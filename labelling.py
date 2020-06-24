@@ -1,10 +1,4 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5 import QtWidgets
-import sys
-from PyQt5.QtGui import *
-from PyQt5 import QtCore
-import bboxing
 import masking_DB as masking
 import bboxing_DB as bboxing
 import mix_bboxing_DB as mix

@@ -8,8 +8,6 @@ import check_DB as check
 import project_DB as project
 import DB
 from mqtt import mqtt_connector
-
-import CDgM_integrated_project.Python.my_client as camera
 from io import BytesIO
 from PIL import Image
 import numpy as np
