@@ -1,5 +1,5 @@
 #-*- coding:utf-8 -*-
-
+# firefly : 192.168.1.186
 from PyQt5.QtWidgets import *
 import sys
 from PyQt5.QtGui import *
@@ -7,12 +7,12 @@ import resist, picture_modify, labelling
 import check_DB as check
 import project_DB as project
 import DB
+from mqtt import mqtt_connector
 
 import CDgM_integrated_project.Python.my_client as camera
 from io import BytesIO
 from PIL import Image
 import numpy as np
-import cv2
 
 class MyApp(QWidget):
     """
@@ -30,7 +30,6 @@ class MyApp(QWidget):
         super().__init__()
         self.initUI()
         self.DB = db
-
         #im_data = np.array(cv2.imread("example.jpg")).tobytes()
         #self.DB.set_image(200000, im_data, 0, 0)
         #self.DB.update_object("1", img_id="1", loc_id="1", category_id="1", iteration="1", mix_num="0")
@@ -111,17 +110,26 @@ class MyApp(QWidget):
     #지그 테스트를 위한 지그 오픈 및, 찍힌 사진을 띄워주는 함수
     def open(self):
         #지그오픈 및 사진촬영 함수 by창석
-        camera.run()
-
+        mqtt_connector('192.168.10.19', 1883).collect_dataset("20001", 1)# ip, port  collect: env_id , image_type
         #지그에서 찍힌 사진을 띄움
         self.open_window = QWidget()
         img_label = QLabel()
-        mage =str(self.DB.last_id_table("Image"))[2:-3]
+        mage = str(self.DB.get_last_id("Image"))[2:-3]
         image = self.DB.get_table(mage, "Image")
         im_data = np.array(Image.open(BytesIO(image[2])).convert("RGB"))
         qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
         self.image_data = QPixmap.fromImage(qim)
         img_label.clear()
+
+        qp = QPainter()
+        qp.begin(self.image_data)
+        # 오브젝트에 관련된 비박스가 존재할 경우 비박스 출력
+
+        qp.setPen(QPen(QColor(255, 0, 0), 4))
+        qp.drawLine(0, qim.height()/2, qim.width(), qim.height()/2)
+        qp.drawLine(qim.width()/2, 0, qim.width()/2, qim.height())
+        qp.end()
+
         img_label.setPixmap(self.image_data.scaledToWidth(1000))
         vbox = QVBoxLayout()
         vbox.addWidget(img_label)

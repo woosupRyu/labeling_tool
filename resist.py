@@ -144,21 +144,133 @@ class resist_app(QWidget):
         grid.addWidget(label19, 18, 1)
 
         #요소들이 배치된 그리드를 실제 창에 배치
-        self.setLayout(grid)
 
+        self.right_frame = QFrame()
+        self.right_frame.setFrameShape(QFrame.Box)
+        self.right_layout = QVBoxLayout()
+
+        self.device_list = QScrollArea()
+        self.grid_list = QScrollArea()
+        self.category_list = QScrollArea()
+        #label1,7
+        self.category_label = QLabel("물품")
+        self.grid_label = QLabel("그리드")
+        self.device_label = QLabel("디바이스")
+
+        self.device_cash = self.DB.list_table("Environment")
+        self.device_a = []
+        self.device_b = []
+        self.device_vbox = QVBoxLayout()
+        for i in self.device_cash:
+            self.device_hbox = QHBoxLayout()
+            self.name = QLabel(i[1] + "/" + str(i[2]))
+            self.del_button = QPushButton("삭제")
+            self.del_button.clicked.connect(self.device_delete)
+            self.del_button.setCheckable(True)
+            self.device_a.append(self.name)
+            self.device_b.append(self.del_button)
+            self.device_hbox.addWidget(self.name)
+            self.device_hbox.addWidget(self.del_button)
+            self.device_vbox.addLayout(self.device_hbox)
+        self.device_list.setLayout(self.device_vbox)
+
+        self.grid_cash = self.DB.list_table("Grid")
+        self.grid_a = []
+        self.grid_b = []
+        self.grid_vbox = QVBoxLayout()
+        for i in self.grid_cash:
+            grid_hbox = QHBoxLayout()
+            name = QLabel(str(i[1]) + "x" + str(i[2]))
+            del_button = QPushButton("삭제")
+            del_button.clicked.connect(self.grid_delete)
+            del_button.setCheckable(True)
+            self.grid_a.append(name)
+            self.grid_b.append(del_button)
+            grid_hbox.addWidget(name)
+            grid_hbox.addWidget(del_button)
+            self.grid_vbox.addLayout(grid_hbox)
+        self.grid_list.setLayout(self.grid_vbox)
+
+        self.category_cash = self.DB.list_table("Category")
+        self.category_a = []
+        self.category_b = []
+        self.category_vbox = QVBoxLayout()
+        for i in self.category_cash:
+            category_hbox = QHBoxLayout()
+            name = QLabel(i[2] + "/" + self.DB.get_table(str(i[0]), "SuperCategory")[1])
+            del_button = QPushButton("삭제")
+            del_button.clicked.connect(self.category_delete)
+            del_button.setCheckable(True)
+            self.category_a.append(name)
+            self.category_b.append(del_button)
+            category_hbox.addWidget(name)
+            category_hbox.addWidget(del_button)
+            self.category_vbox.addLayout(category_hbox)
+        self.category_list.setLayout(self.category_vbox)
+
+
+
+        self.right_layout.addWidget(self.device_label)
+        self.right_layout.addWidget(self.device_list)
+        self.right_layout.addWidget(self.grid_label)
+        self.right_layout.addWidget(self.grid_list)
+        self.right_layout.addWidget(self.category_label)
+        self.right_layout.addWidget(self.category_list)
+
+        self.right_frame.setLayout(self.right_layout)
+
+        self.hbox = QHBoxLayout()
+
+        self.hbox.addLayout(grid)
+        self.hbox.addWidget(self.right_frame)
+
+        self.setLayout(self.hbox)
 
         #윈도우 이름 설정 및 위도우 띄우기
-        self.resize(500,700)
+        self.resize(1000,700)
         self.setWindowTitle("등록")
         self.show()
 
+    def device_delete(self):
+        for i in range(len(self.device_b)):
+            if self.device_b[i].isChecked():
+                del self.device_b[i]
+                del self.device_a[i]
+        for i in reversed(range(self.device_vbox.count())):
+            k = self.device_vbox.itemAt(i).layout()
+            for j in reversed(range(k.count())):
+                k.itemAt(j).widget().deleteLater()
+            k.deleteLater()
+            #print(self.device_vbox.count())
+        print(self.device_b)
+        print(self.device_a)
+        for i in range(len(self.device_b)):
+            sad = QHBoxLayout()
+            sad.addWidget(self.device_a[i])
+            sad.addWidget(self.device_b[i])
+            self.device_vbox.addLayout(sad)
+        self.update()
 
+    def grid_delete(self):
+        print("hi")
+    def category_delete(self):
+        print("hi")
     def send_device_text(self):
 
         #입력받은 디바이스 정보를 DB에 보내주는 함수
         return_value = self.DB.set_environment(self.device_IP.text(), self.floor.text(), self.device_w.text(), self.device_d.text(), self.device_h.text())
         #중복된 데이터는 아래의 함수를 실행시키지 않음
         if return_value == True:
+            bix = QHBoxLayout()
+            new_env = QLabel(self.device_IP.text() + "/" + self.floor.text())
+            self.del_button2 = QPushButton("삭제")
+            bix.addWidget(new_env)
+            bix.addWidget(self.del_button2)
+            self.del_button2.clicked.connect(self.device_delete)
+            self.device_vbox.addLayout(bix)
+            self.device_a.append(new_env)
+            self.device_b.append(self.del_button2)
+            self.update()
             #DB에 보낸 데이터를 확인시켜주는 창
             self.env_check_window = QWidget()
 
@@ -196,6 +308,8 @@ class resist_app(QWidget):
         return_value = self.DB.set_grid(int(self.grid_x.text()), int(self.grid_y.text()))
         # 중복된 데이터는 아래의 함수를 실행시키지 않음
         if return_value == True:
+            self.grid_vbox.addWidget(QLabel(self.grid_x.text() + "x" +self.grid_y.text()))
+            self.update()
             grid_cash = self.DB.list_table("Grid")
             for i in range(len(grid_cash)):
                 if grid_cash[i][1] == int(self.grid_x.text()) and grid_cash[i][2] == int(self.grid_y.text()):
@@ -205,12 +319,12 @@ class resist_app(QWidget):
             location_check = ""
             #0x0이 들어올 경우 예외적으로 생성
             if self.grid_x.text() == "0" and self.grid_y.text() == "0":
-                self.DB.set_location(grid_id, 0, 0)
+                self.DB.set_location(str(grid_id), "0", "0")
                 location_check = "0x0, "
             # 그리드에 존재할 수 있는 모든 로케이션 생성
             for i in range(int(self.grid_x.text())):
                 for j in range(int(self.grid_y.text())):
-                    self.DB.set_location(grid_id, i+1, j+1)
+                    self.DB.set_location(str(grid_id), str(i+1), str(j+1))
                     location_check = location_check + str(i+1) + "x" + str(j+1) + ", "
 
             # DB에 보낸 데이터를 확인시켜주는 창
@@ -255,11 +369,13 @@ class resist_app(QWidget):
         # 썸네일 이미지를 읽어옴
         f = open(self.thumbnail.text(), "rb")
         # 물품 정보를 DB에 보내주는 함수
-        return_value = self.DB.set_category(super_category_id, self.category_name.text(), self.category_w.text(), self.category_d.text(), self.category_h.text(), self.iterate_num.text(), f.read())
+        return_value = self.DB.set_category(str(super_category_id), self.category_name.text(), self.category_w.text(), self.category_d.text(), self.category_h.text(), self.iterate_num.text(), f.read())
         f.close()
         if return_value == True:
+            self.category_vbox.addWidget(QLabel(self.category_name.text() + "/" + self.DB.get_table(str(super_category_id), "SuperCategory")[1]))
             # 중복된 데이터는 아래의 함수를 실행시키지 않음
             self.category_check_window = QWidget()
+
             super_category_label = QLabel("분류 : " + self.super_category_list.currentText())
             name_label = QLabel("이름 : " + self.category_name.text())
             w_label = QLabel("가로 : " + self.category_w.text())
@@ -297,7 +413,6 @@ class resist_app(QWidget):
             self.category_h.setText("")
             self.iterate_num.setText("")
             self.thumbnail.setText("")
-
 
             self.category_check_window.setLayout(vbox)
             self.category_check_window.setWindowTitle("카테고리 체크")

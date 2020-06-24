@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-#오브젝트 이미지 유니크 키에서 없엠, 박스 유니크키 오브젝트 아이디만으로 수정함
+
 initial_queries = list()
 
 # table environment
@@ -12,8 +12,8 @@ width SMALLINT UNSIGNED NOT NULL,
 height SMALLINT UNSIGNED NOT NULL,
 depth SMALLINT UNSIGNED NOT NULL,
 PRIMARY KEY(id),
-UNIQUE INDEX (ipv4, floor)
-) AUTO_INCREMENT=200000"""
+UNIQUE KEY UNIQUE_KEY (ipv4, floor)
+) AUTO_INCREMENT=20001"""
 initial_queries.append(create_env_sql)
 
 # table Grid
@@ -23,7 +23,7 @@ id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 width SMALLINT UNSIGNED NOT NULL,
 height SMALLINT UNSIGNED NOT NULL,
 PRIMARY KEY(id),
-UNIQUE INDEX (width, height)
+UNIQUE KEY UNIQUE_KEY (width, height)
 )"""
 initial_queries.append(create_grid_sql)
 
@@ -45,7 +45,7 @@ data MEDIUMBLOB NOT NULL,
 type TINYINT UNSIGNED NOT NULL,
 check_num TINYINT UNSIGNED NOT NULL,
 PRIMARY KEY(id),
-FOREIGN KEY(env_id) REFERENCES Environment(id) ON UPDATE CASCADE ON DELETE CASCADE
+FOREIGN KEY FOREIGN_KEY (env_id) REFERENCES Environment(id) ON UPDATE CASCADE ON DELETE CASCADE
 )"""
 initial_queries.append(create_img_sql)
 
@@ -57,8 +57,8 @@ id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 x TINYINT UNSIGNED NOT NULL,
 y TINYINT UNSIGNED NOT NULL,
 PRIMARY KEY(id),
-FOREIGN KEY(grid_id) REFERENCES Grid(id) ON UPDATE CASCADE ON DELETE CASCADE,
-UNIQUE INDEX (grid_id, x, y)
+FOREIGN KEY FOREIGN_KEY (grid_id) REFERENCES Grid(id) ON UPDATE CASCADE ON DELETE CASCADE,
+UNIQUE KEY UNIQUE_KEY (grid_id, x, y)
 )"""
 initial_queries.append(create_loc_sql)
 
@@ -74,8 +74,8 @@ depth SMALLINT UNSIGNED NOT NULL,
 iteration TINYINT UNSIGNED NOT NULL,
 thumbnail MEDIUMBLOB NOT NULL,
 PRIMARY KEY(id),
-FOREIGN KEY(super_id) REFERENCES SuperCategory(id) ON UPDATE CASCADE ON DELETE CASCADE,
-UNIQUE INDEX (name, super_id)
+FOREIGN KEY FOREIGN_KEY (super_id) REFERENCES SuperCategory(id) ON UPDATE CASCADE ON DELETE CASCADE,
+UNIQUE KEY UNIQUE_KEY (name, super_id)
 )"""
 initial_queries.append(create_categories_sql)
 
@@ -89,10 +89,10 @@ id INT UNSIGNED NOT NULL AUTO_INCREMENT,
 iteration SMALLINT UNSIGNED NOT NULL,
 mix_num INT NOT NULL,
 PRIMARY KEY(id),
-FOREIGN KEY(img_id) REFERENCES Image(id) ON UPDATE CASCADE ON DELETE CASCADE,
-FOREIGN KEY(loc_id) REFERENCES Location(id) ON UPDATE CASCADE ON DELETE CASCADE,
-FOREIGN KEY(category_id) REFERENCES Category(id) ON UPDATE CASCADE ON DELETE CASCADE,
-UNIQUE INDEX (loc_id, category_id, iteration)
+FOREIGN KEY FOREIGN_KEY_Image (img_id) REFERENCES Image(id) ON UPDATE CASCADE ON DELETE CASCADE,
+FOREIGN KEY FOREIGN_KEY_Category (category_id) REFERENCES Category(id) ON UPDATE CASCADE ON DELETE CASCADE,
+FOREIGN KEY FOREIGN_KEY_Location (loc_id) REFERENCES Location(id) ON UPDATE CASCADE ON DELETE CASCADE,
+UNIQUE KEY UNIQUE_KEY (loc_id, category_id, iteration, mix_num)
 )"""
 initial_queries.append(create_object_sql)
 

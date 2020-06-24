@@ -17,7 +17,7 @@ class label_app(QWidget):
     def label_window(self):
         mask_btn = QPushButton("Mask")
         bbox_btn = QPushButton("Bbox")
-        mix_btn = QPushButton("Mix")
+        mix_btn = QPushButton("Mix Bbox")
         bbox_btn.clicked.connect(self.bbox)
         mask_btn.clicked.connect(self.mask)
         mix_btn.clicked.connect(self.mix)

@@ -34,14 +34,18 @@ class check_app(QWidget):
         mid_frame.setFrameShape(QFrame.Box)
         right_frame = QFrame()
         right_frame.setFrameShape(QFrame.Box)
-        select_all_btn = QPushButton("전체선택")
+        select_all_btn = QPushButton("전체선택(G)")
+        select_all_btn.setShortcut("G")
+        select_all_btn.setToolTip("G")
         select_all_btn.clicked.connect(self.select_all)
-        move_right_btn = QPushButton("->")
+        move_right_btn = QPushButton("->(D)")
         move_right_btn.clicked.connect(self.move_image)
         move_right_btn.setShortcut("D")
-        move_left_btn = QPushButton("<-")
+        move_right_btn.setToolTip("D")
+        move_left_btn = QPushButton("<-(A)")
         move_left_btn.clicked.connect(self.move_image)
         move_left_btn.setShortcut("A")
+        move_left_btn.setToolTip("A")
         """
         왼쪽 프레임
         """
@@ -76,14 +80,15 @@ class check_app(QWidget):
         objects = []
         ob = list(DB.list_object_check_num(self.DB, self.current_category, self.current_grid, "1"))
         if len(ob) != 0:
-            objects = ob
+            objects.append(ob)
         rejected = list(DB.list_object_check_num(self.DB, self.current_category, self.current_grid, "2"))
         if len(rejected) != 0:
             objects.append(rejected)
 
         #호출된 오브젝트들로 버튼 생성 및 연동
-        obj_btn_name_list = self.obj_list2name(objects)
-        for i in range(len(objects)):
+        num = 0
+        obj_btn_name_list = self.obj_list2name(sum(objects, []))
+        for i in range(len(sum(objects, []))):
             check_box = QCheckBox()
             image_btn = QPushButton(obj_btn_name_list[i])
             image_btn.setCheckable(True)
@@ -95,6 +100,9 @@ class check_app(QWidget):
             self.left_vbox.addLayout(tem_hbox)
             self.a.append(check_box)
             self.b.append(image_btn)
+            if num == 0:
+                self.b[num].click()
+            num = num + 1
         self.scroll_vbox.addLayout(self.left_vbox)
         self.left_frame.setLayout(self.scroll_vbox)
         self._scrollArea.setWidget(self.left_frame)
@@ -165,7 +173,7 @@ class check_app(QWidget):
         qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
         self.image_data = QPixmap.fromImage(qim)
         self.image_label.clear()
-        self.image_label.setPixmap(self.image_data.scaledToWidth(1000))
+        self.image_label.setPixmap(self.image_data.scaledToWidth(1500))
 
     def pass_image(self):
         #선택된 이미지들을 허락하는 함수
@@ -202,13 +210,14 @@ class check_app(QWidget):
         #     self.left_vbox.itemAt(i).layout().deleteLater()
         ob = list(DB.list_object_check_num(self.DB, self.current_category, self.current_grid, "1"))
         if len(ob) != 0:
-            objects = ob
+            objects.append(ob)
         rejected = list(DB.list_object_check_num(self.DB, self.current_category, self.current_grid, "2"))
         if len(rejected) != 0:
             objects.append(rejected)
 
-        obj_btn_name_list = self.obj_list2name(objects)
-        for i in range(len(objects)):
+        obj_btn_name_list = self.obj_list2name(sum(objects, []))
+        num = 0
+        for i in range(len(sum(objects, []))):
             check_box = QCheckBox()
             image_btn = QPushButton(obj_btn_name_list[i])
             image_btn.setCheckable(True)
@@ -222,6 +231,9 @@ class check_app(QWidget):
             self.left_vbox.addLayout(tem_hbox)
             self.a.append(check_box)
             self.b.append(image_btn)
+            if num == 0:
+                self.b[num].click()
+            num = num + 1
         self.update()
 
     def change_grid(self):
@@ -239,13 +251,13 @@ class check_app(QWidget):
 
         ob = list(DB.list_object_check_num(self.DB, self.current_category, self.current_grid, "1"))
         if len(ob) != 0:
-            objects = ob
+            objects.append(ob)
         rejected = list(DB.list_object_check_num(self.DB, self.current_category, self.current_grid, "2"))
         if len(rejected) != 0:
             objects.append(rejected)
-
-        obj_btn_name_list = self.obj_list2name(objects)
-        for i in range(len(objects)):
+        num = 0
+        obj_btn_name_list = self.obj_list2name(sum(objects, []))
+        for i in range(len(sum(objects, []))):
             check_box = QCheckBox()
             image_btn = QPushButton(obj_btn_name_list[i])
             image_btn.setCheckable(True)
@@ -258,6 +270,9 @@ class check_app(QWidget):
             self.left_vbox.addLayout(tem_hbox)
             self.a.append(check_box)
             self.b.append(image_btn)
+            if num == 0:
+                self.b[num].click()
+            num = num + 1
         self.update()
 
     def obj_list2name(self, obj_list):
@@ -299,7 +314,7 @@ class check_app(QWidget):
         cate_id = self.DB.get_category_id_from_args(str(super_id), i[0][0])
         grid_id = self.DB.get_grid_id_from_args(i[1][1])
         loc_id = self.DB.get_location_id_from_args(str(grid_id), i[1][0])
-        obj_id = self.DB.get_obj_id_from_args(str(loc_id), str(cate_id), (int(i[2])-1))
+        obj_id = self.DB.get_obj_id_from_args(str(loc_id), str(cate_id), (int(i[2])-1), "-1")
         return str(obj_id)
 
     def select_all(self):
@@ -310,13 +325,13 @@ class check_app(QWidget):
         #다음, 이전 이미지로 이동하는 버튼과 연동된 함수
         len_a = len(self.a)
         sender = self.sender().text()
-        if sender == "<":
+        if sender == "<-(A)":
             for i in range(len_a):
                 if self.b[i].isChecked():
                     if i > 0:
                         self.b[i - 1].click()
                         break
-        elif sender == ">":
+        elif sender == "->(D)":
             for i in range(len_a):
                 if self.b[i].isChecked():
                     if i < (len_a - 1):

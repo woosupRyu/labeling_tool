@@ -2,8 +2,10 @@ from PyQt5.QtCore import *
 from io import BytesIO
 from PIL import Image
 import numpy as np
-import CDgM_integrated_project.Python.my_client as camera
+from mqtt import mqtt_connector
 from DB import *
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
 
 
 class picture_app(QWidget):
@@ -65,19 +67,21 @@ class picture_app(QWidget):
         self.added_list.setHeaderLabels(["추가된 물품 리스트", "그리드", "횟수"])
 
         #촬영 정보를 선택하는 버튼들 생성
-        self.move_left = QPushButton("<-")
+        self.move_left = QPushButton("<-(A)")
         self.move_left.setStyleSheet("background-color : yellow")
         self.move_left.setShortcut("A")
         self.move_left.setToolTip("A")
-        self.move_right = QPushButton("->")
+        self.move_right = QPushButton("->(D)")
         self.move_right.setStyleSheet("background-color : yellow")
         self.move_right.setShortcut("D")
         self.move_right.setToolTip("D")
         self.confirm_btn = QPushButton("확인")
         self.confirm_btn.setStyleSheet("background-color : blue")
-        self.add_category_btn = QPushButton("물건 추가")
+        self.add_category_btn = QPushButton("물건 추가(F)")
+        self.add_category_btn.setShortcut("F")
+        self.add_category_btn.setToolTip("F")
         self.add_category_btn.setStyleSheet("background-color : green")
-        self.delete_btn = QPushButton("삭제")
+        self.delete_btn = QPushButton("삭제(Delete)")
         self.delete_btn.setStyleSheet("background-color : blue")
         self.delete_btn.setShortcut("Delete")
         self.delete_btn.setToolTip("Delete")
@@ -133,7 +137,12 @@ class picture_app(QWidget):
             item = self.add_list.topLevelItem(i)
             for j in range(len(self.category_cash)):
                 if self.category_cash[j][2] + "/" + self.DB.get_table(self.category_cash[j][0], "SuperCategory")[1] == item.text(0):
-                    add_item = self.make_multi_tree_item([item.text(0), self.grid_box.currentText(), self.category_cash[j][6]])
+                    if item.text(0).split("/")[1] == "mix":
+                        add_item = self.make_multi_tree_item([item.text(0), "0x0", self.category_cash[j][6]])
+                    elif item.text(0).split("/")[1] == "background":
+                        add_item = self.make_multi_tree_item([item.text(0), "1x1", self.category_cash[j][6]])
+                    else:
+                        add_item = self.make_multi_tree_item([item.text(0), self.grid_box.currentText(), self.category_cash[j][6]])
             self.add_category.addChild(add_item)
 
 
@@ -165,7 +174,7 @@ class picture_app(QWidget):
         #촬영을 원하는 물품들의 정보들로 오브젝트를 생성하는 부분(이미지는 None)
         for i in self.picture_data:
             cate_super_cate = i[0].split("/")
-            set_object_list(self.DB, self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(cate_super_cate[1])), cate_super_cate[0]), self.DB.get_grid_id_from_args(i[1]))
+            set_object_list(self.DB, self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(cate_super_cate[1])), cate_super_cate[0]), str(self.DB.get_grid_id_from_args(i[1])), -1)
 
         #모든 오브젝트를 생성한 후 오브젝트 정보들 캐싱
         self.object_cash = self.DB.list_table("Object")
@@ -261,6 +270,19 @@ class picture_app(QWidget):
         """
         #프레임에 넣을 레이아웃 생성
         title = QLabel("물품 리스트")
+        btn_layout = QHBoxLayout()
+        left_btn = QPushButton("<-(A)")
+        left_btn.clicked.connect(self.move_image)
+        left_btn.setShortcut("A")
+        left_btn.setToolTip("A")
+        right_btn = QPushButton("->(D)")
+        right_btn.clicked.connect(self.move_image)
+        right_btn.setShortcut("D")
+        right_btn.setToolTip("D")
+        btn_layout.addWidget(left_btn)
+        btn_layout.addWidget(right_btn)
+        btn_frame = QFrame()
+        btn_frame.setLayout(btn_layout)
         device_label = QLabel(self.device_box.currentText())
         self.btn_group = QButtonGroup()
         self.scroll_vbox = QVBoxLayout()
@@ -283,7 +305,7 @@ class picture_app(QWidget):
             else:
                 for j in range(1, int(i[1]) * int(i[2]) + 1):
                     for k in range(int(i[3])):
-                        tt = QPushButton(str(i[0]) + "_" + str((j - 1) // int(i[2]) + 1) + "x" + str((j - 1) % int(i[2]) + 1) + "/" + i[1] + "x" + i[2] + "_" + str(k + 1))
+                        tt = QPushButton(str(i[0]) + "_" + str((j - 1) % int(i[1]) + 1) + "x" + str((j - 1) // int(i[1]) + 1) + "/" + i[1] + "x" + i[2] + "_" + str(k + 1))
                         tt.setCheckable(True)
                         self.btn_group.addButton(tt)
                         self.a.append(tt)
@@ -295,8 +317,6 @@ class picture_app(QWidget):
             else:
                 self.a[i].clicked.connect(self.load_image_grid)
             self.scroll_vbox.addWidget(self.a[i])
-        left_frame.setLayout(self.scroll_vbox)
-        self._scrollArea.setWidget(left_frame)
         left_frame.setLayout(self.scroll_vbox)
         self._scrollArea.setWidget(left_frame)
 
@@ -311,8 +331,8 @@ class picture_app(QWidget):
         """
 
         #촬영버튼 생성
-        shoot_btn = QPushButton("촬영")
-        shoot_btn.setShortcut("Ctrl+S")
+        shoot_btn = QPushButton("촬영(S)")
+        shoot_btn.setShortcut("S")
         shoot_btn.clicked.connect(self.shoot)
         self.right_hbox = QHBoxLayout()
 
@@ -327,6 +347,7 @@ class picture_app(QWidget):
         splitter3.addWidget(title)
         splitter3.addWidget(device_label)
         splitter3.addWidget(self._scrollArea)
+        splitter3.addWidget(btn_frame)
 
         splitter4 = QSplitter(Qt.Vertical)
         splitter4.addWidget(shoot_btn)
@@ -350,11 +371,11 @@ class picture_app(QWidget):
         self.image_name = self.image_name.replace("_", " ")# (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
         self.image_name = self.image_name.split()
 
-        catefgory_id = self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(self.image_name[0].split("/")[1])), self.image_name[0].split("/")[0])
-        location_id = self.DB.get_location_id_from_args(self.DB.get_grid_id_from_args(self.image_name[1].split("/")[1]), self.image_name[1].split("/")[0])
-        iteration = int(self.image_name[2]) - 1
+        category_id = str(self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(self.image_name[0].split("/")[1])), self.image_name[0].split("/")[0]))
+        location_id = str(self.DB.get_location_id_from_args(str(self.DB.get_grid_id_from_args(self.image_name[1].split("/")[1])), self.image_name[1].split("/")[0]))
+        iteration = str(int(self.image_name[2]))
 
-        self.current_obj_id = self.DB.get_obj_id_from_args(location_id, catefgory_id, iteration)
+        self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
         #해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
         if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
             im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[0]), "Image")
@@ -364,12 +385,12 @@ class picture_app(QWidget):
             qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
             self.image_data = QPixmap.fromImage(qim)
             self.image_label.clear()
-            self.image_label.setPixmap(self.image_data.scaledToWidth(1000))
+            self.image_label.setPixmap(self.image_data.scaledToWidth(1500))
 
         #해당 오브젝트가 이미지를 가지고 있지 않으면(첫 촬영인 경우) 썸네일을 보여줌
         else:
             for i in range(len(self.category_cash)):
-                if catefgory_id == self.category_cash[i][1]:
+                if category_id == str(self.category_cash[i][1]):
                     im = self.category_cash[i][7]
                     im_data = np.array(Image.open(BytesIO(im)).convert("RGB"))
                     qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
@@ -377,39 +398,45 @@ class picture_app(QWidget):
                     self.image_label.clear()
                     self.image_label.setPixmap(self.image_data.scaledToWidth(500))
 
+    def move_image(self):
+        # 다음, 이전이미지로 이동하는 함수
+        len_a = len(self.a)
+        sender = self.sender().text()
+        if sender == "<-(A)":
+            for i in range(len_a):
+                if self.a[i].isChecked():
+                    if i > 0:
+                        self.a[i - 1].click()
+                        break
+        elif sender == "->(D)":
+            for i in range(len_a):
+                if self.a[i].isChecked():
+                    if i < (len_a - 1):
+                        self.a[i + 1].click()
+                        break
+
+
     def shoot(self):
         #촬영 버튼과 연동된 실제 촬영 및, 이미지 업데이트 함수
         #촬영하여 이미지를 DB에 저장하는 함수
-        camera.run()
+        mqtt_connector('192.168.10.19', 1883).collect_dataset("20001", 1)# ip, port  collect: env_id , image_type
+        import time
+        time.sleep(1)
 
         #저장된 이미지를 읽어보여주는 함수
-        tem_img = self.DB.get_table(str(self.DB.last_id_table("Image"))[2:-3], "Image")[2]
-        self.image1 = np.array(Image.open(BytesIO(tem_img)).convert("RGB"))
-        self.image1[:, :, [0, 2]] = self.image1[:, :, [2, 0]]
+        tem_img = self.DB.get_table(str(self.DB.get_last_id("Image"))[2:-3], "Image")
+        self.image1 = np.array(Image.open(BytesIO(tem_img[2])).convert("RGB"))
+        #self.image1[:, :, [0, 2]] = self.image1[:, :, [2, 0]]
         qim = QImage(self.image1, self.image1.shape[1], self.image1.shape[0], self.image1.strides[0],
                      QImage.Format_RGB888)
         im = QPixmap.fromImage(qim)
 
         #이미지 사이즈를 조정
-        self.image_label.setPixmap(im.scaledToWidth(1000))
-
-        # for i in range(len(self.a)):
-        #     if self.a[i].isChecked():
-        #         obj_info = self.a[i].text()
-        #         obj_info = obj_info.replace("_", " ")
-        #         obj_info = obj_info.split()
-        #         break
-        # category_info = obj_info[0]
-        # location_info = obj_info[1]
-        # iteration_info = int(obj_info[2]) - 1
-        #
-        # location_id = self.DB.get_location_id_from_args(str(self.DB.get_grid_id_from_args(location_info.split("/")[1])),
-        #                                   location_info.split("/")[0])
-        # category_id = self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(category_info.split("/")[1])), category_info.split("/")[0])
-        # obj_id = str(self.DB.get_obj_id_from_args(location_id, category_id, str(iteration_info)))
+        self.image_label.setPixmap(im.scaledToWidth(1500))
 
         #현재 오브젝트에 촬영된 이미지 업데이트
-        self.DB.update_object(self.current_obj_id, img_id=str(self.DB.last_id_table("Image"))[2:-3])
+        print(len(self.DB.list_table("Image")))
+        self.DB.update_object(self.current_obj_id, img_id=tem_img[1])
         self.DB.update_image_img(self.current_obj_id, self.image1)
 
         #믹스인 경우 데이터 타입을 2로 설정

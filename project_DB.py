@@ -27,7 +27,8 @@ class project_app(QWidget):
         grid_table_list = self.DB.list_table("Grid")
         grid_list = []
         for i in grid_table_list:
-            grid_list.append(str(i[1]) + "x" + str(i[2]))
+            if i[1] != 0:
+                grid_list.append(str(i[1]) + "x" + str(i[2]))
         for i in grid_list:
             grid_btn = QRadioButton(i)
             grid_btn.clicked.connect(self.show_grid)
@@ -46,22 +47,46 @@ class project_app(QWidget):
         object_list_label = QLabel("오브젝트 리스트")
         self.object_box = []
 
-
-
         self.object_vbox = QVBoxLayout()
         self.object_vbox.addWidget(object_list_label)
         self.a = []
         category_table_list = self.DB.list_table("Category")
         for i in category_table_list:
-            self.DB.get_table(str(i[0]), "SuperCategory")[1]
-        for i in ["a", "b", "c", "d", "e", "f"]:
-            self.a.append(QCheckBox(i))
-            self.object_vbox.addWidget(self.a[ad])
-            ad = ad + 1
+            mix_or_not = self.DB.get_table(str(i[0]), "SuperCategory")[1]
+            if mix_or_not != "mix":
+                product_name = i[2] + "/" + mix_or_not
+                ad = QCheckBox(product_name)
+                self.a.append(ad)
+                self.object_vbox.addWidget(ad)
 
         object_frame.setLayout(self.object_vbox)
         self.object_scroll.setWidget(object_frame)
 
+        # 백그라운트 리스트
+
+        background_frame = QFrame()
+        self.background_scroll = QScrollArea()
+        self.background_scroll.setWidgetResizable(True)
+        background_frame.setFrameShape(QFrame.Box)
+        background_list_label = QLabel("배경 리스트")
+        self.background_box = []
+
+        self.background_vbox = QVBoxLayout()
+        self.background_vbox.addWidget(background_list_label)
+        self.background = []
+        category_table_list = self.DB.list_table("Category")
+        for i in category_table_list:
+            background_or_not = self.DB.get_table(str(i[0]), "SuperCategory")[1]
+            if background_or_not == "background":
+                ad = QCheckBox(i[2])
+                self.background.append(ad)
+                self.background_vbox.addWidget(ad)
+
+        background_frame.setLayout(self.background_vbox)
+        self.background_scroll.setWidget(background_frame)
+
+
+        # 그리드 레이아웃 표시
         self.grid_setting_frame = QFrame()
         self.grid_setting = QScrollArea()
         self.grid_setting.setWidgetResizable(True)
@@ -86,6 +111,7 @@ class project_app(QWidget):
         self.h_box1 = QHBoxLayout()
         self.h_box1.addWidget(self.grid_scroll)
         self.h_box1.addWidget(self.object_scroll)
+        self.h_box1.addWidget(self.background_scroll)
         self.h_box1.addWidget(self.grid_setting_frame)
 
         self.augmentation_filename = QLineEdit()
@@ -104,7 +130,7 @@ class project_app(QWidget):
         self.setLayout(self.v_box)
         self.project_name = self.sender()
 
-        self.resize(800, 500)
+        self.resize(1000, 500)
         self.setWindowTitle(self.project_name.text())
         self.show()
 
