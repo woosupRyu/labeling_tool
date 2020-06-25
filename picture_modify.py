@@ -375,43 +375,39 @@ class picture_app(QWidget):
         self.shoot_windows.show()
 
     def load_image_grid(self):
-        global lock
-        if lock:
-            lock = False
-            #버튼이 클릭됬을 때, 해당 오브젝트의 이미지를 띄워주는 함수
-            #버튼으로 부터 어떤 오브젝트를 접근해야 하는지 확인
-            self.image_name = self.sender()
-            self.image_name = self.image_name.text()
-            self.image_name = self.image_name.replace("_", " ")# (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
-            self.image_name = self.image_name.split()
+        #버튼이 클릭됬을 때, 해당 오브젝트의 이미지를 띄워주는 함수
+        #버튼으로 부터 어떤 오브젝트를 접근해야 하는지 확인
+        self.image_name = self.sender()
+        self.image_name = self.image_name.text()
+        self.image_name = self.image_name.replace("_", " ")# (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
+        self.image_name = self.image_name.split()
 
-            category_id = str(self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(self.image_name[0].split("/")[1])), self.image_name[0].split("/")[0]))
-            location_id = str(self.DB.get_location_id_from_args(str(self.DB.get_grid_id_from_args(self.image_name[1].split("/")[1])), self.image_name[1].split("/")[0]))
-            iteration = str(int(self.image_name[2]))
+        category_id = str(self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(self.image_name[0].split("/")[1])), self.image_name[0].split("/")[0]))
+        location_id = str(self.DB.get_location_id_from_args(str(self.DB.get_grid_id_from_args(self.image_name[1].split("/")[1])), self.image_name[1].split("/")[0]))
+        iteration = str(int(self.image_name[2]))
 
-            self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
-            #해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
-            if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
-                im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[0]), "Image")
-                if im[4] == 2:
-                    self.sender().setStyleSheet("background-color: red")
-                im_data = np.array(Image.open(BytesIO(im[2])).convert("RGB"))
-                qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
-                self.image_data = QPixmap.fromImage(qim)
-                self.image_label.clear()
-                self.image_label.setPixmap(self.image_data.scaledToWidth(1500))
+        self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
+        #해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
+        if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
+            im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[0]), "Image")
+            if im[4] == 2:
+                self.sender().setStyleSheet("background-color: red")
+            im_data = np.array(Image.open(BytesIO(im[2])).convert("RGB"))
+            qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
+            self.image_data = QPixmap.fromImage(qim)
+            self.image_label.clear()
+            self.image_label.setPixmap(self.image_data.scaledToWidth(1500))
 
-            #해당 오브젝트가 이미지를 가지고 있지 않으면(첫 촬영인 경우) 썸네일을 보여줌
-            else:
-                for i in range(len(self.category_cash)):
-                    if category_id == str(self.category_cash[i][1]):
-                        im = self.category_cash[i][7]
-                        im_data = np.array(Image.open(BytesIO(im)).convert("RGB"))
-                        qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
-                        self.image_data = QPixmap.fromImage(qim)
-                        self.image_label.clear()
-                        self.image_label.setPixmap(self.image_data.scaledToWidth(500))
-            lock = True
+        #해당 오브젝트가 이미지를 가지고 있지 않으면(첫 촬영인 경우) 썸네일을 보여줌
+        else:
+            for i in range(len(self.category_cash)):
+                if category_id == str(self.category_cash[i][1]):
+                    im = self.category_cash[i][7]
+                    im_data = np.array(Image.open(BytesIO(im)).convert("RGB"))
+                    qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
+                    self.image_data = QPixmap.fromImage(qim)
+                    self.image_label.clear()
+                    self.image_label.setPixmap(self.image_data.scaledToWidth(500))
 
     def move_image(self):
         # 다음, 이전이미지로 이동하는 함수
@@ -436,7 +432,7 @@ class picture_app(QWidget):
             lock = False
             #촬영 버튼과 연동된 실제 촬영 및, 이미지 업데이트 함수
             #촬영하여 이미지를 DB에 저장하는 함수
-            mqtt_connector('192.168.10.19', 1883).collect_dataset("20001", 1)# ip, port  collect: env_id , image_type
+            mqtt_connector('192.168.10.19', 1883, "20001").collect_dataset("20001", 1)# ip, port  collect: env_id , image_type
 
             #저장된 이미지를 읽어보여주는 함수
             tem_img = self.DB.get_table(str(self.DB.get_last_id("Image"))[2:-3], "Image")
