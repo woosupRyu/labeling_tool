@@ -107,8 +107,8 @@ class MyApp(QWidget):
 
     #지그 테스트를 위한 지그 오픈 및, 찍힌 사진을 띄워주는 함수
     def open(self):
-        #지그오픈 및 사진촬영 함수 by창석
-        mqtt_connector('192.168.10.19', 1883, "20001").collect_dataset("20001", 1)# ip, port  collect: env_id , image_type
+        #지그오픈 및 사진촬영 함수
+        mqtt_connector('192.168.10.19', 1883).collect_dataset("20001", 1)# ip, port  collect: env_id , image_type
         #지그에서 찍힌 사진을 띄움
         self.open_window = QWidget()
         img_label = QLabel()

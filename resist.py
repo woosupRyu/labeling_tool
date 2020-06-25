@@ -1,7 +1,9 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import cv2
-import time
+
+global lock
+lock = True
 
 class resist_app(QWidget):
     """
@@ -247,24 +249,28 @@ class resist_app(QWidget):
         self.show()
 
     def device_delete(self):
-        for i in range(len(self.device_b)):
-            if self.device_b[i].isChecked():
-                del_num = i
-        del self.device_b[del_num]
-        del self.device_a[del_num]
+        global lock
+        if lock:
+            lock = False
+            for i in range(len(self.device_b)):
+                if self.device_b[i].isChecked():
+                    del_num = i
+            del self.device_b[del_num]
+            del self.device_a[del_num]
 
-        for i in reversed(range(self.device_vbox.count())):
-            k = self.device_vbox.itemAt(i).layout()
-            for j in reversed(range(k.count())):
-                k.itemAt(j).widget().deleteLater()
+            for i in reversed(range(self.device_vbox.count())):
+                k = self.device_vbox.itemAt(i).layout()
+                for j in reversed(range(k.count())):
+                    k.itemAt(j).widget().deleteLater()
 
-        for l in range(len(self.device_b)):
-            print(self.device_b)
-            self.sad = QHBoxLayout()
-            self.sad.addWidget(self.device_a[l])
-            self.sad.addWidget(self.device_b[l])
-            self.device_vbox.addLayout(self.sad)
-        self.update()
+            for l in range(len(self.device_b)):
+                print(self.device_b)
+                self.sad = QHBoxLayout()
+                self.sad.addWidget(self.device_a[l])
+                self.sad.addWidget(self.device_b[l])
+                self.device_vbox.addLayout(self.sad)
+            self.update()
+            lock = True
 
     def grid_delete(self):
         print("hi")
@@ -273,201 +279,225 @@ class resist_app(QWidget):
         print("hi")
 
     def send_device_text(self):
+        global lock
+        if lock:
+            lock = False
 
-        #입력받은 디바이스 정보를 DB에 보내주는 함수
-        return_value = self.DB.set_environment(self.device_IP.text(), self.floor.text(), self.device_w.text(), self.device_d.text(), self.device_h.text())
-        #중복된 데이터는 아래의 함수를 실행시키지 않음
-        if return_value == True:
-            bix = QHBoxLayout()
-            new_env = QLabel(self.device_IP.text() + "/" + self.floor.text())
-            self.del_button2 = QPushButton("삭제")
-            bix.addWidget(new_env)
-            bix.addWidget(self.del_button2)
-            self.del_button2.clicked.connect(self.device_delete)
-            self.device_vbox.addLayout(bix)
-            self.device_a.append(new_env)
-            self.device_b.append(self.del_button2)
-            self.update()
-            #DB에 보낸 데이터를 확인시켜주는 창
-            self.env_check_window = QWidget()
+            #입력받은 디바이스 정보를 DB에 보내주는 함수
+            return_value = self.DB.set_environment(self.device_IP.text(), self.floor.text(), self.device_w.text(), self.device_d.text(), self.device_h.text())
+            #중복된 데이터는 아래의 함수를 실행시키지 않음
+            if return_value == True:
+                bix = QHBoxLayout()
+                new_env = QLabel(self.device_IP.text() + "/" + self.floor.text())
+                self.del_button2 = QPushButton("삭제")
+                bix.addWidget(new_env)
+                bix.addWidget(self.del_button2)
+                self.del_button2.clicked.connect(self.device_delete)
+                self.device_vbox.addLayout(bix)
+                self.device_a.append(new_env)
+                self.device_b.append(self.del_button2)
+                self.update()
+                #DB에 보낸 데이터를 확인시켜주는 창
+                self.env_check_window = QWidget()
 
-            IP_label = QLabel("IP : " + self.device_IP.text())
-            floor_label = QLabel("층수 : " + self.floor.text())
-            w_label = QLabel("가로 : " + self.device_w.text())
-            d_label = QLabel("깊이 : " + self.device_d.text())
-            h_label = QLabel("높이 : " + self.device_h.text())
-            check_label = QLabel("위의 정보를 가진 환경이 등록되었습니다.")
-            check_btn = QPushButton("환경 확인")
-            check_btn.clicked.connect(self.check)
+                IP_label = QLabel("IP : " + self.device_IP.text())
+                floor_label = QLabel("층수 : " + self.floor.text())
+                w_label = QLabel("가로 : " + self.device_w.text())
+                d_label = QLabel("깊이 : " + self.device_d.text())
+                h_label = QLabel("높이 : " + self.device_h.text())
+                check_label = QLabel("위의 정보를 가진 환경이 등록되었습니다.")
+                check_btn = QPushButton("환경 확인")
+                check_btn.clicked.connect(self.check)
 
-            vbox = QVBoxLayout()
-            vbox.addWidget(IP_label)
-            vbox.addWidget(floor_label)
-            vbox.addWidget(w_label)
-            vbox.addWidget(d_label)
-            vbox.addWidget(h_label)
-            vbox.addWidget(check_label)
-            vbox.addWidget(check_btn)
+                vbox = QVBoxLayout()
+                vbox.addWidget(IP_label)
+                vbox.addWidget(floor_label)
+                vbox.addWidget(w_label)
+                vbox.addWidget(d_label)
+                vbox.addWidget(h_label)
+                vbox.addWidget(check_label)
+                vbox.addWidget(check_btn)
 
-            self.env_check_window.setLayout(vbox)
-            self.env_check_window.setWindowTitle("환경 등록 확인")
-            self.env_check_window.show()
+                self.env_check_window.setLayout(vbox)
+                self.env_check_window.setWindowTitle("환경 등록 확인")
+                self.env_check_window.show()
 
-            # DB로 보내진 정보들을 Tool에서 지움
-            self.device_IP.setText("")
-            self.floor.setText("")
-            self.device_w.setText("")
-            self.device_d.setText("")
-            self.device_h.setText("")
+                # DB로 보내진 정보들을 Tool에서 지움
+                self.device_IP.setText("")
+                self.floor.setText("")
+                self.device_w.setText("")
+                self.device_d.setText("")
+                self.device_h.setText("")
+            lock = True
 
     def send_grid_text(self):
-        #그리드 정보를 DB에 보내주는 함수
-        return_value = self.DB.set_grid(int(self.grid_x.text()), int(self.grid_y.text()))
-        # 중복된 데이터는 아래의 함수를 실행시키지 않음
-        if return_value == True:
-            bix = QHBoxLayout()
-            new_grid = QLabel(self.grid_x.text() + "x" +self.grid_y.text())
-            self.del_button3 = QPushButton("삭제")
-            bix.addWidget(new_grid)
-            bix.addWidget(self.del_button3)
-            self.del_button3.clicked.connect(self.grid_delete)
-            self.grid_vbox.addLayout(bix)
-            self.grid_a.append(new_grid)
-            self.grid_b.append(self.del_button3)
-            self.update()
+        global lock
+        if lock:
+            lock = False
+            #그리드 정보를 DB에 보내주는 함수
+            return_value = self.DB.set_grid(int(self.grid_x.text()), int(self.grid_y.text()))
+            # 중복된 데이터는 아래의 함수를 실행시키지 않음
+            if return_value == True:
+                bix = QHBoxLayout()
+                new_grid = QLabel(self.grid_x.text() + "x" +self.grid_y.text())
+                self.del_button3 = QPushButton("삭제")
+                bix.addWidget(new_grid)
+                bix.addWidget(self.del_button3)
+                self.del_button3.clicked.connect(self.grid_delete)
+                self.grid_vbox.addLayout(bix)
+                self.grid_a.append(new_grid)
+                self.grid_b.append(self.del_button3)
+                self.update()
 
-            grid_cash = self.DB.list_table("Grid")
-            for i in range(len(grid_cash)):
-                if grid_cash[i][1] == int(self.grid_x.text()) and grid_cash[i][2] == int(self.grid_y.text()):
-                    grid_id = grid_cash[i][0]
+                grid_cash = self.DB.list_table("Grid")
+                for i in range(len(grid_cash)):
+                    if grid_cash[i][1] == int(self.grid_x.text()) and grid_cash[i][2] == int(self.grid_y.text()):
+                        grid_id = grid_cash[i][0]
 
-            #그리드에 존재할 수 있는 모든 로케이션 생성
-            location_check = ""
-            #0x0이 들어올 경우 예외적으로 생성
-            if self.grid_x.text() == "0" and self.grid_y.text() == "0":
-                self.DB.set_location(str(grid_id), "0", "0")
-                location_check = "0x0, "
-            # 그리드에 존재할 수 있는 모든 로케이션 생성
-            for i in range(int(self.grid_x.text())):
-                for j in range(int(self.grid_y.text())):
-                    self.DB.set_location(str(grid_id), str(i+1), str(j+1))
-                    location_check = location_check + str(i+1) + "x" + str(j+1) + ", "
+                #그리드에 존재할 수 있는 모든 로케이션 생성
+                location_check = ""
+                #0x0이 들어올 경우 예외적으로 생성
+                if self.grid_x.text() == "0" and self.grid_y.text() == "0":
+                    self.DB.set_location(str(grid_id), "0", "0")
+                    location_check = "0x0, "
+                # 그리드에 존재할 수 있는 모든 로케이션 생성
+                for i in range(int(self.grid_x.text())):
+                    for j in range(int(self.grid_y.text())):
+                        self.DB.set_location(str(grid_id), str(i+1), str(j+1))
+                        location_check = location_check + str(i+1) + "x" + str(j+1) + ", "
 
-            # DB에 보낸 데이터를 확인시켜주는 창
-            self.grid_resist = QWidget()
-            grid_check_label  = QLabel(self.grid_x.text() + "x" + self.grid_y.text() + " 그리드가 생성되었습니다.")
-            location_check_label = QLabel(location_check + str(int(self.grid_x.text())*int(self.grid_y.text())) + "개의 로케이션이 생성되었습니다.")
-            check_btn = QPushButton("그리드 확인")
-            check_btn.clicked.connect(self.check)
-            vbox = QVBoxLayout()
-            vbox.addWidget(grid_check_label)
-            vbox.addWidget(location_check_label)
-            vbox.addWidget(check_btn)
+                # DB에 보낸 데이터를 확인시켜주는 창
+                self.grid_resist = QWidget()
+                grid_check_label  = QLabel(self.grid_x.text() + "x" + self.grid_y.text() + " 그리드가 생성되었습니다.")
+                location_check_label = QLabel(location_check + str(int(self.grid_x.text())*int(self.grid_y.text())) + "개의 로케이션이 생성되었습니다.")
+                check_btn = QPushButton("그리드 확인")
+                check_btn.clicked.connect(self.check)
+                vbox = QVBoxLayout()
+                vbox.addWidget(grid_check_label)
+                vbox.addWidget(location_check_label)
+                vbox.addWidget(check_btn)
 
-            self.grid_resist.setLayout(vbox)
-            self.grid_resist.setWindowTitle("그리드, 로케이션 추가")
-            self.grid_resist.show()
+                self.grid_resist.setLayout(vbox)
+                self.grid_resist.setWindowTitle("그리드, 로케이션 추가")
+                self.grid_resist.show()
 
-            # DB로 보내진 정보들을 Tool에서 지움
-            self.grid_x.setText("")
-            self.grid_y.setText("")
+                # DB로 보내진 정보들을 Tool에서 지움
+                self.grid_x.setText("")
+                self.grid_y.setText("")
+            lock = True
 
 
     def send_super_category_text(self):
-        # 입력받은 디바이스 정보를 DB에 보내주는 함수
-        return_value = self.DB.set_supercategory(self.super_category_name.text())
+        global lock
+        if lock:
+            lock = False
+            # 입력받은 디바이스 정보를 DB에 보내주는 함수
+            return_value = self.DB.set_supercategory(self.super_category_name.text())
 
-        # 중복된 데이터는 아래의 함수를 실행시키지 않음
-        if return_value == True:
-            #등록된 분류를 박스에 추가함
-            self.super_category_list.addItem(self.super_category_name.text())
-            self.super_category_list.setCurrentText(self.super_category_name.text())
-            # DB로 보내진 정보들을 Tool에서 지움
-            self.super_category_name.setText("")
+            # 중복된 데이터는 아래의 함수를 실행시키지 않음
+            if return_value == True:
+                #등록된 분류를 박스에 추가함
+                self.super_category_list.addItem(self.super_category_name.text())
+                self.super_category_list.setCurrentText(self.super_category_name.text())
+                # DB로 보내진 정보들을 Tool에서 지움
+                self.super_category_name.setText("")
+            lock = True
 
 
     def send_category_text(self):
-        #물품의 분류를 불러옴
-        self.super_category_cash = self.DB.list_table("SuperCategory")
-        for i in range(len(self.super_category_cash)):
-            if self.super_category_cash[i][1] == self.super_category_list.currentText():
-                super_category_id = self.super_category_cash[i][0]
-        # 썸네일 이미지를 읽어옴
-        f = open(self.thumbnail.text(), "rb")
-        # 물품 정보를 DB에 보내주는 함수
-        return_value = self.DB.set_category(str(super_category_id), self.category_name.text(), self.category_w.text(), self.category_d.text(), self.category_h.text(), self.iterate_num.text(), f.read())
-        f.close()
-        if return_value == True:
-            bix = QHBoxLayout()
-            new_category = QLabel(self.category_name.text() + "/" + self.DB.get_table(str(super_category_id), "SuperCategory")[1])
-            self.del_button4 = QPushButton("삭제")
-            bix.addWidget(new_category)
-            bix.addWidget(self.del_button4)
-            self.del_button4.clicked.connect(self.category_delete)
-            self.category_vbox.addLayout(bix)
-            self.category_a.append(new_category)
-            self.category_b.append(self.del_button4)
-            self.update()
+        global lock
+        if lock:
+            lock = False
+            #물품의 분류를 불러옴
+            self.super_category_cash = self.DB.list_table("SuperCategory")
+            for i in range(len(self.super_category_cash)):
+                if self.super_category_cash[i][1] == self.super_category_list.currentText():
+                    super_category_id = self.super_category_cash[i][0]
+            # 썸네일 이미지를 읽어옴
+            f = open(self.thumbnail.text(), "rb")
+            # 물품 정보를 DB에 보내주는 함수
+            return_value = self.DB.set_category(str(super_category_id), self.category_name.text(), self.category_w.text(), self.category_d.text(), self.category_h.text(), self.iterate_num.text(), f.read())
+            f.close()
+            if return_value == True:
+                bix = QHBoxLayout()
+                new_category = QLabel(self.category_name.text() + "/" + self.DB.get_table(str(super_category_id), "SuperCategory")[1])
+                self.del_button4 = QPushButton("삭제")
+                bix.addWidget(new_category)
+                bix.addWidget(self.del_button4)
+                self.del_button4.clicked.connect(self.category_delete)
+                self.category_vbox.addLayout(bix)
+                self.category_a.append(new_category)
+                self.category_b.append(self.del_button4)
+                self.update()
 
-            # 중복된 데이터는 아래의 함수를 실행시키지 않음
-            self.category_check_window = QWidget()
+                # 중복된 데이터는 아래의 함수를 실행시키지 않음
+                self.category_check_window = QWidget()
 
-            super_category_label = QLabel("분류 : " + self.super_category_list.currentText())
-            name_label = QLabel("이름 : " + self.category_name.text())
-            w_label = QLabel("가로 : " + self.category_w.text())
-            d_label = QLabel("깊이 : " + self.category_d.text())
-            h_label = QLabel("높이 : " + self.category_h.text())
-            iteration_label = QLabel("반복 횟수 : " + self.iterate_num.text())
-            thumb_label = QLabel("썸네일 : ")
-            check_btn = QPushButton("물품 확인")
-            check_btn.clicked.connect(self.check)
-            thumbnail_label = QLabel()
-            img = cv2.imread(self.thumbnail.text())
-            img[:, :, [0, 2]] = img[:, :, [2, 0]]
-            qim = QImage(img.data, img.shape[1], img.shape[0], img.strides[0], QImage.Format_RGB888)
-            im = QPixmap.fromImage(qim)
-            thumbnail_label.setPixmap(im.scaledToWidth(500))
+                super_category_label = QLabel("분류 : " + self.super_category_list.currentText())
+                name_label = QLabel("이름 : " + self.category_name.text())
+                w_label = QLabel("가로 : " + self.category_w.text())
+                d_label = QLabel("깊이 : " + self.category_d.text())
+                h_label = QLabel("높이 : " + self.category_h.text())
+                iteration_label = QLabel("반복 횟수 : " + self.iterate_num.text())
+                thumb_label = QLabel("썸네일 : ")
+                check_btn = QPushButton("물품 확인")
+                check_btn.clicked.connect(self.check)
+                thumbnail_label = QLabel()
+                img = cv2.imread(self.thumbnail.text())
+                img[:, :, [0, 2]] = img[:, :, [2, 0]]
+                qim = QImage(img.data, img.shape[1], img.shape[0], img.strides[0], QImage.Format_RGB888)
+                im = QPixmap.fromImage(qim)
+                thumbnail_label.setPixmap(im.scaledToWidth(500))
 
-            check_label = QLabel("위의 정보로 카테고리가 등록되었습니다.")
+                check_label = QLabel("위의 정보로 카테고리가 등록되었습니다.")
 
-            vbox = QVBoxLayout()
-            vbox.addWidget(super_category_label)
-            vbox.addWidget(name_label)
-            vbox.addWidget(w_label)
-            vbox.addWidget(d_label)
-            vbox.addWidget(h_label)
-            vbox.addWidget(iteration_label)
-            vbox.addWidget(thumb_label)
-            vbox.addWidget(thumbnail_label)
-            vbox.addWidget(check_label)
-            vbox.addWidget(check_btn)
+                vbox = QVBoxLayout()
+                vbox.addWidget(super_category_label)
+                vbox.addWidget(name_label)
+                vbox.addWidget(w_label)
+                vbox.addWidget(d_label)
+                vbox.addWidget(h_label)
+                vbox.addWidget(iteration_label)
+                vbox.addWidget(thumb_label)
+                vbox.addWidget(thumbnail_label)
+                vbox.addWidget(check_label)
+                vbox.addWidget(check_btn)
 
-            # DB로 보내진 정보들을 Tool에서 지움
-            self.category_name.setText("")
-            self.category_w.setText("")
-            self.category_d.setText("")
-            self.category_h.setText("")
-            self.iterate_num.setText("")
-            self.thumbnail.setText("")
+                # DB로 보내진 정보들을 Tool에서 지움
+                self.category_name.setText("")
+                self.category_w.setText("")
+                self.category_d.setText("")
+                self.category_h.setText("")
+                self.iterate_num.setText("")
+                self.thumbnail.setText("")
 
-            self.category_check_window.setLayout(vbox)
-            self.category_check_window.setWindowTitle("카테고리 체크")
-            self.category_check_window.show()
+                self.category_check_window.setLayout(vbox)
+                self.category_check_window.setWindowTitle("카테고리 체크")
+                self.category_check_window.show()
+            lock = True
 
     def search_image(self):
-        #썸네일 파일을 찾을 수 있도록 창을 띄워주는 함수
-        thumbnail = QFileDialog()
-        self.thumb_name = thumbnail.getOpenFileName()
-        self.thumbnail.setText(self.thumb_name[0])
+        global lock
+        if lock:
+            lock = False
+            #썸네일 파일을 찾을 수 있도록 창을 띄워주는 함수
+            thumbnail = QFileDialog()
+            self.thumb_name = thumbnail.getOpenFileName()
+            self.thumbnail.setText(self.thumb_name[0])
+        lock = True
 
     def check(self):
-        #물품 등록 후 확인 창에서 버튼을 누르면 창이 닫는 함수
-        if self.sender().text() == "환경 확인":
-            self.env_check_window.close()
-        elif self.sender().text() == "물품 확인":
-            self.category_check_window.close()
-        elif self.sender().text() == "그리드 확인":
-            self.grid_resist.close()
+        global lock
+        if lock:
+            lock = False
+            #물품 등록 후 확인 창에서 버튼을 누르면 창이 닫는 함수
+            if self.sender().text() == "환경 확인":
+                self.env_check_window.close()
+            elif self.sender().text() == "물품 확인":
+                self.category_check_window.close()
+            elif self.sender().text() == "그리드 확인":
+                self.grid_resist.close()
+            lock = True
 
 # 썸네일 이미지 확인 코드
 # a = self.DB.get_category(1)
