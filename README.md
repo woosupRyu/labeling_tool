@@ -58,7 +58,7 @@ Environment, Grid, SuperCategory, Category 정보를 등록하는 작업 환경
     촬영 횟수 : 1\~x (정수)  
     이미지 : 찾기 버튼 클릭 후 파일 선택  
     
-  <img src="https://user-images.githubusercontent.com/46614789/84611142-e75cdf80-aef7-11ea-8451-4580c4123602.png"  width="30%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/85643538-6fe53800-b6cf-11ea-976c-2412416c3d25.png"  width="60%" height="30%">  
   
 ### 촬영
 ---
