@@ -1,6 +1,7 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import cv2
+import time
 
 class resist_app(QWidget):
     """
@@ -149,9 +150,22 @@ class resist_app(QWidget):
         self.right_frame.setFrameShape(QFrame.Box)
         self.right_layout = QVBoxLayout()
 
+
+        self.device_frame = QFrame()
+        self.device_frame.setFrameShape(QFrame.Box)
         self.device_list = QScrollArea()
+        self.device_list.setWidgetResizable(True)
+
+        self.grid_frame = QFrame()
+        self.grid_frame.setFrameShape(QFrame.Box)
         self.grid_list = QScrollArea()
+        self.grid_list.setWidgetResizable(True)
+
+        self.category_frame = QFrame()
+        self.category_frame.setFrameShape(QFrame.Box)
         self.category_list = QScrollArea()
+        self.category_list.setWidgetResizable(True)
+
         #label1,7
         self.category_label = QLabel("물품")
         self.grid_label = QLabel("그리드")
@@ -172,7 +186,8 @@ class resist_app(QWidget):
             self.device_hbox.addWidget(self.name)
             self.device_hbox.addWidget(self.del_button)
             self.device_vbox.addLayout(self.device_hbox)
-        self.device_list.setLayout(self.device_vbox)
+        self.device_frame.setLayout(self.device_vbox)
+        self.device_list.setWidget(self.device_frame)
 
         self.grid_cash = self.DB.list_table("Grid")
         self.grid_a = []
@@ -189,7 +204,8 @@ class resist_app(QWidget):
             grid_hbox.addWidget(name)
             grid_hbox.addWidget(del_button)
             self.grid_vbox.addLayout(grid_hbox)
-        self.grid_list.setLayout(self.grid_vbox)
+        self.grid_frame.setLayout(self.grid_vbox)
+        self.grid_list.setWidget(self.grid_frame)
 
         self.category_cash = self.DB.list_table("Category")
         self.category_a = []
@@ -206,9 +222,8 @@ class resist_app(QWidget):
             category_hbox.addWidget(name)
             category_hbox.addWidget(del_button)
             self.category_vbox.addLayout(category_hbox)
-        self.category_list.setLayout(self.category_vbox)
-
-
+        self.category_frame.setLayout(self.category_vbox)
+        self.category_list.setWidget(self.category_frame)
 
         self.right_layout.addWidget(self.device_label)
         self.right_layout.addWidget(self.device_list)
@@ -234,27 +249,29 @@ class resist_app(QWidget):
     def device_delete(self):
         for i in range(len(self.device_b)):
             if self.device_b[i].isChecked():
-                del self.device_b[i]
-                del self.device_a[i]
+                del_num = i
+        del self.device_b[del_num]
+        del self.device_a[del_num]
+
         for i in reversed(range(self.device_vbox.count())):
             k = self.device_vbox.itemAt(i).layout()
             for j in reversed(range(k.count())):
                 k.itemAt(j).widget().deleteLater()
-            k.deleteLater()
-            #print(self.device_vbox.count())
-        print(self.device_b)
-        print(self.device_a)
-        for i in range(len(self.device_b)):
-            sad = QHBoxLayout()
-            sad.addWidget(self.device_a[i])
-            sad.addWidget(self.device_b[i])
-            self.device_vbox.addLayout(sad)
+
+        for l in range(len(self.device_b)):
+            print(self.device_b)
+            self.sad = QHBoxLayout()
+            self.sad.addWidget(self.device_a[l])
+            self.sad.addWidget(self.device_b[l])
+            self.device_vbox.addLayout(self.sad)
         self.update()
 
     def grid_delete(self):
         print("hi")
+
     def category_delete(self):
         print("hi")
+
     def send_device_text(self):
 
         #입력받은 디바이스 정보를 DB에 보내주는 함수
@@ -308,8 +325,17 @@ class resist_app(QWidget):
         return_value = self.DB.set_grid(int(self.grid_x.text()), int(self.grid_y.text()))
         # 중복된 데이터는 아래의 함수를 실행시키지 않음
         if return_value == True:
-            self.grid_vbox.addWidget(QLabel(self.grid_x.text() + "x" +self.grid_y.text()))
+            bix = QHBoxLayout()
+            new_grid = QLabel(self.grid_x.text() + "x" +self.grid_y.text())
+            self.del_button3 = QPushButton("삭제")
+            bix.addWidget(new_grid)
+            bix.addWidget(self.del_button3)
+            self.del_button3.clicked.connect(self.grid_delete)
+            self.grid_vbox.addLayout(bix)
+            self.grid_a.append(new_grid)
+            self.grid_b.append(self.del_button3)
             self.update()
+
             grid_cash = self.DB.list_table("Grid")
             for i in range(len(grid_cash)):
                 if grid_cash[i][1] == int(self.grid_x.text()) and grid_cash[i][2] == int(self.grid_y.text()):
@@ -372,7 +398,17 @@ class resist_app(QWidget):
         return_value = self.DB.set_category(str(super_category_id), self.category_name.text(), self.category_w.text(), self.category_d.text(), self.category_h.text(), self.iterate_num.text(), f.read())
         f.close()
         if return_value == True:
-            self.category_vbox.addWidget(QLabel(self.category_name.text() + "/" + self.DB.get_table(str(super_category_id), "SuperCategory")[1]))
+            bix = QHBoxLayout()
+            new_category = QLabel(self.category_name.text() + "/" + self.DB.get_table(str(super_category_id), "SuperCategory")[1])
+            self.del_button4 = QPushButton("삭제")
+            bix.addWidget(new_category)
+            bix.addWidget(self.del_button4)
+            self.del_button4.clicked.connect(self.category_delete)
+            self.category_vbox.addLayout(bix)
+            self.category_a.append(new_category)
+            self.category_b.append(self.del_button4)
+            self.update()
+
             # 중복된 데이터는 아래의 함수를 실행시키지 않음
             self.category_check_window = QWidget()
 
