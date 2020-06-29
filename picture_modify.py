@@ -12,7 +12,6 @@ lock = True
 class picture_app(QWidget):
     """
     최상위 화면에서 촬영 버튼을 누르면 생성되는 클래스
-
     1. 촬영할 환경, 그리드를 박스에서 선택한 후, 원하는 물품을 클릭하고 -> 버튼을 누르면 해당 물품이 좌측 공간에서 가운데 공간으로 이동한다.
     2. 만약 원하지 않는 물품을 실수로 가운데로 옮겼을 경우 가운데 공간에서 해당 물품을 선택 후 <- 버튼을 클릭하면 다시 좌측 공간으로 이동한다.
     3. 원하는 물품들을 모두 가운데 공간에 둔 후, 물품추가 버튼을 누르면 물품들에 그리드 정보가 합쳐져 우측 공간으로 이동한다.
@@ -20,7 +19,6 @@ class picture_app(QWidget):
     5. 좌측에 촬영해야할 물품 리스트가 뜨고 가운데 해당 물품의 로케이션이 뜬다.(미구현) 우측화면엔 기본적으로 썸네일 이미지가 보이며,
     이미 촬영된 이미지가 있을 경우, 촬영된 이미지를 보여준다.
     6. 촬영 버튼을 누르면 우측의 이미지가 촬영된 이미지로 바뀐다.(촬영 버튼을 누르는 순간 해당 물품의 이미지는 촬영된 이미지로 업데이트 됨)
-
     !!!등록에서 잘못 등록한 물품들은 여기서 삭제해야함. 물품리스트에서 삭제하고 싶은 물품을 선택 후, 삭제 버튼 클릭!!!
     """
     def __init__(self, db):
@@ -375,43 +373,39 @@ class picture_app(QWidget):
         self.shoot_windows.show()
 
     def load_image_grid(self):
-        global lock
-        if lock:
-            lock = False
-            #버튼이 클릭됬을 때, 해당 오브젝트의 이미지를 띄워주는 함수
-            #버튼으로 부터 어떤 오브젝트를 접근해야 하는지 확인
-            self.image_name = self.sender()
-            self.image_name = self.image_name.text()
-            self.image_name = self.image_name.replace("_", " ")# (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
-            self.image_name = self.image_name.split()
+        #버튼이 클릭됬을 때, 해당 오브젝트의 이미지를 띄워주는 함수
+        #버튼으로 부터 어떤 오브젝트를 접근해야 하는지 확인
+        self.image_name = self.sender()
+        self.image_name = self.image_name.text()
+        self.image_name = self.image_name.replace("_", " ")# (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
+        self.image_name = self.image_name.split()
 
-            category_id = str(self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(self.image_name[0].split("/")[1])), self.image_name[0].split("/")[0]))
-            location_id = str(self.DB.get_location_id_from_args(str(self.DB.get_grid_id_from_args(self.image_name[1].split("/")[1])), self.image_name[1].split("/")[0]))
-            iteration = str(int(self.image_name[2]))
+        category_id = str(self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(self.image_name[0].split("/")[1])), self.image_name[0].split("/")[0]))
+        location_id = str(self.DB.get_location_id_from_args(str(self.DB.get_grid_id_from_args(self.image_name[1].split("/")[1])), self.image_name[1].split("/")[0]))
+        iteration = str(int(self.image_name[2]))
 
-            self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
-            #해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
-            if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
-                im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[0]), "Image")
-                if im[4] == 2:
-                    self.sender().setStyleSheet("background-color: red")
-                im_data = np.array(Image.open(BytesIO(im[2])).convert("RGB"))
-                qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
-                self.image_data = QPixmap.fromImage(qim)
-                self.image_label.clear()
-                self.image_label.setPixmap(self.image_data.scaledToWidth(1500))
+        self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
+        #해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
+        if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
+            im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[0]), "Image")
+            if im[4] == 2:
+                self.sender().setStyleSheet("background-color: red")
+            im_data = np.array(Image.open(BytesIO(im[2])).convert("RGB"))
+            qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
+            self.image_data = QPixmap.fromImage(qim)
+            self.image_label.clear()
+            self.image_label.setPixmap(self.image_data.scaledToWidth(1500))
 
-            #해당 오브젝트가 이미지를 가지고 있지 않으면(첫 촬영인 경우) 썸네일을 보여줌
-            else:
-                for i in range(len(self.category_cash)):
-                    if category_id == str(self.category_cash[i][1]):
-                        im = self.category_cash[i][7]
-                        im_data = np.array(Image.open(BytesIO(im)).convert("RGB"))
-                        qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
-                        self.image_data = QPixmap.fromImage(qim)
-                        self.image_label.clear()
-                        self.image_label.setPixmap(self.image_data.scaledToWidth(500))
-            lock = True
+        #해당 오브젝트가 이미지를 가지고 있지 않으면(첫 촬영인 경우) 썸네일을 보여줌
+        else:
+            for i in range(len(self.category_cash)):
+                if category_id == str(self.category_cash[i][1]):
+                    im = self.category_cash[i][7]
+                    im_data = np.array(Image.open(BytesIO(im)).convert("RGB"))
+                    qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
+                    self.image_data = QPixmap.fromImage(qim)
+                    self.image_label.clear()
+                    self.image_label.setPixmap(self.image_data.scaledToWidth(500))
 
     def move_image(self):
         # 다음, 이전이미지로 이동하는 함수
@@ -436,10 +430,11 @@ class picture_app(QWidget):
             lock = False
             #촬영 버튼과 연동된 실제 촬영 및, 이미지 업데이트 함수
             #촬영하여 이미지를 DB에 저장하는 함수
-            mqtt_connector('192.168.10.19', 1883).collect_dataset("20001", 1)# ip, port  collect: env_id , image_type
-
+            conn = mqtt_connector('192.168.10.19', 1883, "20001")
+            conn.collect_dataset("20001", 1)# ip, port  collect: env_id , image_type
+            image_id = conn.get_result()
             #저장된 이미지를 읽어보여주는 함수
-            tem_img = self.DB.get_table(str(self.DB.get_last_id("Image"))[2:-3], "Image")
+            tem_img = self.DB.get_table(str(image_id), "Image")
             self.image1 = np.array(Image.open(BytesIO(tem_img[2])).convert("RGB"))
             #self.image1[:, :, [0, 2]] = self.image1[:, :, [2, 0]]
             qim = QImage(self.image1, self.image1.shape[1], self.image1.shape[0], self.image1.strides[0],
@@ -458,7 +453,3 @@ class picture_app(QWidget):
             if self.image_name[0].split("/")[1] == "mix":
                 self.DB.update_image(self.DB.get_table(self.current_obj_id, "Object")[0], type=2)
             lock = True
-
-
-
-

@@ -1,10 +1,10 @@
 import paho.mqtt.client as mqtt
 import json
 
-
 class mqtt_callback():
-    def __init__(self, device_id):
+    def __init__(self, device_id, image_id):
         self.device_id = device_id
+        self.image_id = image_id
 
     def on_connect(self, client, userdata, flags, rc):
         if rc == 0:
@@ -22,18 +22,24 @@ class mqtt_callback():
         print("subscribed: " + str(mid) + " " + str(granted_qos))
 
     def on_message(self, client, userdata, message):
-        #         print("message received " ,str(message.payload.decode("utf-8")))
-        #         print("message topic=",message.topic)<br>#         print("message qos=",message.qos)<br>#         print("message retain flag=",message.retain)<br>#         print("userdata=", userdata)<br>        print('class method device_id : ', self.device_id)<br>        if message.topic == "device_operation_vending_web":
-        data = json.loads(str(message.payload.decode("utf-8")))
-        if data['ret_code'] == "0000":
-            client.disconnect()
-        else:
-            print('fail!')
+        print('class method device_id : ', self.device_id)
+        if message.topic == "device_operation_vending_web":
+            data = json.loads(str(message.payload.decode("utf-8")))
+            if data['ret_code'] == "0000":
+                print('data collect success')
+                self.image_id = data['msg']
+            else:
+                print('data collect fail')
+                self.image_id = None
+        client.disconnect()
+
+    def get_result(self):
+        return self.image_id
 
 
 class mqtt_connector(mqtt_callback):
     def __init__(self, ip_address, port, device_id):
-        super(mqtt_connector, self).__init__(device_id)
+        super(mqtt_connector, self).__init__(device_id, 0)
         self.ip = ip_address
         self.port = port
         self.mutexlock = True
