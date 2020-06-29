@@ -1,7 +1,6 @@
 import paho.mqtt.client as mqtt
 import json
 
-
 class mqtt_callback():
     def __init__(self, device_id, image_id):
         self.device_id = device_id
