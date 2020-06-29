@@ -186,8 +186,9 @@ class picture_app(QWidget):
             #모든 오브젝트를 생성한 후 오브젝트 정보들 캐싱
             self.object_cash = self.DB.list_table("Object")
             self.close()
+            lock = True
             self.shoot_window()
-        lock = True
+
 
     def make_tree_item(cls, name, i):
         # 물품 트리에 아이템을 추가하는 함수
@@ -432,10 +433,11 @@ class picture_app(QWidget):
             lock = False
             #촬영 버튼과 연동된 실제 촬영 및, 이미지 업데이트 함수
             #촬영하여 이미지를 DB에 저장하는 함수
-            mqtt_connector('192.168.10.19', 1883, "20001").collect_dataset("20001", 1)# ip, port  collect: env_id , image_type
-
+            conn = mqtt_connector('192.168.10.19', 1883, "20001")
+            conn.collect_dataset("20001", 1)# ip, port  collect: env_id , image_type
+            image_id = conn.get_result()
             #저장된 이미지를 읽어보여주는 함수
-            tem_img = self.DB.get_table(str(self.DB.get_last_id("Image"))[2:-3], "Image")
+            tem_img = self.DB.get_table(str(image_id), "Image")
             self.image1 = np.array(Image.open(BytesIO(tem_img[2])).convert("RGB"))
             #self.image1[:, :, [0, 2]] = self.image1[:, :, [2, 0]]
             qim = QImage(self.image1, self.image1.shape[1], self.image1.shape[0], self.image1.strides[0],
