@@ -5,7 +5,7 @@ import random
 import math
 import copy
 import json
-import DB
+from DCD_DB_API_master.db_api import DB
 from io import BytesIO
 from PIL import Image
 

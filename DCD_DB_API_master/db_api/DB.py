@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pymysql
-import querys
+import DCD_DB_API_master.db_api.querys
 import inspect
 
 
