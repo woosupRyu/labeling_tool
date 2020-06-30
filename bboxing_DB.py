@@ -5,7 +5,8 @@ import numpy as np
 import random
 from io import BytesIO
 from PIL import Image
-import DB
+from DCD_DB_API_master.db_api import DB
+
 # 그래픽스 클래스에서도 참조해야할 변수들 글로벌로 선언
 
 global view  # 이미지 보여주는 공간

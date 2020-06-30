@@ -4,7 +4,7 @@ from io import BytesIO
 from PIL import Image
 from PyQt5.QtGui import *
 import numpy as np
-import DB
+from DCD_DB_API_master.db_api import DB
 
 global lock
 lock = True
@@ -246,6 +246,7 @@ class check_app(QWidget):
                 self.a.append(check_box)
                 self.b.append(image_btn)
                 if num == 0:
+                    lock = True
                     self.b[num].click()
                 num = num + 1
             self.update()
@@ -253,7 +254,6 @@ class check_app(QWidget):
 
 
     def change_grid(self):
-        global lock
         global lock
         if lock:
             lock = False
@@ -291,10 +291,12 @@ class check_app(QWidget):
                 self.a.append(check_box)
                 self.b.append(image_btn)
                 if num == 0:
+                    lock = True
                     self.b[num].click()
                 num = num + 1
             self.update()
             lock = True
+
 
     def obj_list2name(self, obj_list):
         #오브젝트들의 아이디를 참조하여 해당하는 버튼의 이름을 만들어주는 함수

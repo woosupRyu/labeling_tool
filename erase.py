@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
-from DB import DB
-
+from DCD_DB_API_master.db_api import DB
 
 
 def reset_table(db):

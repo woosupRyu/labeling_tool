@@ -64,15 +64,15 @@ Environment, Grid, SuperCategory, Category 정보를 등록하는 작업 환경
 ---
 Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택 하고 촬영하는 환경  
 1. 원하는 디바이스, 그리드 선택  
-  <img src="https://user-images.githubusercontent.com/46614789/84611133-e461ef00-aef7-11ea-8636-15c946cc3e35.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/84611133-e461ef00-aef7-11ea-8636-15c946cc3e35.png"  width="30%" height="30%">  
 2. 물품 리스트에서 원하는 물품을 선택 후, ->버튼 클릭(추가할 물품 리스트로 물품 이동)  
-  <img src="https://user-images.githubusercontent.com/46614789/84611135-e5931c00-aef7-11ea-84d8-ea3699689f57.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/84611135-e5931c00-aef7-11ea-84d8-ea3699689f57.png"  width="30%" height="30%">  
 3. 원하는 물품을 모두 추가할 물품 리스트로 옮긴 후, 물건추가 버튼 클릭  
-  <img src="https://user-images.githubusercontent.com/46614789/84611137-e5931c00-aef7-11ea-926b-3fdb3bdbe2eb.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/84611137-e5931c00-aef7-11ea-926b-3fdb3bdbe2eb.png"  width="30%" height="30%">  
 4. 원하는 그리드, 물품조합을 모두 추가할 때 까지 2,3 과정 반복  
-  <img src="https://user-images.githubusercontent.com/46614789/84611138-e62bb280-aef7-11ea-8e66-f89b927c6ce1.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/84611138-e62bb280-aef7-11ea-8e66-f89b927c6ce1.png"  width="30%" height="30%">  
 5. 확인버튼 클릭  
-  <img src="https://user-images.githubusercontent.com/46614789/84611140-e6c44900-aef7-11ea-976a-adf1e6462c2d.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/84611140-e6c44900-aef7-11ea-976a-adf1e6462c2d.png"  width="30%" height="30%">  
 6. 촬영  
   촬영버튼을 누르면 냉장고 문이 열리고 물품을 배치 후, 문을 닫으면 사진이 찍힘  
   
@@ -81,13 +81,13 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 ---
 촬영된 이미지가 데이터로 쓰일 수 있는지 체크하는 환경   
 1. 원하는 카테고리와 그리드 선택  
-  <img src="https://user-images.githubusercontent.com/46614789/84611733-a6fe6100-aef9-11ea-8159-cf839288ca7c.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/84611733-a6fe6100-aef9-11ea-8159-cf839288ca7c.png"  width="30%" height="30%">  
 2. 허락(거절)할 오브젝트들 선택  
-  <img src="https://user-images.githubusercontent.com/46614789/84611737-a8c82480-aef9-11ea-928f-c631ad98e11d.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/84611737-a8c82480-aef9-11ea-928f-c631ad98e11d.png"  width="30%" height="30%">  
 3. 허락(거절)버튼 클릭  
-  <img src="https://user-images.githubusercontent.com/46614789/84611739-a960bb00-aef9-11ea-932b-ac1a23967355.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/84611739-a960bb00-aef9-11ea-932b-ac1a23967355.png"  width="30%" height="30%">  
 4. 허락(거절)된 버튼을 제외한 나머지 버튼 클릭 및 거절  
-  <img src="https://user-images.githubusercontent.com/46614789/84611740-a9f95180-aef9-11ea-8d26-b3eb38c107e2.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/84611740-a9f95180-aef9-11ea-8d26-b3eb38c107e2.png"  width="30%" height="30%">  
   
   한번 허락하거나 거절해서 버튼색이 변한 버튼도 다시 거절, 허락 할 수 있음. 단, 한번 리스트를 갱신하거나 창을 재시작하면 허락된 오브젝트들은 나타나지 않음
 **(허락한 데이터는 추후 검수리스트에 보이지 않으니 신중히 선택)** 
@@ -95,7 +95,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 ### 라벨링
 ---
 검수된 이미지에 비박스와 마스크를 그리는 환경  
-  <img src="https://user-images.githubusercontent.com/46614789/84733391-126b3000-afd9-11ea-887c-a4a11a8268cc.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/84733391-126b3000-afd9-11ea-887c-a4a11a8268cc.png"  width="30%" height="30%">  
   
 1. 좌측 상단에서 원하는 물품을 선택  
 2. 원하는 오브젝트 선택 후 작업   
@@ -135,16 +135,9 @@ Mix 데이터는 테스트 데이터로 합성하기 위해 사용되는 마스�
   
 라벨수정 : 변경하고 싶은 라벨과 마스크를 선택한 뒤 라벨수정 버튼 클릭
 
-  <img src="https://user-images.githubusercontent.com/46614789/86100044-470bdb00-baf3-11ea-8558-0d89a93788c7.png" width="60%" height="30%">   
-  
-
 ### 합성
 ---
 라벨링된 데이터를 합성하여 학습 데이터를 생성하는 환경  
-  
-합성하고싶은 물품들과 그리드, 배경(background)를 선택한다.  
-  
-<img src="https://user-images.githubusercontent.com/46614789/86100246-8c300d00-baf3-11ea-868a-92a93e36c8f7.png" width="60%" height="30%">   
 
 ### 지그오픈
 ---

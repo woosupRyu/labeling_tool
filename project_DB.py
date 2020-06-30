@@ -1,11 +1,8 @@
 from PyQt5.QtWidgets import *
-from PyQt5.QtCore import *
-from PyQt5 import QtWidgets
-import sys
-from PyQt5.QtGui import *
-from PyQt5 import QtCore
-import socket
-import struct
+from io import BytesIO
+from PIL import Image
+import numpy as np
+import augment_v3
 
 
 class project_app(QWidget):
@@ -27,7 +24,7 @@ class project_app(QWidget):
         grid_table_list = self.DB.list_table("Grid")
         grid_list = []
         for i in grid_table_list:
-            if i[1] != 0:
+            if i[1] != 0 and not(i[1] == 1 and i[2] == 1):
                 grid_list.append(str(i[1]) + "x" + str(i[2]))
         for i in grid_list:
             grid_btn = QRadioButton(i)
@@ -53,7 +50,7 @@ class project_app(QWidget):
         category_table_list = self.DB.list_table("Category")
         for i in category_table_list:
             mix_or_not = self.DB.get_table(str(i[0]), "SuperCategory")[1]
-            if mix_or_not != "mix":
+            if mix_or_not != "mix" and mix_or_not != "background":
                 product_name = i[2] + "/" + mix_or_not
                 ad = QCheckBox(product_name)
                 self.a.append(ad)
@@ -78,9 +75,11 @@ class project_app(QWidget):
         for i in category_table_list:
             background_or_not = self.DB.get_table(str(i[0]), "SuperCategory")[1]
             if background_or_not == "background":
-                ad = QCheckBox(i[2])
+                ad = QRadioButton(i[2] + "/background")
+                ad.clicked.connect(self.current_back)
                 self.background.append(ad)
                 self.background_vbox.addWidget(ad)
+        self.background[0].click()
 
         background_frame.setLayout(self.background_vbox)
         self.background_scroll.setWidget(background_frame)
@@ -99,6 +98,7 @@ class project_app(QWidget):
             if self.grid_box[i].isChecked():
                 grid_x = self.grid_box[i].text().split("x")[0]
                 grid_y = self.grid_box[i].text().split("x")[1]
+                self.current_grid = (int(grid_x), int(grid_y))
         for i in range(1, int(grid_x) + 1):
             for j in range(1, int(grid_y) + 1):
                 grid_setting_btn = QPushButton(str(i) + "x" + str(j))
@@ -118,6 +118,7 @@ class project_app(QWidget):
         self.augmentation_option_btn  = QPushButton("Augment 옵션")
         self.augmentation_option_btn.clicked.connect(self.augmentation_option)
         self.augmentation = QPushButton("합성하기")
+        self.augmentation.clicked.connect(self.augment)
         self.h_box2 = QHBoxLayout()
         self.h_box2.addWidget(self.augmentation_filename)
         self.h_box2.addWidget(self.augmentation_option_btn)
@@ -182,6 +183,7 @@ class project_app(QWidget):
             if self.grid_box[i].isChecked():
                 grid_x = self.grid_box[i].text().split("x")[0]
                 grid_y = self.grid_box[i].text().split("x")[1]
+                self.current_grid = (int(grid_x), int(grid_y))
         for i in range(1, int(grid_x) + 1):
             for j in range(1, int(grid_y) + 1):
                 grid_setting_btn = QPushButton(str(i) + "x" + str(j))
@@ -193,4 +195,46 @@ class project_app(QWidget):
         self.update()
 
         self.show()
+    def current_back(self):
+        self.current_background = self.sender().text()
+
+    def augment(self):
+        grid = self.current_grid
+        category_name = []
+        category_id = []
+        for i in self.a:
+            if i.isChecked():
+                category_name.append(i.text())
+
+        for i in category_name:
+            name = i.split("/")
+            super_id = self.DB.get_supercategory_id_from_args(name[1])
+            cate_id = self.DB.get_category_id_from_args(str(super_id), name[0])
+            category_id.append(cate_id)
+
+        batch_method = 3
+        back_name = self.current_background.split("/")
+        back_super_id = self.DB.get_supercategory_id_from_args(back_name[1])
+        back_cate_id = self.DB.get_category_id_from_args(str(back_super_id), back_name[0])
+        grid_id = self.DB.get_grid_id_from_args("1x1")
+        loc_id = self.DB.get_location_id_from_args(str(grid_id), "1x1")
+        object_id = self.DB.get_obj_id_from_args(loc_id, back_cate_id, "1", "-1")
+        obj = self.DB.get_table(str(object_id), "Object")
+        background = self.DB.get_table(str(obj[0]), "Image")[2]
+        background_image = np.array(Image.open(BytesIO(background)).convert("RGB"))
+
+
+        # 실제 사용함수
+
+        aug1 = augment_v3.augment(grid, category_id, batch_method, background_image)
+        aug1.compose_batch()
+        aug1.load_DB()
+        aug1.make_background()
+        aug1.make_maskmap()
+        aug1.augment_image()
+        aug1.re_segmentation()
+        result = aug1.save_DB()
+
+        print("finish")
+
 

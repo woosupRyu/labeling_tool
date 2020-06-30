@@ -3,7 +3,7 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import numpy as np
 import random
-import DB
+from DCD_DB_API_master.db_api import DB
 from io import BytesIO
 from PIL import Image
 import copy
