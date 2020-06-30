@@ -135,9 +135,16 @@ Mix 데이터는 테스트 데이터로 합성하기 위해 사용되는 마스�
   
 라벨수정 : 변경하고 싶은 라벨과 마스크를 선택한 뒤 라벨수정 버튼 클릭
 
+  <img src="https://user-images.githubusercontent.com/46614789/86100044-470bdb00-baf3-11ea-8558-0d89a93788c7.png">   
+  
+
 ### 합성
 ---
 라벨링된 데이터를 합성하여 학습 데이터를 생성하는 환경  
+  
+합성하고싶은 물품들과 그리드, 배경(background)를 선택한다.  
+  
+<img src="https://user-images.githubusercontent.com/46614789/86100246-8c300d00-baf3-11ea-868a-92a93e36c8f7.png">   
 
 ### 지그오픈
 ---
