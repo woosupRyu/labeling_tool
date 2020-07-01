@@ -7,11 +7,11 @@
 Python3.7, PyQt5(5.14), opencv-python(4.2.0.34), pillow(7.1.2), paho-mqtt(1.5.0), PyMySQL(0.9.3) 추후 한번에 설치할 수 있는 스크립트를 추가할 예정입니다
   
 ## 참고사항  
-Practice.py를 실행시킨 후 등록 -> 촬영 -> 검수 -> 라벨링 -> 합성 순으로 작업을 진행  
+main.py를 실행시킨 후 등록 -> 촬영 -> 검수 -> 라벨링 -> 합성 순으로 작업을 진행  
   
 <img src="https://user-images.githubusercontent.com/46614789/84610354-3f461700-aef5-11ea-8228-91c0946c4626.png"  width="30%" height="30%">
   
-Practice.py를 실행시켰을 때 생성되는 창 -> 최상위 화면  
+main.py를 실행시켰을 때 생성되는 창 -> 최상위 화면  
   
 각 단계의 버튼을 클릭하면 해당 작업을 수행할 수 있는 새로운 창이 생성  
   
