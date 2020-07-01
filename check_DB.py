@@ -116,8 +116,8 @@ class check_app(QWidget):
                 self.b[num].click()
             num = num + 1
         self.scroll_vbox.addLayout(self.left_vbox)
-        self.left_frame.setLayout(self.scroll_vbox)
-        self._scrollArea.setWidget(self.left_frame)
+        #self.left_frame.setLayout(self.scroll_vbox)
+        self._scrollArea.setLayout(self.scroll_vbox)
 
 
 

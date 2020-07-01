@@ -6,7 +6,6 @@ import random
 from io import BytesIO
 from PIL import Image
 from DCD_DB_API_master.db_api import DB
-
 # 그래픽스 클래스에서도 참조해야할 변수들 글로벌로 선언
 
 global view  # 이미지 보여주는 공간
@@ -59,7 +58,7 @@ class mix(QWidget):
         global mix_label_color
 
         #초기값 설정
-        self.collect_color = [[255, 0, 0], [255, 0, 80], [255, 0, 160], [255, 0, 240], [190, 0, 255], [110, 0, 255], [30, 0, 255], [0, 50, 255], [0, 130, 255], [0, 210, 255], [0, 255, 220], [0, 255, 140], [0, 255, 60], [20, 255, 0], [100, 255, 0], [180, 255, 0], [240, 255, 0], [255, 240, 0], [255, 160, 0], [255, 80, 0], [128, 64, 64], [112, 64, 128], [64, 96, 128], [64, 128, 80], [128, 128, 64], [190, 94, 94], [190, 94, 174], [126, 94, 190], [94, 142, 190], [94, 190, 158]]
+        self.collect_color = [[255, 0, 0], [255, 0, 80], [255, 0, 160], [255, 0, 240], [190, 0, 255], [110, 0, 255], [30, 0, 255], [0, 130, 255], [0, 210, 255], [0, 255, 220], [0, 255, 140], [0, 255, 60], [100, 255, 0], [180, 255, 0], [240, 255, 0], [255, 160, 0], [255, 80, 0], [128, 64, 64], [112, 64, 128], [64, 96, 128], [64, 128, 80], [128, 128, 64], [190, 94, 94], [190, 94, 174], [126, 94, 190], [94, 142, 190], [94, 190, 158]]
         mix_label_color = {}
         scale_factor_w = 1  # 이미지 사이즈의 배율이므로 1로 초기화
         mask_num = 1000000  # 마스크 개수의 초기값
@@ -415,7 +414,7 @@ class mix(QWidget):
         scale_factor_w = 1
         mask_num = 1000000
         draggin_idx = -1
-
+        self.collect_color = [[255, 0, 0], [255, 0, 80], [255, 0, 160], [255, 0, 240], [190, 0, 255], [110, 0, 255], [30, 0, 255], [0, 130, 255], [0, 210, 255], [0, 255, 220], [0, 255, 140], [0, 255, 60], [100, 255, 0], [180, 255, 0], [240, 255, 0], [255, 160, 0], [255, 80, 0], [128, 64, 64], [112, 64, 128], [64, 96, 128], [64, 128, 80], [128, 128, 64], [190, 94, 94], [190, 94, 174], [126, 94, 190], [94, 142, 190], [94, 190, 158]]
 
         label_color = []
         label_line_color = []
@@ -551,6 +550,8 @@ class mix(QWidget):
         global mask_num
         global draggin_idx
         global category_id_list
+        global color_value
+
 
         #변수들 초기화
         category_id_list = []
@@ -560,6 +561,7 @@ class mix(QWidget):
         self.b = []
         count = 0
         coordinates = []
+        color_value = []
 
         scale_factor_w = 1
         mask_num = 1000000
@@ -569,7 +571,7 @@ class mix(QWidget):
         label_line_color = []
         fill_color = []
         coordinates = []
-
+        self.collect_color = [[255, 0, 0], [255, 0, 80], [255, 0, 160], [255, 0, 240], [190, 0, 255], [110, 0, 255], [30, 0, 255], [0, 130, 255], [0, 210, 255], [0, 255, 220], [0, 255, 140], [0, 255, 60], [100, 255, 0], [180, 255, 0], [240, 255, 0], [255, 160, 0], [255, 80, 0], [128, 64, 64], [112, 64, 128], [64, 96, 128], [64, 128, 80], [128, 128, 64], [190, 94, 94], [190, 94, 174], [126, 94, 190], [94, 142, 190], [94, 190, 158]]
 
         cate_info = category_box.currentText().split("/")
 
@@ -782,11 +784,15 @@ class mix(QWidget):
         global mix_label_color
         category_id_list = []
         label_list = []
+        color_value = []
         k = 0
         mix_label_color = {}
         for i in self.label_name_list:
             if i.isChecked():
-                color_value.append(random.choice(self.collect_color))
+                selected_color = random.choice(self.collect_color)
+                self.collect_color.remove(selected_color)
+
+                color_value.append(selected_color)
                 label_col = QColor(color_value[k][0], color_value[k][1], color_value[k][2])
                 back_label_color = "background-color: " + label_col.name()
                 label_str = i.text()
@@ -794,11 +800,13 @@ class mix(QWidget):
                 label_id = self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(label_str.split("/")[1])), label_str.split("/")[0])
                 mix_label_color[label_id] = label_col
 
+
                 label_list[k].clicked.connect(self.color_select)
                 label_list[k].setStyleSheet(back_label_color)
                 k = k + 1
             else:
                 continue
+        self.collect_color = [[255, 0, 0], [255, 0, 80], [255, 0, 160], [255, 0, 240], [190, 0, 255], [110, 0, 255], [30, 0, 255], [0, 130, 255], [0, 210, 255], [0, 255, 220], [0, 255, 140], [0, 255, 60], [100, 255, 0], [180, 255, 0], [240, 255, 0], [255, 160, 0], [255, 80, 0], [128, 64, 64], [112, 64, 128], [64, 96, 128], [64, 128, 80], [128, 128, 64], [190, 94, 94], [190, 94, 174], [126, 94, 190], [94, 142, 190], [94, 190, 158]]
 
 
         if k == 0:
@@ -1059,6 +1067,7 @@ class tracking_screen(QGraphicsView):
                 label_color.append(pen)
                 label_line_color.append(line_pen)
                 fill_color.append(brush)
+                print(color_value)
                 for i in range(len(color_value)):
                     if QColor(color_value[i][0], color_value[i][1], color_value[i][2]) == line_pen.color():
                         cate_id = self.name2cate_id(label_list[i].text())
