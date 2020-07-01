@@ -7,7 +7,7 @@ import resist_DB, picture_DB, labelling
 import check_DB as check
 import project_DB as project
 from DCD_DB_API_master.db_api import DB
-from MQTT.mqtt import mqtt_connector
+from BVT_MQTT_client.MQTT_client import mqtt_connector
 from io import BytesIO
 from PIL import Image
 import numpy as np

@@ -180,7 +180,7 @@ class check_app(QWidget):
             qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
             self.image_data = QPixmap.fromImage(qim)
             self.image_label.clear()
-            self.image_label.setPixmap(self.image_data.scaledToWidth(1500))
+            self.image_label.setPixmap(self.image_data.scaledToWidth(1000))
             lock = True
 
     def pass_image(self):

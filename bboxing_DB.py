@@ -166,7 +166,7 @@ class bbox(QWidget):
         self.progress_state = QLabel("진행도 : " + str(progress) + "/" + str(len_a))
 
         #윈도우에 기능 배치
-        left_frame = QFrame()
+        #left_frame = QFrame()
 
         left_vboxx = QVBoxLayout()
         left_vboxp = QVBoxLayout()
@@ -186,9 +186,9 @@ class bbox(QWidget):
             left_hbox.addWidget(self.b[i])
             left_vboxx.addLayout(left_hbox)
 
-        left_frame.setLayout(left_vboxx)
+        #left_frame.setLayout(left_vboxx)
         self.scroll_area = QScrollArea()
-        self.scroll_area.setWidget(left_frame)
+        self.scroll_area.setLayout(left_vboxx)
         self.vertical_box = QVBoxLayout()
         self.vertical_box.addWidget(category_box)
         self.vertical_box.addWidget(self.progress_state)
@@ -196,7 +196,7 @@ class bbox(QWidget):
         self.vertical_box.addWidget(next_btn)
         self.vertical_box.addWidget(before_btn)
 
-        #상로베타적 버튼 설정
+        #상호베타적 버튼 설정
         self.btn_group.addButton(edit_btn)
         self.btn_group.addButton(mask_btn)
 

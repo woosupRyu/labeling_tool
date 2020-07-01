@@ -3,7 +3,7 @@ from io import BytesIO
 from PIL import Image
 import numpy as np
 from DCD_DB_API_master.db_api.DB import *
-from MQTT.mqtt import mqtt_connector
+from BVT_MQTT_client.MQTT_client import mqtt_connector
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 
@@ -76,18 +76,22 @@ class picture_app(QWidget):
         self.move_right.setToolTip("D")
         self.confirm_btn = QPushButton("확인")
         self.confirm_btn.setStyleSheet("background-color : blue")
-        self.add_category_btn = QPushButton("물건 추가(F)")
+        self.add_category_btn = QPushButton("물품 추가(F)")
         self.add_category_btn.setShortcut("F")
         self.add_category_btn.setToolTip("F")
         self.add_category_btn.setStyleSheet("background-color : green")
-        self.delete_btn = QPushButton("삭제(Delete)")
+        self.obj_delete_btn = QPushButton("삭제(Delete)")
+        self.obj_delete_btn.setStyleSheet("background-color : yellow")
+        self.obj_delete_btn.setShortcut("Delete")
+        self.obj_delete_btn.setToolTip("Delete")
+        self.obj_delete_btn.clicked.connect(self.delete_object)
+        self.delete_btn = QPushButton("삭제")
         self.delete_btn.setStyleSheet("background-color : blue")
-        self.delete_btn.setShortcut("Delete")
-        self.delete_btn.setToolTip("Delete")
         self.delete_btn.clicked.connect(self.delete_category)
         empty_layout = QHBoxLayout()
         empty_layout.addWidget(self.delete_btn)
         empty_layout.addStretch(1)
+        empty_layout.addWidget(self.obj_delete_btn)
 
         layout = QBoxLayout(QBoxLayout.LeftToRight)
         layout.addWidget(self.object_list)
@@ -195,7 +199,6 @@ class picture_app(QWidget):
         item.setText(i, name)
         return item
 
-
     def make_multi_tree_item(cls, name):
         # 촬영 물품 트리에 아이템을 추가하는 함수
         item = QTreeWidgetItem()
@@ -203,7 +206,6 @@ class picture_app(QWidget):
         item.setText(1, name[1])
         item.setText(2, str(name[2]))
         return item
-
 
     def move_object(self):
         # 물품 트리에서 추가 물품 트리로 아이템을 옮기는 함수
@@ -240,6 +242,11 @@ class picture_app(QWidget):
                 self.DB.delete_table(str(self.DB.get_category_id_from_args(superid, cate_str[0])), "Category")
             lock = True
 
+    def delete_object(self):
+        item = self.added_list.currentItem()
+        source = QTreeWidget.invisibleRootItem(self.added_list)
+        source.removeChild(item)
+
     def shoot_window(self):
         # 실제 촬영할 윈도우 생성
         self.category_list = []
@@ -257,6 +264,8 @@ class picture_app(QWidget):
             self.iterate_list.append(item.text(2))
         self.picture_data = list(zip(self.category_list, self.grid_x_list, self.grid_y_list, self.iterate_list))
 
+        device = self.device_box.currentText().split("/")
+        self.device_id = str(self.DB.get_env_id_from_args(device[0], device[1]))
         #물품추가 윈도우를 닫음
         self.close()
 
@@ -431,8 +440,8 @@ class picture_app(QWidget):
             lock = False
             #촬영 버튼과 연동된 실제 촬영 및, 이미지 업데이트 함수
             #촬영하여 이미지를 DB에 저장하는 함수
-            conn = mqtt_connector('192.168.10.19', 1883, "20001")
-            conn.collect_dataset("20001", 1)# ip, port  collect: env_id , image_type
+            conn = mqtt_connector('192.168.10.19', 1883, self.device_id)
+            conn.collect_dataset(self.device_id, 1)# ip, port  collect: env_id , image_type
             image_id = conn.get_result()
             #저장된 이미지를 읽어보여주는 함수
             tem_img = self.DB.get_table(str(image_id), "Image")
