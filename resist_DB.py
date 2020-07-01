@@ -273,7 +273,7 @@ class resist_app(QWidget):
             lock = True
 
     def grid_delete(self):
-        print("hi")
+        print("hello")
 
     def category_delete(self):
         print("hi")

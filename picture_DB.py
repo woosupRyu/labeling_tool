@@ -9,6 +9,7 @@ from PyQt5.QtGui import *
 
 global lock
 lock = True
+
 class picture_app(QWidget):
     """
     최상위 화면에서 촬영 버튼을 누르면 생성되는 클래스

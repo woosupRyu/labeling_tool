@@ -72,14 +72,6 @@ class MyApp(QWidget):
         self.setWindowIcon(QIcon("beyless.png"))
         self.show()
 
-    # 창을 닫을 경우 진짜 닫을지 메세지 표시
-    # def closeEvent(self, QCloseEvent):
-    #     ans = QMessageBox.question(self, "종료확인", "종료하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-    #     if ans == QMessageBox.Yes:
-    #         QCloseEvent.accept()
-    #     else:
-    #         QCloseEvent.ignore()
-
     #등록 기능 창을 띄워주는 함수
     def regist_part(self):
         self.res_window = resist_DB.resist_app(self.DB)
