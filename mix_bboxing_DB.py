@@ -552,7 +552,6 @@ class mix(QWidget):
         global category_id_list
         global color_value
 
-
         #변수들 초기화
         category_id_list = []
 
