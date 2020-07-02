@@ -3,7 +3,7 @@ from io import BytesIO
 from PIL import Image
 import numpy as np
 from DCD_DB_API_master.db_api.DB import *
-from BVT_MQTT_client.MQTT_client import mqtt_connector
+from MQTT_client import mqtt_connector
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 

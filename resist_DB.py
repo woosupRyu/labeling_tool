@@ -153,8 +153,8 @@ class resist_app(QWidget):
         self.right_layout = QVBoxLayout()
 
 
-        self.device_frame = QFrame()
-        self.device_frame.setFrameShape(QFrame.Box)
+        #self.device_frame = QFrame()
+        #self.device_frame.setFrameShape(QFrame.Box)
         self.device_list = QScrollArea()
         self.device_list.setWidgetResizable(True)
 
@@ -188,8 +188,8 @@ class resist_app(QWidget):
             self.device_hbox.addWidget(self.name)
             self.device_hbox.addWidget(self.del_button)
             self.device_vbox.addLayout(self.device_hbox)
-        self.device_frame.setLayout(self.device_vbox)
-        self.device_list.setWidget(self.device_frame)
+        #self.device_frame.setLayout(self.device_vbox)
+        self.device_list.setLayout(self.device_vbox)
 
         self.grid_cash = self.DB.list_table("Grid")
         self.grid_a = []
@@ -249,28 +249,25 @@ class resist_app(QWidget):
         self.show()
 
     def device_delete(self):
-        global lock
-        if lock:
-            lock = False
-            for i in range(len(self.device_b)):
-                if self.device_b[i].isChecked():
-                    del_num = i
-            del self.device_b[del_num]
-            del self.device_a[del_num]
+        for i in range(len(self.device_b)):
+            if self.device_b[i].isChecked():
+                del_num = i
+        del self.device_b[del_num]
+        del self.device_a[del_num]
 
-            for i in reversed(range(self.device_vbox.count())):
-                k = self.device_vbox.itemAt(i).layout()
-                for j in reversed(range(k.count())):
-                    k.itemAt(j).widget().deleteLater()
+        for i in reversed(range(self.device_vbox.count())):
+            k = self.device_vbox.itemAt(i).layout()
+            for j in reversed(range(k.count())):
+                k.itemAt(j).widget().deleteLater()
+            k.deleteLater()
 
-            for l in range(len(self.device_b)):
-                print(self.device_b)
-                self.sad = QHBoxLayout()
-                self.sad.addWidget(self.device_a[l])
-                self.sad.addWidget(self.device_b[l])
-                self.device_vbox.addLayout(self.sad)
+        for l in range(len(self.device_a)):
+            sad = QHBoxLayout()
+            sad.addWidget(self.device_a[l])
+            sad.addWidget(self.device_b[l])
+            self.device_vbox.addWidget(self.device_a[l])
             self.update()
-            lock = True
+
 
     def grid_delete(self):
         print("hello")

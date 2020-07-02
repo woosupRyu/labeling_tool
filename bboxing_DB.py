@@ -150,7 +150,7 @@ class bbox(QWidget):
             temp_btn.clicked.connect(self.image_state)
             temp_btn.setCheckable(True)
             if count == 0:
-                temp_btn.click()
+                #temp_btn.click()
                 current_object = temp_btn.text()
             self.label_group.addButton(temp_btn)
             self.a.append(temp_btn)
@@ -229,6 +229,7 @@ class bbox(QWidget):
         self.setWindowTitle("비박싱")
         self.setLayout(hbox)
         self.show()
+        self.a[0].click()
 
     def set_original_size(self):
         # 이미지를 원래 크기로 되돌리는 버튼과 연결된 함수

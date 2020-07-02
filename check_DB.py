@@ -268,6 +268,7 @@ class check_app(QWidget):
                 k = self.left_vbox.itemAt(i).layout()
                 for j in reversed(range(k.count())):
                     k.itemAt(j).widget().deleteLater()
+                k.deleteLater()
 
             ob = list(DB.list_object_check_num(self.DB, self.current_category, self.current_grid, "1"))
             if len(ob) != 0:

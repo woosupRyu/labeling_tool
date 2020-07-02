@@ -154,7 +154,7 @@ class mask(QWidget):
             temp_btn.clicked.connect(self.image_state)
             temp_btn.setCheckable(True)
             if count == 0:
-                temp_btn.click()
+                #temp_btn.click()
                 current_object = temp_btn.text()
             self.label_group.addButton(temp_btn)
             self.a.append(temp_btn)
@@ -229,6 +229,7 @@ class mask(QWidget):
         self.setWindowTitle("마스킹")
         self.setLayout(hbox)
         self.show()
+        self.a[0].click()
 
     def set_original_size(self):
         # 이미지를 원래 크기로 되돌리는 버튼과 연결된 함수
@@ -238,13 +239,15 @@ class mask(QWidget):
         global scene
         global im
         global maskpoint
+        global view
+        global scene
+
         #이미지 스케일을 1로 수정 후 다시 출력
         scale_factor_w = 1
         qp = QPainter()
         im.setDevicePixelRatio(scale_factor_w)
         qp.begin(im)
         qp.setPen(line_pen)
-        qp.setBrush(QBrush(Qt.transparent))
         qp.drawPolygon(QPolygon(maskpoint))
         qp.end()
         w = im.width()
@@ -274,6 +277,8 @@ class mask(QWidget):
         global qim
         global current_object
         global check_state
+        global view
+        global scene
 
         #작업상태 및 변수들 초기화
         check_state = 100
@@ -291,19 +296,19 @@ class mask(QWidget):
         self.img_data = np.array(Image.open(BytesIO(imgd)).convert("RGB"))
         qim = QImage(self.img_data, self.img_data.shape[1], self.img_data.shape[0], self.img_data.strides[0],
                      QImage.Format_RGB888)
-        w = qim.width()
-        h = qim.height()
         im = QPixmap.fromImage(qim)
         qp = QPainter()
         im.setDevicePixelRatio(scale_factor_w)
+        w = im.width()
+        h = im.height()
+        print(w)
+        print(h)
         qp.begin(im)
-
         # 오브젝트와 관련된 비박스가 존재할 경우 비박스 출력
         if self.DB.mask_info(img_obj_id) != None:
             maskpoint_value = self.XYvalue2maskvalue(self.DB.mask_info(img_obj_id))
             maskpoint = self.value2qpoints(maskpoint_value)
             qp.setPen(line_pen)
-            qp.setBrush(QBrush(Qt.transparent))
             qp.drawPolygon(QPolygon(maskpoint))
         qp.end()
         scene.clear()
@@ -358,6 +363,8 @@ class mask(QWidget):
         global maskpoint_value
         global check_state
         global current_object
+        global scene
+        global view
 
         # 변수들 초기화
         progress = 0
@@ -561,9 +568,6 @@ class tracking_screen(QGraphicsView):
                     im = QPixmap.fromImage(qim)
                     im.setDevicePixelRatio(scale_factor_w)
                     qp.begin(im)
-
-                    qp.setPen(pen)
-                    qp.drawPoints(QPolygon(temp_maskpoint))
                     qp.setPen(line_pen)
                     qp.drawPolyline(QPolygon(temp_maskpoint))
                     qp.end()
