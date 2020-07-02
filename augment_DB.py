@@ -18,6 +18,10 @@ class project_app(QWidget):
         grid_frame.setFrameShape(QFrame.Box)
         grid_list_label = QLabel("그리드 리스트")
         self.grid_box = []
+
+        grid_label_box = QVBoxLayout()
+        grid_label_box.addWidget(grid_list_label)
+
         grid_box_group = QGroupBox()
         grid_vbox = QVBoxLayout()
         grid_vbox.addWidget(grid_list_label)
@@ -35,6 +39,7 @@ class project_app(QWidget):
         grid_box_group.setLayout(grid_vbox)
         grid_frame.setLayout(grid_vbox)
         self.grid_scroll.setWidget(grid_frame)
+        grid_label_box.addWidget(self.grid_scroll)
 
         #오브젝트 리스트
         object_frame = QFrame()
@@ -44,8 +49,10 @@ class project_app(QWidget):
         object_list_label = QLabel("오브젝트 리스트")
         self.object_box = []
 
+        label_box = QVBoxLayout()
+        label_box.addWidget(object_list_label)
+
         self.object_vbox = QVBoxLayout()
-        self.object_vbox.addWidget(object_list_label)
         self.a = []
         category_table_list = self.DB.list_table("Category")
         for i in category_table_list:
@@ -57,10 +64,9 @@ class project_app(QWidget):
                     ad = QCheckBox(product_name)
                     self.a.append(ad)
                     self.object_vbox.addWidget(ad)
-
         object_frame.setLayout(self.object_vbox)
         self.object_scroll.setWidget(object_frame)
-
+        label_box.addWidget(self.object_scroll)
         # 백그라운트 리스트
 
         background_frame = QFrame()
@@ -70,6 +76,8 @@ class project_app(QWidget):
         background_list_label = QLabel("배경 리스트")
         self.background_box = []
 
+        background_label_box = QVBoxLayout()
+        background_label_box.addWidget(background_list_label)
         self.background_vbox = QVBoxLayout()
         self.background_vbox.addWidget(background_list_label)
         self.background = []
@@ -85,6 +93,7 @@ class project_app(QWidget):
 
         background_frame.setLayout(self.background_vbox)
         self.background_scroll.setWidget(background_frame)
+        background_label_box.addWidget(self.background_scroll)
 
 
         # 그리드 레이아웃 표시
@@ -111,9 +120,9 @@ class project_app(QWidget):
 
         #3가지 묶는 레이아웃
         self.h_box1 = QHBoxLayout()
-        self.h_box1.addWidget(self.grid_scroll)
-        self.h_box1.addWidget(self.object_scroll)
-        self.h_box1.addWidget(self.background_scroll)
+        self.h_box1.addLayout(grid_label_box)
+        self.h_box1.addLayout(label_box)
+        self.h_box1.addLayout(background_label_box)
         self.h_box1.addWidget(self.grid_setting_frame)
 
         self.augmentation_filename = QLineEdit()

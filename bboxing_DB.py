@@ -225,7 +225,7 @@ class bbox(QWidget):
         left_splitter.setStretchFactor(1, 5)
         hbox.addWidget(left_splitter)
 
-        self.resize(1300, 1000)
+        self.resize(1500, 1000)
         self.setWindowTitle("비박싱")
         self.setLayout(hbox)
         self.show()

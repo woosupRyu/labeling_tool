@@ -225,7 +225,7 @@ class mask(QWidget):
         left_splitter.setStretchFactor(1, 5)
         hbox.addWidget(left_splitter)
 
-        self.resize(1300, 1000)
+        self.resize(1500, 1000)
         self.setWindowTitle("마스킹")
         self.setLayout(hbox)
         self.show()
@@ -302,8 +302,6 @@ class mask(QWidget):
         im.setDevicePixelRatio(scale_factor_w)
         w = im.width()
         h = im.height()
-        print(w)
-        print(h)
         qp.begin(im)
         # 오브젝트와 관련된 비박스가 존재할 경우 비박스 출력
         if self.DB.mask_info(img_obj_id) != None:

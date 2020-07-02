@@ -324,7 +324,7 @@ class mix(QWidget):
         left_splitter.setStretchFactor(1, 5)
         hbox.addWidget(left_splitter)
 
-        self.resize(1300, 1000)
+        self.resize(1500, 1000)
         self.setWindowTitle("비박싱")
         self.setLayout(hbox)
         self.show()
@@ -1066,7 +1066,6 @@ class tracking_screen(QGraphicsView):
                 label_color.append(pen)
                 label_line_color.append(line_pen)
                 fill_color.append(brush)
-                print(color_value)
                 for i in range(len(color_value)):
                     if QColor(color_value[i][0], color_value[i][1], color_value[i][2]) == line_pen.color():
                         cate_id = self.name2cate_id(label_list[i].text())
