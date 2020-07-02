@@ -113,7 +113,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   다음 이미지 - D  
   이전 이미지 - A  
   박스(마스크) 작업 환경으로 전환 - Q    
-  저장 - Ctrl + S  
+  저장 - S  
   확대 - Ctrl + 스크롤  
   화면이동 - Ctrl + 좌클릭드래그  
       
