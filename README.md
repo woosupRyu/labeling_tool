@@ -64,13 +64,14 @@ Environment, Grid, SuperCategory, Category 정보를 등록하는 작업 환경
 ---
 Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택 하고 촬영하는 환경  
 1. 원하는 디바이스, 그리드 선택  
-  <img src="https://user-images.githubusercontent.com/46614789/84611133-e461ef00-aef7-11ea-8636-15c946cc3e35.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86326580-e5777800-bc7c-11ea-95f6-77ce4f08f65f.png"  width="60%" height="30%">  
 2. 물품 리스트에서 원하는 물품을 선택 후, ->버튼 클릭(추가할 물품 리스트로 물품 이동)  
-  <img src="https://user-images.githubusercontent.com/46614789/84611135-e5931c00-aef7-11ea-84d8-ea3699689f57.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86326590-e90aff00-bc7c-11ea-88d0-5c778a58c5fe.png"  width="60%" height="30%">  
 3. 원하는 물품을 모두 추가할 물품 리스트로 옮긴 후, 물건추가 버튼 클릭  
-  <img src="https://user-images.githubusercontent.com/46614789/84611137-e5931c00-aef7-11ea-926b-3fdb3bdbe2eb.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86326597-ea3c2c00-bc7c-11ea-8a31-c547be6d1421.png"  width="60%" height="30%">  
 4. 원하는 그리드, 물품조합을 모두 추가할 때 까지 2,3 과정 반복  
-  <img src="https://user-images.githubusercontent.com/46614789/84611138-e62bb280-aef7-11ea-8e66-f89b927c6ce1.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86326601-eb6d5900-bc7c-11ea-9eef-5b9a8618b22c.png"  width="60%" height="30%">  
+  우측 공간에 물품을 잘못 추가했을 경우, 해당 항목을 클릭한 후, 삭제(Delete)버튼을 누르면 해당 항목이 제거됨
 5. 확인버튼 클릭  
   <img src="https://user-images.githubusercontent.com/46614789/84611140-e6c44900-aef7-11ea-976a-adf1e6462c2d.png"  width="60%" height="30%">  
 6. 촬영  
