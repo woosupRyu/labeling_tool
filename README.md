@@ -64,13 +64,14 @@ Environment, Grid, SuperCategory, Category 정보를 등록하는 작업 환경
 ---
 Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택 하고 촬영하는 환경  
 1. 원하는 디바이스, 그리드 선택  
-  <img src="https://user-images.githubusercontent.com/46614789/84611133-e461ef00-aef7-11ea-8636-15c946cc3e35.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86326580-e5777800-bc7c-11ea-95f6-77ce4f08f65f.png"  width="60%" height="30%">  
 2. 물품 리스트에서 원하는 물품을 선택 후, ->버튼 클릭(추가할 물품 리스트로 물품 이동)  
-  <img src="https://user-images.githubusercontent.com/46614789/84611135-e5931c00-aef7-11ea-84d8-ea3699689f57.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86326590-e90aff00-bc7c-11ea-88d0-5c778a58c5fe.png"  width="60%" height="30%">  
 3. 원하는 물품을 모두 추가할 물품 리스트로 옮긴 후, 물건추가 버튼 클릭  
-  <img src="https://user-images.githubusercontent.com/46614789/84611137-e5931c00-aef7-11ea-926b-3fdb3bdbe2eb.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86326597-ea3c2c00-bc7c-11ea-8a31-c547be6d1421.png"  width="60%" height="30%">  
 4. 원하는 그리드, 물품조합을 모두 추가할 때 까지 2,3 과정 반복  
-  <img src="https://user-images.githubusercontent.com/46614789/84611138-e62bb280-aef7-11ea-8e66-f89b927c6ce1.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86326601-eb6d5900-bc7c-11ea-9eef-5b9a8618b22c.png"  width="60%" height="30%">  
+  우측 공간에 물품을 잘못 추가했을 경우, 해당 항목을 클릭한 후, 삭제(Delete)버튼을 누르면 해당 항목이 제거됨
 5. 확인버튼 클릭  
   <img src="https://user-images.githubusercontent.com/46614789/84611140-e6c44900-aef7-11ea-976a-adf1e6462c2d.png"  width="60%" height="30%">  
 6. 촬영  
@@ -113,7 +114,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   다음 이미지 - D  
   이전 이미지 - A  
   박스(마스크) 작업 환경으로 전환 - Q    
-  저장 - Ctrl + S  
+  저장 - S  
   확대 - Ctrl + 스크롤  
   화면이동 - Ctrl + 좌클릭드래그  
       
@@ -133,11 +134,26 @@ Mix 데이터는 테스트 데이터로 합성하기 위해 사용되는 마스�
   
 삭제 : 수정 환경에서 원하는 마스크 내부를 클릭한 뒤 삭제버튼 클릭
   
-라벨수정 : 변경하고 싶은 라벨과 마스크를 선택한 뒤 라벨수정 버튼 클릭
-
+라벨수정 : 변경하고 싶은 라벨과 마스크를 선택한 뒤 라벨수정 버튼 클릭  
+  
+  <img src="https://user-images.githubusercontent.com/46614789/86327090-a138a780-bc7d-11ea-88df-31baf62b521a.png"  width="60%" height="30%">  
+  
+  수정 태에서 마스크를 클릭할 경우 좌측 상단에 물품정보가 표시되며, 해당마스크를 삭제, 현재 우측에서 선택되어있는 라벨로 라벨수정이 가능함  
+  
+  <img src="https://user-images.githubusercontent.com/46614789/86327091-a269d480-bc7d-11ea-993e-98a5be6432e9.png"  width="60%" height="30%">  
+  
 ### 합성
 ---
 라벨링된 데이터를 합성하여 학습 데이터를 생성하는 환경  
+  
+합성 환경을 설정하기위해 그리드, 배경, 물품을 선택  
+(물품별 그리드 기능과 augment 옵션 기능은 현재 합성에선 사용되지 않는다)  
+
+<img src="https://user-images.githubusercontent.com/46614789/86327272-f5438c00-bc7d-11ea-8be7-52509aec3664.png"  width="60%" height="30%">  
+  
+합성하기 클릭  
+  
+  
 
 ### 지그오픈
 ---
