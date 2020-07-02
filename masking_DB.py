@@ -229,7 +229,8 @@ class mask(QWidget):
         self.setWindowTitle("마스킹")
         self.setLayout(hbox)
         self.show()
-        self.a[0].click()
+        if len(self.a) != 0:
+            self.a[0].click()
 
     def set_original_size(self):
         # 이미지를 원래 크기로 되돌리는 버튼과 연결된 함수

@@ -1,8 +1,9 @@
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
 import cv2
-
+import copy
 global lock
+
 lock = True
 
 class resist_app(QWidget):
@@ -153,8 +154,8 @@ class resist_app(QWidget):
         self.right_layout = QVBoxLayout()
 
 
-        #self.device_frame = QFrame()
-        #self.device_frame.setFrameShape(QFrame.Box)
+        self.device_frame = QFrame()
+        self.device_frame.setFrameShape(QFrame.Box)
         self.device_list = QScrollArea()
         self.device_list.setWidgetResizable(True)
 
@@ -188,8 +189,8 @@ class resist_app(QWidget):
             self.device_hbox.addWidget(self.name)
             self.device_hbox.addWidget(self.del_button)
             self.device_vbox.addLayout(self.device_hbox)
-        #self.device_frame.setLayout(self.device_vbox)
-        self.device_list.setLayout(self.device_vbox)
+        self.device_frame.setLayout(self.device_vbox)
+        self.device_list.setWidget(self.device_frame)
 
         self.grid_cash = self.DB.list_table("Grid")
         self.grid_a = []
@@ -244,36 +245,78 @@ class resist_app(QWidget):
         self.setLayout(self.hbox)
 
         #윈도우 이름 설정 및 위도우 띄우기
-        self.resize(1000,700)
+        self.resize(1000, 700)
         self.setWindowTitle("등록")
         self.show()
 
     def device_delete(self):
+
+        del_num = -1
+
         for i in range(len(self.device_b)):
-            if self.device_b[i].isChecked():
+            if self.sender() == self.device_b[i]:
                 del_num = i
-        del self.device_b[del_num]
-        del self.device_a[del_num]
+                delete_name = self.device_a[del_num].text()
+                del self.device_b[del_num]
+                del self.device_a[del_num]
+                break
 
         for i in reversed(range(self.device_vbox.count())):
             k = self.device_vbox.itemAt(i).layout()
-            for j in reversed(range(k.count())):
-                k.itemAt(j).widget().deleteLater()
-            k.deleteLater()
+            if i == del_num:
+                for j in reversed(range(k.count())):
+                    k.itemAt(j).widget().deleteLater()
+                k.deleteLater()
 
-        for l in range(len(self.device_a)):
-            sad = QHBoxLayout()
-            sad.addWidget(self.device_a[l])
-            sad.addWidget(self.device_b[l])
-            self.device_vbox.addWidget(self.device_a[l])
-            self.update()
+        env_id = self.DB.get_env_id_from_args(delete_name.split("/")[0], delete_name.split("/")[1])
+        self.DB.delete_table(str(env_id), "Environment")
 
 
     def grid_delete(self):
-        print("hello")
+
+        del_num = -1
+
+        for i in range(len(self.grid_b)):
+            if self.sender() == self.grid_b[i]:
+                del_num = i
+                delete_name = self.grid_a[del_num].text()
+                del self.grid_b[del_num]
+                del self.grid_a[del_num]
+                break
+
+        for i in reversed(range(self.grid_vbox.count())):
+            k = self.grid_vbox.itemAt(i).layout()
+            if i == del_num:
+                for j in reversed(range(k.count())):
+                    k.itemAt(j).widget().deleteLater()
+                k.deleteLater()
+
+        grid_id = self.DB.get_grid_id_from_args(delete_name)
+        self.DB.delete_table(str(grid_id), "Grid")
+
 
     def category_delete(self):
-        print("hi")
+
+        del_num = -1
+
+        for i in range(len(self.category_b)):
+            if self.sender() == self.category_b[i]:
+                del_num = i
+                delete_name = self.category_a[del_num].text()
+                del self.category_b[del_num]
+                del self.category_a[del_num]
+                break
+
+        for i in reversed(range(self.category_vbox.count())):
+            k = self.category_vbox.itemAt(i).layout()
+            if i == del_num:
+                for j in reversed(range(k.count())):
+                    k.itemAt(j).widget().deleteLater()
+                k.deleteLater()
+        super_id = self.DB.get_supercategory_id_from_args(delete_name.split("/")[1])
+        category_id = self.DB.get_category_id_from_args(str(super_id), delete_name.split("/")[0])
+        self.DB.delete_table(str(category_id), "Category")
+
 
     def send_device_text(self):
         global lock
@@ -326,6 +369,7 @@ class resist_app(QWidget):
                 self.device_d.setText("")
                 self.device_h.setText("")
             lock = True
+
 
     def send_grid_text(self):
         global lock

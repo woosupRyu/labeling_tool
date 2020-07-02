@@ -1458,8 +1458,22 @@ class DB:
                 return sum(cursor.fetchall(), ())[0]
 
         except Exception as e:
-            print('Error function:', inspect.stack()[0][3])
-            print(e)
+            #print('Error function:', inspect.stack()[0][3])
+            #print(e)
+            return None
+        finally:
+            self.db.commit()
+
+    def get_mask_id_from_args(self, obj_id):
+        try:
+            with self.db.cursor() as cursor:
+                query = "SELECT id FROM Mask WHERE obj_id='" + obj_id + "'"
+                cursor.execute(query)
+                return sum(cursor.fetchall(), ())[0]
+
+        except Exception as e:
+            #print('Error function:', inspect.stack()[0][3])
+            #print(e)
             return None
         finally:
             self.db.commit()
@@ -1493,6 +1507,26 @@ class DB:
                 query = "SELECT mix_num FROM Object WHERE loc_id=%s AND category_id=%s AND iteration=%s"
                 value = (loc_id, category_id, iteration)
                 cursor.execute(query, value)
+                return sum(cursor.fetchall(), ())
+
+        except Exception as e:
+            print('Error function:', inspect.stack()[0][3])
+            print(e)
+            return None
+
+    def get_obj_id_from_category_id(self, category_id):
+        """
+        Object table의 (category id)를 입력 받아
+        Object table의 (obj id)들 반환
+        Args:
+            category_id (str): Object table의 (category id)
+        Return:
+            tuple () : Object_table의 (obj id) 값들
+        """
+        try:
+            with self.db.cursor() as cursor:
+                query = "SELECT id FROM Object WHERE category_id=" + category_id + " AND mix_num=" + "-1"
+                cursor.execute(query)
                 return sum(cursor.fetchall(), ())
 
         except Exception as e:
@@ -1871,3 +1905,38 @@ def get_max_mix_num(db, loc_id, category_id, iteration):
         return 0
 
     return sorted(mix_nums, reverse=True)[0]
+
+def process_check(db, category_id):
+    """
+    Object table의 (category_id)가 입력받은 값을 가지고 (mix_num)이 -1인 Object table의 row가 존재하고
+    해당하는 모든 Object table의 row에 대한 Bbox table의 row와 Mask table의 row가 둘다 존재할 경우 True 반환
+    이외의 경우 False 반환
+    Args:
+        db (DB): DB class
+        category_id (str): Object table의 (category_id)
+    Return:
+        Boolean: True or False
+    """
+    # obj_id들 조회
+    obj_ids = db.get_obj_id_from_category_id(category_id=category_id)
+    if obj_ids is None:
+        return False
+
+    mask_flag, bbox_flag = False, False
+    for obj_id in obj_ids:
+        obj_id = str(obj_id)
+        # Bbox 테이블 조회
+        bbox = db.get_bbox_id_from_args(obj_id)
+        if bbox != None:
+            bbox_flag = True
+
+        # Mask 테이블 조회
+        mask = db.get_mask_id_from_args(obj_id)
+        if mask != None:
+            mask_flag = True
+
+    if mask_flag is True and bbox_flag is True:
+        return True
+    else:
+        return False
+

@@ -3,7 +3,7 @@ from io import BytesIO
 from PIL import Image
 import numpy as np
 import augment_v3
-
+from DCD_DB_API_master.db_api import DB
 
 class project_app(QWidget):
     def __init__(self, db):
@@ -50,11 +50,13 @@ class project_app(QWidget):
         category_table_list = self.DB.list_table("Category")
         for i in category_table_list:
             mix_or_not = self.DB.get_table(str(i[0]), "SuperCategory")[1]
-            if mix_or_not != "mix" and mix_or_not != "background":
-                product_name = i[2] + "/" + mix_or_not
-                ad = QCheckBox(product_name)
-                self.a.append(ad)
-                self.object_vbox.addWidget(ad)
+
+            if DB.process_check(self.DB, str(i[1])):
+                if mix_or_not != "mix" and mix_or_not != "background":
+                    product_name = i[2] + "/" + mix_or_not
+                    ad = QCheckBox(product_name)
+                    self.a.append(ad)
+                    self.object_vbox.addWidget(ad)
 
         object_frame.setLayout(self.object_vbox)
         self.object_scroll.setWidget(object_frame)
