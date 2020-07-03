@@ -136,11 +136,15 @@ Mix 데이터는 테스트 데이터로 합성하기 위해 사용되는 마스�
   
 라벨수정 : 변경하고 싶은 라벨과 마스크를 선택한 뒤 라벨수정 버튼 클릭  
   
-  <img src="https://user-images.githubusercontent.com/46614789/86327090-a138a780-bc7d-11ea-88df-31baf62b521a.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86441947-ede8b500-bd47-11ea-88d0-6e22d6e41da2.png"  width="60%" height="30%">  
   
   수정 태에서 마스크를 클릭할 경우 좌측 상단에 물품정보가 표시되며, 해당마스크를 삭제, 현재 우측에서 선택되어있는 라벨로 라벨수정이 가능함  
   
-  <img src="https://user-images.githubusercontent.com/46614789/86327091-a269d480-bc7d-11ea-993e-98a5be6432e9.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86441950-efb27880-bd47-11ea-80a4-467a5ba89487.png"  width="60%" height="30%">  
+    
+  다음 라벨을 클릭할 경우 현재 작업라벨(우측에 선택되어 있는 라벨)이 다음 라벨로 바뀜  
+    
+  이전 라벨을 클릭할 경우 현재 작업라벨(우측에 선택되어 있는 라벨)이 이전 라벨로 바뀜  
   
 ### 합성
 ---
