@@ -21,7 +21,6 @@ global qp # QPainter
 global scene # 이미지 보여주는 공간
 global im # 마스크를 포함한 이미지
 global pen # 마스크 포인트 그리는 펜
-global brush # 마스크 채우는 붓
 global mask_num # 선택된 마스크의 순서
 global qim # 마스크 없는 원 이미지
 global line_pen # 마스크 선 그리는 펜
@@ -74,7 +73,6 @@ class mask(QWidget):
         global category_box
         global left_vboxx
         global pen
-        global brush
         global line_pen
         global current_object
         progress = 0
@@ -148,9 +146,8 @@ class mask(QWidget):
         self.label_list = QRadioButton(category_name)
         self.label_list.setStyleSheet(back_label_color)
         self.label_list.toggle()
-        pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 3)
-        line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 1)
-        brush = QBrush(QColor(RGB[0], RGB[1], RGB[2]), Qt.Dense3Pattern)
+        pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 4)
+        line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 2)
 
         #호출된 오브젝트들로 버튼 생성
         for i in btn_names:
@@ -359,7 +356,6 @@ class mask(QWidget):
         global left_vboxx
         global pen
         global line_pen
-        global brush
         global im
         global qim
         global maskpoint
@@ -369,6 +365,7 @@ class mask(QWidget):
         global scene
         global view
         global qp
+        global scale_factor_w
 
         # 변수들 초기화
         progress = 0
@@ -376,6 +373,7 @@ class mask(QWidget):
         self.a = []
         self.b = []
         count = 0
+        scale_factor_w = 1
 
         # 변경된 물품의 라벨 생성
         cate_info = category_box.currentText().split("/")
@@ -384,9 +382,8 @@ class mask(QWidget):
         self.label_list = QRadioButton(category_box.currentText())
         self.label_list.setStyleSheet(back_label_color)
         self.label_list.toggle()
-        pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 3)
-        line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 1)
-        brush = QBrush(QColor(RGB[0], RGB[1], RGB[2]), Qt.Dense3Pattern)
+        pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 4)
+        line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 2)
         for i in reversed(range(self.label_vbox.count())):
             self.label_vbox.itemAt(i).widget().deleteLater()
         self.label_vbox.addWidget(self.label_list)
@@ -455,7 +452,6 @@ class mask(QWidget):
                 maskpoint_value = self.XYvalue2maskvalue(self.DB.mask_info(img_obj_id))
                 maskpoint = self.value2qpoints(maskpoint_value)
                 qp.setPen(line_pen)
-                qp.setBrush(QBrush(Qt.transparent))
                 qp.drawPolygon(QPolygon(maskpoint))
             qp.end()
             scene.clear()
@@ -650,6 +646,10 @@ class tracking_screen(QGraphicsView):
                 scale_factor_w = scale_factor_w * 0.9
             elif scale_factor_w < 2 and delta.y() < 0:
                 scale_factor_w = scale_factor_w * 1.1
+            if scale_factor_w < 0.5:
+                line_pen.setWidth(1)
+            else:
+                line_pen.setWidth(3)
 
             im.setDevicePixelRatio(scale_factor_w)
             qp.end()
@@ -669,7 +669,6 @@ class tracking_screen(QGraphicsView):
         global qp
         global pen
         global scene
-        global brush
         global mask_num
         global mask_btn
         global line_pen

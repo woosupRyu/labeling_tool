@@ -113,6 +113,14 @@ class mix(QWidget):
         mask_btn.setShortcut("Q")
         mask_btn.setToolTip("Q")
         mask_btn.toggle()
+        next_label_btn = QPushButton("다음 라벨(C)")
+        next_label_btn.setShortcut("C")
+        next_label_btn.setToolTip("C")
+        next_label_btn.clicked.connect(self.change_current_label)
+        before_labe_btn = QPushButton("이전 라벨(Z)")
+        before_labe_btn.setShortcut("Z")
+        before_labe_btn.setToolTip("Z")
+        before_labe_btn.clicked.connect(self.change_current_label)
         label_change_btn = QPushButton("라벨수정(F)")
         label_change_btn.setShortcut("F")
         label_change_btn.clicked.connect(self.change_label)
@@ -231,8 +239,7 @@ class mix(QWidget):
             label_color = []
             fill_color = []
             for i in coordinates:
-                label_line_color.append(QPen(mix_label_color[i[4]], 6))
-                label_color.append(QPen(mix_label_color[i[4]], 2))
+                label_line_color.append(QPen(mix_label_color[i[4]], 4))
                 fill_color.append(QBrush(mix_label_color[i[4]], Qt.Dense2Pattern))
 
         # 버튼 좌측의 체크박스 기준으로 현재 작업진행도 표시
@@ -301,7 +308,6 @@ class mix(QWidget):
 
             if len(exist_bbox) != 0:
                 for i in range(len(coordinates)):
-                    pen = label_color[i]
                     line_pen = label_line_color[i]
                     brush = fill_color[i]
                     qp.setPen(line_pen)
@@ -316,6 +322,8 @@ class mix(QWidget):
         vbox = QVBoxLayout()
         vbox.addWidget(edit_btn)
         vbox.addWidget(mask_btn)
+        vbox.addWidget(next_label_btn)
+        vbox.addWidget(before_labe_btn)
         vbox.addWidget(label_change_btn)
         vbox.addWidget(original_size_btn)
         vbox.addWidget(mask_delete_btn)
@@ -348,13 +356,11 @@ class mix(QWidget):
         if type(label_list) == list:
             for i in label_list:
                 if i.isChecked():
-                    pen = QPen(QColor(color_value[k][0], color_value[k][1], color_value[k][2]), 6)
-                    line_pen = QPen(QColor(color_value[k][0], color_value[k][1], color_value[k][2]), 2)
+                    line_pen = QPen(QColor(color_value[k][0], color_value[k][1], color_value[k][2]), 4)
                     brush = QBrush(QColor(color_value[k][0], color_value[k][1], color_value[k][2]), Qt.Dense2Pattern)
                 k = k + 1
         else:
-            pen = QPen(QColor(color_value[0][0], color_value[0][1], color_value[0][2]), 6)
-            line_pen = QPen(QColor(color_value[0][0], color_value[0][1], color_value[0][2]), 2)
+            line_pen = QPen(QColor(color_value[0][0], color_value[0][1], color_value[0][2]), 4)
             brush = QBrush(QColor(color_value[0][0], color_value[0][1], color_value[0][2]), Qt.Dense2Pattern)
 
     def set_original_size(self):
@@ -467,15 +473,13 @@ class mix(QWidget):
             fill_color = []
 
             for i in coordinates:
-                label_line_color.append(QPen(mix_label_color[i[4]], 6))
-                label_color.append(QPen(mix_label_color[i[4]], 2))
+                label_line_color.append(QPen(mix_label_color[i[4]], 4))
                 fill_color.append(QBrush(mix_label_color[i[4]], Qt.Dense2Pattern))
             for i in label_list:
                 self.label_vbox.addWidget(i)
             self.label_box.setLayout(self.label_vbox)
 
             for i in range(len(coordinates)):
-                pen = label_color[i]
                 line_pen = label_line_color[i]
                 brush = fill_color[i]
                 qp.setPen(line_pen)
@@ -592,8 +596,7 @@ class mix(QWidget):
         label_list.clicked.connect(self.color_select)
         label_list.setStyleSheet(back_label_color)
         label_list.toggle()
-        pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 6)
-        line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 2)
+        line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 4)
         brush = QBrush(QColor(RGB[0], RGB[1], RGB[2]), Qt.Dense2Pattern)
         for i in reversed(range(self.label_vbox.count())):
             self.label_vbox.itemAt(i).widget().deleteLater()
@@ -636,8 +639,7 @@ class mix(QWidget):
             label_list.clicked.connect(self.color_select)
             label_list.setStyleSheet(back_label_color)
             label_list.toggle()
-            pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 6)
-            line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 2)
+            line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 4)
             brush = QBrush(QColor(RGB[0], RGB[1], RGB[2]), Qt.Dense2Pattern)
         else:
             category_name_list = self.category_list2name(self.DB.list_table("Category"))
@@ -659,8 +661,7 @@ class mix(QWidget):
             label_color = []
             fill_color = []
             for i in coordinates:
-                label_line_color.append(QPen(mix_label_color[i[4]], 6))
-                label_color.append(QPen(mix_label_color[i[4]], 2))
+                label_line_color.append(QPen(mix_label_color[i[4]], 4))
                 fill_color.append(QBrush(mix_label_color[i[4]], Qt.Dense2Pattern))
         len_a = len(self.a)
         self.progress_state.setText("진행도 : " + str(progress) + "/" + str(len_a))
@@ -700,7 +701,6 @@ class mix(QWidget):
 
             if len(exist_bbox) != 0:
                 for i in range(len(coordinates)):
-                    pen = label_color[i]
                     line_pen = label_line_color[i]
                     brush = fill_color[i]
                     qp.setPen(line_pen)
@@ -910,8 +910,7 @@ class mix(QWidget):
         k = 0
         for i in label_list:
             if i.isChecked():
-                lc = QPen(QColor(color_value[k][0], color_value[k][1], color_value[k][2]), 6)
-                line_lc = QPen(QColor(color_value[k][0], color_value[k][1], color_value[k][2]), 2)
+                line_lc = QPen(QColor(color_value[k][0], color_value[k][1], color_value[k][2]), 4)
                 bc = QBrush(QColor(color_value[k][0], color_value[k][1], color_value[k][2]),
                             Qt.Dense3Pattern)
             k = k + 1
@@ -955,6 +954,23 @@ class mix(QWidget):
         name = name.split("/")
         return self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(name[1])), name[0])
 
+    def change_current_label(self):
+        global label_list
+        for i in range(len(label_list)):
+            if label_list[i].isChecked():
+                k = i
+        if self.sender().text() == "다음 라벨(C)":
+            if k + 1 >= len(label_list):
+                pass
+            else:
+                label_list[k + 1].click()
+        if self.sender().text() == "이전 라벨(Z)":
+            if k - 1 < 0:
+                pass
+            else:
+                label_list[k - 1].click()
+
+
 
 
 class tracking_screen(QGraphicsView):
@@ -997,7 +1013,6 @@ class tracking_screen(QGraphicsView):
                     qp.drawRect(QRect(self.start_point.x(), self.start_point.y(), x - self.start_point.x(), y - self.start_point.y()))
 
                     for i in range(len(coordinates)):
-                        qp.setPen(pen)
                         qp.setPen(label_line_color[i])
                         qp.drawRect(QRect(coordinates[i][0][0], coordinates[i][0][1], coordinates[i][3][0] - coordinates[i][0][0], coordinates[i][3][1] - coordinates[i][0][1]))
                     qp.end()
@@ -1014,8 +1029,6 @@ class tracking_screen(QGraphicsView):
                     iter_num = 0
                     for i in coordinates:
                         if iter_num != minimum_mask:
-                            qp.setPen(pen)
-                            # qp.drawPoints(QPolygon(i))
                             qp.setPen(label_line_color[iter_num])
                             qp.drawRect(QRect(i[0][0], i[0][1], i[3][0]-i[0][0], i[3][1]-i[0][1]))
                         iter_num = iter_num + 1
@@ -1046,8 +1059,6 @@ class tracking_screen(QGraphicsView):
                     qp.end()
                     scene.addPixmap(im)
 
-
-
     def mouseReleaseEvent(self, e):
         # 마우스가 클릭됬다가 떨어질 때 발생하는 이벤트
         global view
@@ -1074,7 +1085,6 @@ class tracking_screen(QGraphicsView):
             print("nothing")
         else:
             if mask_btn.isChecked():
-                label_color.append(pen)
                 label_line_color.append(line_pen)
                 fill_color.append(brush)
                 for i in range(len(color_value)):
@@ -1226,12 +1236,6 @@ class tracking_screen(QGraphicsView):
                 # 좌클릭시 포인트 생성 및 선 생성
                 if e.buttons() == Qt.LeftButton:
                     self.start_point = QPoint(x, y)
-                    qp = QPainter()
-                    qp.begin(im)
-                    qp.setPen(pen)
-                    qp.drawPoint(x, y)
-                    qp.end()
-                    scene.addPixmap(im)
                     draggin_idx = 10
 
             # 수정 작업중 발생하는 이벤트

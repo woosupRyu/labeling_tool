@@ -19,8 +19,6 @@ global mask_btn  # 마스킹 버튼
 global qp  # QPainter
 global scene  # 이미지 보여주는 공간
 global im  # 마스크를 포함한 이미지
-global pen  # 마스크 포인트 그리는 펜
-global brush  # 마스크 채우는 붓
 global mask_num  # 선택된 마스크의 순서
 global qim  # 마스크 없는 원 이미지
 global line_pen  # 마스크 선 그리는 펜
@@ -66,8 +64,6 @@ class bbox(QWidget):
         global category_box
         global left_vboxx
         global line_pen
-        global pen
-        global brush
         global left_vboxx
         global current_object
         global coordinates
@@ -136,10 +132,7 @@ class bbox(QWidget):
         self.label_list = QRadioButton(category_name)
         self.label_list.setStyleSheet(back_label_color)
         self.label_list.toggle()
-        pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 6)
-        line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 2)
-        brush = QBrush(QColor(RGB[0], RGB[1], RGB[2]), Qt.Dense2Pattern)
-
+        line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 4)
         #호출한 오브젝트들을 호출할 수 있는 버튼 및 작업상태박스 생성
         self.a = []
         self.b = []
@@ -248,7 +241,6 @@ class bbox(QWidget):
         qp.begin(im)
         if len(coordinates) != 0:
             qp.setPen(line_pen)
-            qp.setBrush(QBrush(Qt.transparent))
             qp.drawRect(QRect(coordinates[0][0], coordinates[0][1], coordinates[3][0] - coordinates[0][0], coordinates[3][1] - coordinates[0][1]))
 
         w = im.width()
@@ -307,7 +299,6 @@ class bbox(QWidget):
 
             coordinates = self.bbox2coordinate(self.DB.get_table(str(self.DB.get_bbox_id_from_args(img_obj_id)), "Bbox"))
             qp.setPen(line_pen)
-            qp.setBrush(QBrush(Qt.transparent))
             qp.drawRect(QRect(coordinates[0][0], coordinates[0][1], coordinates[3][0] - coordinates[0][0], coordinates[3][1] - coordinates[0][1]))
         qp.end()
         scene.clear()
@@ -351,8 +342,6 @@ class bbox(QWidget):
         # 선택된 물품이 바뀔 경우 바뀐 물품의 오브젝트 리스트를 호출하는 함수
         global category_box
         global left_vboxx
-        global pen
-        global brush
         global line_pen
         global im
         global qim
@@ -360,7 +349,7 @@ class bbox(QWidget):
         global coordinates
 
         coordinates = []
-        progress = 0#불러온 오브젝트들 중 bbox작업이 완료된 오브젝트들의 개수를 저장하는 변수
+        progress = 0 #불러온 오브젝트들 중 bbox작업이 완료된 오브젝트들의 개수를 저장하는 변수
         self.a = []
         self.b = []
         count = 0
@@ -373,9 +362,7 @@ class bbox(QWidget):
         self.label_list = QRadioButton(category_box.currentText())
         self.label_list.setStyleSheet(back_label_color)
         self.label_list.toggle()
-        pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 6)
-        line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 2)
-        brush = QBrush(QColor(RGB[0], RGB[1], RGB[2]), Qt.Dense2Pattern)
+        line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 4)
         for i in reversed(range(self.label_vbox.count())):
             self.label_vbox.itemAt(i).widget().deleteLater()
         self.label_vbox.addWidget(self.label_list)
@@ -450,7 +437,6 @@ class bbox(QWidget):
             if len(sum(self.DB.get_bbox_info(img_obj_id), ())) != 0:
                 coordinates = self.bbox2coordinate(self.DB.get_table(str(self.DB.get_bbox_id_from_args(img_obj_id)), "Bbox"))
                 qp.setPen(line_pen)
-                qp.setBrush(QBrush(Qt.transparent))
                 qp.drawRect(QRect(coordinates[0][0], coordinates[0][1], coordinates[3][0] - coordinates[0][0], coordinates[3][1] - coordinates[0][1]))
             qp.end()
             scene.clear()
@@ -631,7 +617,6 @@ class tracking_screen(QGraphicsView):
                 im.setDevicePixelRatio(scale_factor_w)
                 qp.begin(im)
                 qp.setPen(line_pen)
-                qp.setBrush(QBrush(Qt.transparent))
                 qp.drawRect(QRect(coordinates[0][0], coordinates[0][1], coordinates[3][0] - coordinates[0][0], coordinates[3][1] - coordinates[0][1]))
                 qp.end()
                 scene.clear()
@@ -654,7 +639,6 @@ class tracking_screen(QGraphicsView):
                 im = QPixmap.fromImage(qim)
                 im.setDevicePixelRatio(scale_factor_w)
                 qp.begin(im)
-                qp.setBrush(QBrush(Qt.transparent))
                 qp.setPen(line_pen)
                 """
                 qp.drawRect(QRect(coordinates[0][0], coordinates[0][1], coordinates[3][0] - coordinates[0][0], coordinates[3][1] - coordinates[0][1]))
@@ -693,6 +677,7 @@ class tracking_screen(QGraphicsView):
         global scene
         global im
         global view
+        global line_pen
 
         # ctrl+휠을 하면 이미지의 사이즈가 확대, 축소 되도록 수정
         if Qt.ControlModifier == int(mods):
@@ -703,7 +688,10 @@ class tracking_screen(QGraphicsView):
                 scale_factor_w = scale_factor_w * 0.9
             elif scale_factor_w < 2 and delta.y() < 0:
                 scale_factor_w = scale_factor_w * 1.1
-
+            if scale_factor_w < 0.5:
+                line_pen.setWidth(2)
+            else:
+                line_pen.setWidth(4)
             im.setDevicePixelRatio(scale_factor_w)
             qp.end()
             scene.clear()
@@ -721,9 +709,7 @@ class tracking_screen(QGraphicsView):
         global minimum_mask
         global edit_btn
         global qp
-        global pen
         global scene
-        global brush
         global mask_num
         global mask_btn
         global line_pen
@@ -746,7 +732,7 @@ class tracking_screen(QGraphicsView):
                     self.start_point = QPoint(x, y)
                     qp = QPainter()
                     qp.begin(im)
-                    qp.setPen(pen)
+                    qp.setPen(line_pen)
                     qp.drawPoint(x, y)
                     qp.end()
                     scene.addPixmap(im)
