@@ -30,7 +30,7 @@ global color_value # 색의 실제 값
 global category_box # 현재 선택할 수 있는 물품을 보여주는 박스
 global left_vboxx
 global current_object # 현재 선택된 오브젝트
-
+global point_num
 
 class mask(QWidget):
     def __init__(self, db):
@@ -45,6 +45,8 @@ class mask(QWidget):
         global color_value
         global check_state
         global qim
+        global qp
+        global point_num
 
         #변수들 초기화
         self.collect_color = [[255, 0, 0], [255, 255, 0], [0, 255, 255], [0, 255, 0], [255, 0, 255]]
@@ -58,6 +60,8 @@ class mask(QWidget):
         color_value = []
         self.label_list = []
         qim = []
+        qp = QPainter()
+        point_num = 0
 
     def masking(self):
 
@@ -245,7 +249,6 @@ class mask(QWidget):
 
         #이미지 스케일을 1로 수정 후 다시 출력
         scale_factor_w = 1
-        qp = QPainter()
         im.setDevicePixelRatio(scale_factor_w)
         qp.begin(im)
         qp.setPen(line_pen)
@@ -280,6 +283,7 @@ class mask(QWidget):
         global check_state
         global view
         global scene
+        global qp
 
         #작업상태 및 변수들 초기화
         check_state = 100
@@ -298,14 +302,14 @@ class mask(QWidget):
         qim = QImage(self.img_data, self.img_data.shape[1], self.img_data.shape[0], self.img_data.strides[0],
                      QImage.Format_RGB888)
         im = QPixmap.fromImage(qim)
-        qp = QPainter()
         im.setDevicePixelRatio(scale_factor_w)
         w = im.width()
         h = im.height()
         qp.begin(im)
         # 오브젝트와 관련된 비박스가 존재할 경우 비박스 출력
-        if self.DB.mask_info(img_obj_id) != None:
-            maskpoint_value = self.XYvalue2maskvalue(self.DB.mask_info(img_obj_id))
+        masks = self.DB.mask_info(img_obj_id)
+        if masks != None:
+            maskpoint_value = self.XYvalue2maskvalue(masks)
             maskpoint = self.value2qpoints(maskpoint_value)
             qp.setPen(line_pen)
             qp.drawPolygon(QPolygon(maskpoint))
@@ -364,6 +368,7 @@ class mask(QWidget):
         global current_object
         global scene
         global view
+        global qp
 
         # 변수들 초기화
         progress = 0
@@ -440,7 +445,6 @@ class mask(QWidget):
             obj_info1 = self.DB.get_table(img_obj_id, "Object")
             img_info1 = self.DB.get_table(str(obj_info1[0]), "Image")
             img = np.array(Image.open(BytesIO(img_info1[2])).convert("RGB"))
-            qp = QPainter()
             qim = QImage(img, img.shape[1], img.shape[0], img.strides[0], QImage.Format_RGB888)
             w = qim.width()
             h = qim.height()
@@ -546,6 +550,7 @@ class tracking_screen(QGraphicsView):
         global maskpoint
         global scene
         global check_state
+        global point_num
 
         #마우스 위치를 확대, 축소된 이미지에 맞도록 변환
         x = (view.mapToScene(e.pos()).x()) * scale_factor_w
@@ -561,14 +566,15 @@ class tracking_screen(QGraphicsView):
             if mask_btn.isChecked():
                 # 마스킹 작업 중일 경우 현재 위치에 포인트를 찍을 경우 그려지게 되는 마스크를 표시
                 if check_state == 30:
-                    temp_maskpoint = copy.deepcopy(maskpoint)
-                    temp_maskpoint.append(QPoint(x, y))
-                    qp = QPainter()
+                    if len(maskpoint) == point_num + 1:
+                        maskpoint[point_num] = QPoint(x, y)
+                    else:
+                        maskpoint.append(QPoint(x, y))
                     im = QPixmap.fromImage(qim)
                     im.setDevicePixelRatio(scale_factor_w)
-                    qp.begin(im)
+                    qp.begin(im)#####################################################path 함수로 수정#######################################################
                     qp.setPen(line_pen)
-                    qp.drawPolyline(QPolygon(temp_maskpoint))
+                    qp.drawPolyline(QPolygon(maskpoint))
                     qp.end()
                     scene.addPixmap(im)
 
@@ -577,7 +583,6 @@ class tracking_screen(QGraphicsView):
                 if draggin_idx != -1:
 
                     maskpoint[draggin_idx] = QPoint(x, y)
-                    qp = QPainter()
                     im = QPixmap.fromImage(qim)
                     im.setDevicePixelRatio(scale_factor_w)
                     qp.begin(im)
@@ -613,12 +618,10 @@ class tracking_screen(QGraphicsView):
                 maskpoint[draggin_idx] = QPoint(x, y)
 
                 draggin_idx = -1
-                qp = QPainter()
                 im = QPixmap.fromImage(qim)
                 im.setDevicePixelRatio(scale_factor_w)
                 qp.begin(im)
 
-                qp.setBrush(QBrush(Qt.transparent))
                 qp.setPen(line_pen)
                 qp.drawPolygon(QPolygon(maskpoint))
                 qp.setPen(pen)
@@ -641,7 +644,6 @@ class tracking_screen(QGraphicsView):
 
         #ctrl+휠을 하면 이미지의 사이즈가 확대, 축소 되도록 수정
         if Qt.ControlModifier == int(mods):
-            qp = QPainter()
             qp.begin(im)
             #확대, 축소비율 설정 휠이 한번 움직일때마다 10%씩 작아지거나 커짐, 최소, 최대 크기는 0.5배에서 4배로 설정
             if delta.y() > 0 and scale_factor_w > 0.25:
@@ -677,6 +679,7 @@ class tracking_screen(QGraphicsView):
         global maskpoint
         global check_state
         global qim
+        global point_num
 
         x = (view.mapToScene(e.pos()).x()) * scale_factor_w
         y = (view.mapToScene(e.pos()).y()) * scale_factor_w
@@ -692,9 +695,8 @@ class tracking_screen(QGraphicsView):
                 # 좌클릭시 포인트 생성 및 선 생성
                 # 첫 포인트 생성 시 작업
                 if e.buttons() == Qt.LeftButton and check_state == 100:
-                    maskpoint.append(QPoint(x, y))
+                    maskpoint.append((QPoint(x, y)))
                     maskpoint_value.append([x, y])
-                    qp = QPainter()
                     qp.begin(im)
                     qp.setPen(pen)
                     qp.drawPoint(x, y)
@@ -703,11 +705,12 @@ class tracking_screen(QGraphicsView):
                     qp.end()
                     scene.addPixmap(im)
                     check_state = 30
+                    point_num = point_num + 1
+
                 # 두번째 이후 포인트 생성 시 작업
                 elif e.buttons() == Qt.LeftButton and check_state == 30:
-                    maskpoint.append(QPoint(x, y))
+                    maskpoint[point_num] = QPoint(x, y)
                     maskpoint_value.append([x, y])
-                    qp = QPainter()
                     qp.begin(im)
                     qp.setPen(pen)
                     qp.drawPoint(x, y)
@@ -715,14 +718,13 @@ class tracking_screen(QGraphicsView):
                     qp.drawPolyline(QPolygon(maskpoint))
                     qp.end()
                     scene.addPixmap(im)
+                    point_num = point_num + 1
                 #마스크가 있는 상태에서 클릭할 경우 기존의 마스크는 사라지고 새로운 마스크 생성
                 elif e.buttons() == Qt.LeftButton and check_state == 10:
-
                     maskpoint = []
                     maskpoint_value = []
                     maskpoint.append(QPoint(x, y))
                     maskpoint_value.append([x, y])
-                    qp = QPainter()
                     im = QPixmap.fromImage(qim)
                     im.setDevicePixelRatio(scale_factor_w)
                     qp.begin(im)
@@ -734,12 +736,12 @@ class tracking_screen(QGraphicsView):
                     scene.clear()
                     scene.addPixmap(im)
                     check_state = 30
+                    point_num = point_num + 1
 
                 #우클릭시 최종 마스크 생성
                 elif e.buttons() == Qt.RightButton:
                     im = QPixmap.fromImage(qim)
                     im.setDevicePixelRatio(scale_factor_w)
-                    qp = QPainter()
                     qp.begin(im)
                     qp.setPen(line_pen)
 
@@ -748,6 +750,7 @@ class tracking_screen(QGraphicsView):
 
                     scene.addPixmap(im)
                     check_state = 10
+                    point_num = 0
 
             #수정 작업중 발생하는 이벤트
             #클릭위치와 가장 가까운 점을 계산하여 해당 포인트를 마우스 위치로 수정

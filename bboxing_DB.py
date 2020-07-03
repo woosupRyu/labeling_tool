@@ -359,6 +359,7 @@ class bbox(QWidget):
         global current_object
         global coordinates
 
+        coordinates = []
         progress = 0#불러온 오브젝트들 중 bbox작업이 완료된 오브젝트들의 개수를 저장하는 변수
         self.a = []
         self.b = []

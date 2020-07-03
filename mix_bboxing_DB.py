@@ -254,15 +254,23 @@ class mix(QWidget):
         category_box.currentIndexChanged.connect(self.list_change)
 
         #버튼, 체크박스에 기능 연동
+        lframe = QFrame()
+        lvbox = QVBoxLayout()
+        self.lscroll = QScrollArea()
         for i in range(len(self.a)):
             left_hbox = QHBoxLayout()
             self.a[i].clicked.connect(self.image_state)
             self.b[i].stateChanged.connect(self.save_state)
             left_hbox.addWidget(self.a[i])
             left_hbox.addWidget(self.b[i])
-            left_vboxx.addLayout(left_hbox)
+            lvbox.addLayout(left_hbox)
 
+
+        lframe.setLayout(lvbox)
+        self.lscroll.setWidget(lframe)
+        left_vboxx.addWidget(self.lscroll)
         left_frame.setLayout(left_vboxx)
+
 
         self.btn_group.addButton(edit_btn)
         self.btn_group.addButton(mask_btn)
@@ -657,18 +665,21 @@ class mix(QWidget):
         len_a = len(self.a)
         self.progress_state.setText("진행도 : " + str(progress) + "/" + str(len_a))
 
-        for i in reversed(range(1, left_vboxx.count())):
-            left_vboxx.itemAt(i).layout().itemAt(1).widget().deleteLater()
-            left_vboxx.itemAt(i).layout().itemAt(0).widget().deleteLater()
-            left_vboxx.itemAt(i).layout().deleteLater()
+        print(left_vboxx.itemAt(1).widget().deleteLater)
 
+        lvbox = QVBoxLayout()
+        lframe = QFrame()
         for i in range(len(self.a)):
             left_hbox = QHBoxLayout()
             self.a[i].clicked.connect(self.image_state)
             self.b[i].stateChanged.connect(self.save_state)
             left_hbox.addWidget(self.a[i])
             left_hbox.addWidget(self.b[i])
-            left_vboxx.addLayout(left_hbox)
+            lvbox.addLayout(left_hbox)
+
+        lframe.setLayout(lvbox)
+        self.lscroll.setWidget(lframe)
+        left_vboxx.addWidget(self.lscroll)
         scene.clear()
         if len(objects) >= 1:
 
