@@ -168,7 +168,7 @@ class mask(QWidget):
         #작업 진행도 표시
         len_a = len(self.a)
         self.progress_state = QLabel("진행도 : " + str(progress) + "/" + str(len_a))
-        #left_frame = QFrame()
+        left_frame = QFrame()
 
         left_vboxx = QVBoxLayout()
         left_vboxp = QVBoxLayout()
@@ -188,9 +188,9 @@ class mask(QWidget):
             left_hbox.addWidget(self.b[i])
             left_vboxx.addLayout(left_hbox)
 
-        #left_frame.setLayout(left_vboxx)
+        left_frame.setLayout(left_vboxx)
         self.scroll_area = QScrollArea()
-        self.scroll_area.setLayout(left_vboxx)
+        self.scroll_area.setWidget(left_frame)
         self.vertical_box = QVBoxLayout()
         self.vertical_box.addWidget(category_box)
         self.vertical_box.addWidget(self.progress_state)

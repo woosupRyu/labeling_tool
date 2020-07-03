@@ -36,7 +36,7 @@ class check_app(QWidget):
         mid_frame.setFrameShape(QFrame.Box)
         right_frame = QFrame()
         right_frame.setFrameShape(QFrame.Box)
-        select_all_btn = QPushButton("전체선택(G)")
+        select_all_btn = QPushButton("전체반전(G)")
         select_all_btn.setShortcut("G")
         select_all_btn.setToolTip("G")
         select_all_btn.clicked.connect(self.select_all)
@@ -343,7 +343,7 @@ class check_app(QWidget):
 
     def select_all(self):
         for i in self.a:
-            i.setChecked(True)
+            i.toggle()
 
     def move_image(self):
         #다음, 이전 이미지로 이동하는 버튼과 연동된 함수
