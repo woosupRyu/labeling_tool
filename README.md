@@ -63,8 +63,14 @@ Environment, Grid, SuperCategory, Category 정보를 등록하는 작업 환경
 ### 촬영
 ---
 Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택 하고 촬영하는 환경  
+  
+현재 테스트용 두가지 UI를 구현  
+메뉴얼은 코드를 받아 실행시키면 적용되는 UI 기준으로 설명이 되어 있으며, 다른 UI는 main함수의 import picture_DB를 import picture_DB_sample로 수정 후, 83번쨰 줄의 picture_DB를 picture_DB_sample로 수정 후 실행시키면 적용 가능  
+  
 1. 원하는 디바이스, 그리드 선택  
   <img src="https://user-images.githubusercontent.com/46614789/86326580-e5777800-bc7c-11ea-95f6-77ce4f08f65f.png"  width="60%" height="30%">  
+  아래의 이미지는 코드를 picture_DB_sample로 수정 후 실행시켰을 경우의 UI  
+  <img src="https://user-images.githubusercontent.com/46614789/86573009-b3348600-bfae-11ea-9dcf-e46088c03563.png"  width="60%" height="30%">  
 2. 물품 리스트에서 원하는 물품을 선택 후, ->버튼 클릭(추가할 물품 리스트로 물품 이동)  
   <img src="https://user-images.githubusercontent.com/46614789/86326590-e90aff00-bc7c-11ea-88d0-5c778a58c5fe.png"  width="60%" height="30%">  
 3. 원하는 물품을 모두 추가할 물품 리스트로 옮긴 후, 물건추가 버튼 클릭  
