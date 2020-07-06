@@ -172,13 +172,12 @@ class picture_app(QWidget):
 
             # 추가 완료된 아이템을 리스트에서 방출
             source_tw = self.add_list
+            target_tw = self.object_list
             source = QTreeWidget.invisibleRootItem(source_tw)
             for i in range(source_tw.topLevelItemCount()):
                 item = source_tw.topLevelItem(0)
                 source.removeChild(item)
             lock = True
-
-
 
     def select_object(self):
         global lock
@@ -199,7 +198,7 @@ class picture_app(QWidget):
             #촬영을 원하는 물품들의 정보들로 오브젝트를 생성하는 부분(이미지는 None)
             for i in self.picture_data:
                 cate_super_cate = i[0].split("/")
-                set_object_list(self.DB, self.DB.get_category_id(str(self.DB.get_supercategory_id(cate_super_cate[1]))[1:-2], cate_super_cate[0]), str(self.DB.get_grid_id(i[1]))[1:-2], -1)
+                set_object_list(self.DB, self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(cate_super_cate[1])), cate_super_cate[0]), str(self.DB.get_grid_id_from_args(i[1])), -1)
 
             #모든 오브젝트를 생성한 후 오브젝트 정보들 캐싱
             self.object_cash = self.DB.list_table("Object")
@@ -240,7 +239,6 @@ class picture_app(QWidget):
             source = QTreeWidget.invisibleRootItem(source_tw)
             source.removeChild(item)
 
-
     def delete_category(self):
         global lock
         if lock:
@@ -254,8 +252,8 @@ class picture_app(QWidget):
                 source = QTreeWidget.invisibleRootItem(self.object_list)
                 source.removeChild(category)
 
-                superid = str(self.DB.get_supercategory_id(cate_str[1]))
-                self.DB.delete_table(str(self.DB.get_category_id(superid, cate_str[0])), "Category")
+                superid = str(self.DB.get_supercategory_id_from_args(cate_str[1]))
+                self.DB.delete_table(str(self.DB.get_category_id_from_args(superid, cate_str[0])), "Category")
             lock = True
 
     def delete_object(self):
@@ -281,7 +279,7 @@ class picture_app(QWidget):
         self.picture_data = list(zip(self.category_list, self.grid_x_list, self.grid_y_list, self.iterate_list))
 
         device = self.device_box.currentText().split("/")
-        self.device_id = str(self.DB.get_env_id(device[0], device[1]))
+        self.device_id = str(self.DB.get_env_id_from_args(device[0], device[1]))
         #물품추가 윈도우를 닫음
         self.close()
 
@@ -406,8 +404,8 @@ class picture_app(QWidget):
         self.image_name = self.image_name.replace("_", " ")# (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
         self.image_name = self.image_name.split()
 
-        category_id = str(self.DB.get_category_id(str(self.DB.get_supercategory_id(self.image_name[0].split("/")[1]))[1:-2], self.image_name[0].split("/")[0]))
-        location_id = str(self.DB.get_loc_id(str(self.DB.get_grid_id(self.image_name[1].split("/")[1]))[1:-2], self.image_name[1].split("/")[0]))
+        category_id = str(self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(self.image_name[0].split("/")[1])), self.image_name[0].split("/")[0]))
+        location_id = str(self.DB.get_location_id_from_args(str(self.DB.get_grid_id_from_args(self.image_name[1].split("/")[1])), self.image_name[1].split("/")[0]))
         iteration = str(int(self.image_name[2]))
 
         self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
@@ -472,7 +470,7 @@ class picture_app(QWidget):
 
             #현재 오브젝트에 촬영된 이미지 업데이트
             self.DB.update_object(self.current_obj_id, img_id=tem_img[1])
-            self.DB.update_img_img_obj_id(self.current_obj_id, self.image1)
+            self.DB.update_image_img(self.current_obj_id, self.image1)
 
             #믹스인 경우 데이터 타입을 2로 설정
             if self.image_name[0].split("/")[1] == "mix":
