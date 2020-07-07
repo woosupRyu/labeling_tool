@@ -79,7 +79,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   <img src="https://user-images.githubusercontent.com/46614789/86326601-eb6d5900-bc7c-11ea-9eef-5b9a8618b22c.png"  width="60%" height="30%">  
   우측 공간에 물품을 잘못 추가했을 경우, 해당 항목을 클릭한 후, 삭제(Delete)버튼을 누르면 해당 항목이 제거됨
 5. 확인버튼 클릭  
-  <img src="https://user-images.githubusercontent.com/46614789/84611140-e6c44900-aef7-11ea-976a-adf1e6462c2d.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86730036-14209480-c069-11ea-9924-49b9eaaa046d.png"  width="60%" height="30%">  
 6. 촬영  
   촬영버튼을 누르면 냉장고 문이 열리고 물품을 배치 후, 문을 닫으면 사진이 찍힘  
   
