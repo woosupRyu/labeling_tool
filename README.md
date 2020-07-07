@@ -161,9 +161,12 @@ Mix 데이터는 테스트 데이터로 합성하기 위해 사용되는 마스�
 합성 환경을 설정하기위해 그리드, 배경, 물품을 선택  
 (물품별 그리드 기능과 augment 옵션 기능은 현재 합성에선 사용되지 않는다)  
 
-<img src="https://user-images.githubusercontent.com/46614789/86327272-f5438c00-bc7d-11ea-8be7-52509aec3664.png"  width="60%" height="30%">  
+<img src="https://user-images.githubusercontent.com/46614789/86729401-6ca36200-c068-11ea-90a2-9dbafdf939d3.png"  width="60%" height="30%">  
   
-합성하기 클릭  
+합성하기 클릭      
+  
+  <img src="https://user-images.githubusercontent.com/46614789/86729414-6e6d2580-c068-11ea-8b69-3003f8cb88cd.png"  width="60%" height="30%">  
+ 
   
   
 
