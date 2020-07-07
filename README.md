@@ -95,6 +95,8 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   <img src="https://user-images.githubusercontent.com/46614789/84611739-a960bb00-aef9-11ea-932b-ac1a23967355.png"  width="60%" height="30%">  
 4. 허락(거절)된 버튼을 제외한 나머지 버튼 클릭 및 거절  
   <img src="https://user-images.githubusercontent.com/46614789/84611740-a9f95180-aef9-11ea-8d26-b3eb38c107e2.png"  width="60%" height="30%">  
+5. 거절한 데이터의 경우 촬영 작업 시 버튼이 붉은색으로 표시   
+  <img src="https://user-images.githubusercontent.com/46614789/86728974-e850df00-c067-11ea-9bda-67bb444fad18.png"  width="60%" height="30%"> 
   
   한번 허락하거나 거절해서 버튼색이 변한 버튼도 다시 거절, 허락 할 수 있음. 단, 한번 리스트를 갱신하거나 창을 재시작하면 허락된 오브젝트들은 나타나지 않음
 **(허락한 데이터는 추후 검수리스트에 보이지 않으니 신중히 선택)** 
