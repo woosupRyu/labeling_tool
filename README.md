@@ -87,9 +87,9 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 ### 검수
 ---
 촬영된 이미지가 데이터로 쓰일 수 있는지 체크하는 환경   
-1. 원하는 카테고리와 그리드 선택  
+1. 원하는 카테고리와 그리드 선택, 이전에 검수과정을 진행했었고 그때 거절된 이미지는 붉은색으로 버튼이 생성됨  
   <img src="https://user-images.githubusercontent.com/46614789/86754141-9d40c700-c07b-11ea-8dee-84b433550841.png"  width="60%" height="30%">  
-2. 허락(거절)할 오브젝트들 선택(S를 누를 시, 해당 이미지의 체크박스 상태가 바뀜)
+2. 허락(거절)할 오브젝트들 선택(S를 누를 시, 해당 이미지의 체크박스 상태가 바뀌며, F를 누를 시, 거절된 이미지를 제외한 나머지 이미지의 체크박스 상태가 바뀜)   
   <img src="https://user-images.githubusercontent.com/46614789/86754149-9e71f400-c07b-11ea-80d3-14bc1363a9c6.png"  width="60%" height="30%">  
 3. 허락(거절)버튼 클릭  
   <img src="https://user-images.githubusercontent.com/46614789/86754155-9f0a8a80-c07b-11ea-8641-bf7a9c5e82a3.png"  width="60%" height="30%">  
