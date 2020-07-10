@@ -3,8 +3,15 @@
     
   임시로 공유한 툴이기 때문에 메뉴얼도 미흡하고 미완성된 부분이 많습니다. 주석 후 수정된 코드도 많고 주석을 달지못한 코드도 있습니다. 사용, 확인해보시고 수정해야할 점 Github이나 Notion에 최대한 많이 올려주시기 바랍니다~   
     
-## 필요 설치모듈  
-Python3.7, PyQt5(5.14), opencv-python(4.2.0.34), pillow(7.1.2), paho-mqtt(1.5.0), PyMySQL(0.9.3) 추후 한번에 설치할 수 있는 스크립트를 추가할 예정입니다
+## 필요 설치모듈
+Linux, Window  
+Python3.7, PyQt5(5.14), opencv-python(4.2.0.34), pillow(7.1.2), paho-mqtt(1.5.0), PyMySQL(0.9.3)
+  
+Mac  
+Python3.7, PyQt5(5.14), opencv-contrib-python-headless, pillow(7.1.2), paho-mqtt(1.5.0), PyMySQL(0.9.3)
+
+**모듈들은 상위버전이어도 상관없으나 Linux PyQt5의 경우 5.15(최신)버전을 사용했을 때, 에러가 발생했습니다.**
+
   
 ## 참고사항  
 main.py를 실행시킨 후 등록 -> 촬영 -> 검수 -> 라벨링 -> 합성 순으로 작업을 진행  
