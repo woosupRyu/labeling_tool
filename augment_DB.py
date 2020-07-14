@@ -58,7 +58,7 @@ class project_app(QWidget):
         for i in category_table_list:
             mix_or_not = self.DB.get_table(str(i[0]), "SuperCategory")[1]
 
-            if DB.process_check(self.DB, str(i[1])):
+            if self.DB.check_process(str(i[1])):
                 if mix_or_not != "mix" and mix_or_not != "background":
                     product_name = i[2] + "/" + mix_or_not
                     ad = QCheckBox(product_name)
@@ -219,16 +219,16 @@ class project_app(QWidget):
 
         for i in category_name:
             name = i.split("/")
-            super_id = self.DB.get_supercategory_id_from_args(name[1])
-            cate_id = self.DB.get_category_id_from_args(str(super_id), name[0])
+            super_id = self.DB.get_supercategory_id(name[1])
+            cate_id = self.DB.get_category_id(str(super_id), name[0])
             category_id.append(cate_id)
 
         batch_method = 3
         back_name = self.current_background.split("/")
-        back_super_id = self.DB.get_supercategory_id_from_args(back_name[1])
-        back_cate_id = self.DB.get_category_id_from_args(str(back_super_id), back_name[0])
-        grid_id = self.DB.get_grid_id_from_args("1x1")
-        loc_id = self.DB.get_location_id_from_args(str(grid_id), "1x1")
+        back_super_id = self.DB.get_supercategory_id(back_name[1])
+        back_cate_id = self.DB.get_category_id(str(back_super_id), back_name[0])
+        grid_id = self.DB.get_grid_id("1x1")
+        loc_id = self.DB.get_loc_id_from_args(str(grid_id), "1x1")
         object_id = self.DB.get_obj_id_from_args(loc_id, back_cate_id, "1", "-1")
         obj = self.DB.get_table(str(object_id), "Object")
         background = self.DB.get_table(str(obj[0]), "Image")[2]

@@ -3,7 +3,7 @@
 from PyQt5.QtWidgets import *
 import sys
 from PyQt5.QtGui import *
-import resist_DB, picture_DB, labelling
+import resist_DB, picture_DB_sample, labelling
 import check_DB as check
 import augment_DB as project
 from DCD_DB_API_master.db_api import DB
@@ -28,9 +28,25 @@ class MyApp(QWidget):
         super().__init__()
         self.initUI()
         self.DB = db
-        #im_data = np.array(cv2.imread("example.jpg")).tobytes()
-        #self.DB.set_image(200000, im_data, 0, 0)
-        #self.DB.update_object("1", img_id="1", loc_id="1", category_id="1", iteration="1", mix_num="0")
+        # for i in self.DB.list_table("Object"):
+        #     if i[2] == 1:
+        #         print(i)
+        #
+        # print(self.DB.list_table("Grid"))
+        #
+        # self.DB.set_obj_list(str(10), str(40), str(3), str(-1))
+        # for i in self.DB.list_table("Object"):
+        #     if i[2] == 40:
+        #         print(i)
+        # print(self.DB.list_table("Grid"))
+        # for i in range(len(a)):
+        #     if a[i][2] == 19:
+        #         print(a[i])
+        # print(self.DB.get_mix_num("5", "19", "1"))
+        # print(self.DB.get_table("19", "Category")[2])
+        obj = self.DB.list_obj_check_num("1", "7", "0")
+        print(obj)
+
 
     def initUI(self):
         #기능별 버튼 생성
@@ -42,15 +58,10 @@ class MyApp(QWidget):
         zig_btn = QPushButton("지그오픈")
 
         #버튼과 해당 기능을 하는 함수를 연결
-        resist_btn.resize(resist_btn.sizeHint())
         resist_btn.clicked.connect(self.regist_part)
-        picture_btn.resize(picture_btn.sizeHint())
         picture_btn.clicked.connect(self.picture_window)
-        check_btn.resize(check_btn.sizeHint())
         check_btn.clicked.connect(self.check_window)
-        labeling_btn.resize(labeling_btn.sizeHint())
         labeling_btn.clicked.connect(self.labeling_window)
-        project_btn.resize(project_btn.sizeHint())
         project_btn.clicked.connect(self.project_window)
         zig_btn.clicked.connect(self.open)
 
@@ -79,7 +90,7 @@ class MyApp(QWidget):
 
     # 촬영 기능을 하는 창을 띄워주는 함수
     def picture_window(self):
-        self.selection_window = picture_DB.picture_app(self.DB)
+        self.selection_window = picture_DB_sample.picture_app(self.DB)
         self.selection_window.selection_window()
 
     # 검수 기능 창을 띄워주는 함수
@@ -99,14 +110,14 @@ class MyApp(QWidget):
 
     #지그 테스트를 위한 지그 오픈 및, 찍힌 사진을 띄워주는 함수
     def open(self):
-        #지그오픈 및 사진촬영 함수
-        mqtt_connector('192.168.10.19', 1883, "20017").collect_dataset("20017", 1)# ip, port  collect: env_id , image_type
-        #지그에서 찍힌 사진을 띄움
         self.open_window = QWidget()
         img_label = QLabel()
-        mage = str(self.DB.get_last_id("Image"))[2:-3]
-        image = self.DB.get_table(mage, "Image")
-        im_data = np.array(Image.open(BytesIO(image[2])).convert("RGB"))
+        conn = mqtt_connector('192.168.10.71', 1883, "20001")
+        conn.collect_dataset("20001", 1)  # ip, port  collect: env_id , image_type
+        image_id = conn.get_result()
+        # 저장된 이미지를 읽어보여주는 함수
+        tem_img = self.DB.get_table(str(image_id), "Image")
+        im_data = np.array(Image.open(BytesIO(tem_img[2])).convert("RGB"))
         qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
         self.image_data = QPixmap.fromImage(qim)
         img_label.clear()
@@ -125,6 +136,8 @@ class MyApp(QWidget):
         vbox.addWidget(img_label)
         self.open_window.setLayout(vbox)
         self.open_window.show()
+
+
 
 
 #실제 코드를 실행

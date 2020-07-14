@@ -4,10 +4,7 @@ from io import BytesIO
 from PIL import Image
 from PyQt5.QtGui import *
 import numpy as np
-from DCD_DB_API_master.db_api import DB
 
-global lock
-lock = True
 
 class check_app(QWidget):
     """
@@ -32,8 +29,8 @@ class check_app(QWidget):
         hbox = QHBoxLayout()
         self.left_frame = QFrame()
         self.left_frame.setFrameShape(QFrame.Box)
-        mid_frame = QFrame()
-        mid_frame.setFrameShape(QFrame.Box)
+        self.mid_frame = QFrame()
+        self.mid_frame.setFrameShape(QFrame.Box)
         right_frame = QFrame()
         right_frame.setFrameShape(QFrame.Box)
         select_all_btn = QPushButton("전체반전(G)")
@@ -56,7 +53,7 @@ class check_app(QWidget):
         mid_hbox = QHBoxLayout()
         self.image_label = QLabel()
         mid_hbox.addWidget(self.image_label)
-        mid_frame.setLayout(mid_hbox)
+        self.mid_frame.setLayout(mid_hbox)
 
         """
         왼쪽 프레임
@@ -84,25 +81,38 @@ class check_app(QWidget):
         self.b = []
         self.btn_group = QButtonGroup()
         cate_info = self.category_box.currentText().split("/")
-        super_id = self.DB.get_supercategory_id_from_args(cate_info[1])
-        self.current_category = str(self.DB.get_category_id_from_args(str(super_id), cate_info[0]))
-        self.current_grid = str(self.DB.get_grid_id_from_args(self.grid_box.currentText()))
+        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
+        self.current_grid = str(self.DB.get_grid_id(self.grid_box.currentText()))[1:-2]
 
         #현재 물품과 그리드를 참고하여 검수되지 않았거나 거절된 이미지를 가진 오브젝트만 호출
         objects = []
-        ob = list(DB.list_object_check_num(self.DB, self.current_category, self.current_grid, "1"))
-        if len(ob) != 0:
+        ob = self.DB.list_obj_check_num(self.current_grid, self.current_category, "1")
+        if ob != None:
+            ob = list(ob)
             objects.append(ob)
-        rejected = list(DB.list_object_check_num(self.DB, self.current_category, self.current_grid, "2"))
-        if len(rejected) != 0:
+        rejected = self.DB.list_obj_check_num(self.current_grid, self.current_category, "2")
+        if rejected != None:
+            rejected = list(rejected)
             objects.append(rejected)
-
         #호출된 오브젝트들로 버튼 생성 및 연동
-        num = 0
+
         obj_btn_name_list = self.obj_list2name(sum(objects, []))
         for i in range(len(sum(objects, []))):
             check_box = QCheckBox()
             image_btn = QPushButton(obj_btn_name_list[i])
+            tt_name = image_btn.text().split("_")  # (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
+
+
+            category_id = str(self.DB.get_cat_id(tt_name[0].split("/")[0], tt_name[0].split("/")[1]))
+            location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))[1:-2]
+            iteration = str(tt_name[2])
+
+            self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
+            # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
+            if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
+                im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[0]), "Image")
+                if im[4] == 2:
+                    image_btn.setStyleSheet("background-color: red")
             image_btn.setCheckable(True)
             self.btn_group.addButton(image_btn)
             image_btn.clicked.connect(self.signal)
@@ -112,14 +122,11 @@ class check_app(QWidget):
             self.left_vbox.addLayout(tem_hbox)
             self.a.append(check_box)
             self.b.append(image_btn)
-            if num == 0:
-                self.b[num].click()
-            num = num + 1
+            self.b[0].click()
+
         self.scroll_vbox.addLayout(self.left_vbox)
-        #self.left_frame.setLayout(self.scroll_vbox)
-        self._scrollArea.setLayout(self.scroll_vbox)
-
-
+        self.left_frame.setLayout(self.scroll_vbox)
+        self._scrollArea.setWidget(self.left_frame)
 
         """
         오른쪽 프레임
@@ -154,158 +161,173 @@ class check_app(QWidget):
         splitter1.addWidget(select_all_btn)
         splitter1.setStretchFactor(1, 2)
 
-        splitter2 = QSplitter(Qt.Horizontal)
-        splitter2.addWidget(splitter1)
-        splitter2.addWidget(mid_frame)
-        splitter2.addWidget(right_frame)
-        splitter2.setStretchFactor(1, 4)
+        self.splitter2 = QSplitter(Qt.Horizontal)
+        self.splitter2.addWidget(splitter1)
+        self.splitter2.addWidget(self.mid_frame)
+        self.splitter2.addWidget(right_frame)
+        self.splitter2.setStretchFactor(1, 4)
+        self.splitter2.splitterMoved.connect(self.print_xy)
 
-        hbox.addWidget(splitter2)
+        hbox.addWidget(self.splitter2)
         self.setLayout(hbox)
 
-        self.resize(1300,1000)
+        self.resize(1300, 1000)
         self.setWindowTitle("검수")
         self.show()
 
-    def signal(self):
-        global lock
-        if lock:
-            lock = False
-            #이미지 클릭시 이미지를 띄워주는 함수
-            btn_name = self.sender().text()
-            obj_id = self.obj_name2id(btn_name)
-            im = self.DB.get_table(str(self.DB.get_table(obj_id, "Object")[0]), "Image")
+    def print_xy(self):
+        self.image_label.clear()
+        width = self.mid_frame.width() - 30
+        if width < 1700:
+            self.image_label.setPixmap(self.image_data.scaledToWidth(width))
 
-            im_data = np.array(Image.open(BytesIO(im[2])).convert("RGB"))
-            qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
-            self.image_data = QPixmap.fromImage(qim)
-            self.image_label.clear()
-            self.image_label.setPixmap(self.image_data.scaledToWidth(1000))
-            lock = True
+    def signal(self):
+        #이미지 클릭시 이미지를 띄워주는 함수
+        btn_name = self.sender().text()
+        obj_id = self.obj_name2id(btn_name)
+
+        im = self.DB.get_table(str(self.DB.get_table(obj_id, "Object")[0]), "Image")
+
+        im_data = np.array(Image.open(BytesIO(im[2])).convert("RGB"))
+        qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
+        self.image_data = QPixmap.fromImage(qim)
+        self.image_label.clear()
+        width = self.mid_frame.width() - 30
+        if width < 1700:
+            self.image_label.setPixmap(self.image_data.scaledToWidth(width))
+
 
     def pass_image(self):
         #선택된 이미지들을 허락하는 함수
-        for i in range(len(self.a)):
-            if self.a[i].isChecked() == True:
+        for i, info in enumerate(self.a):
+            if info.isChecked() == True:
                 self.b[i].setStyleSheet("background-color : green")
-                DB.update_image_check_num(self.DB, self.obj_name2id(self.b[i].text()), "0")
+                self.DB.update_img_check_num_obj_id(self.obj_name2id(self.b[i].text()), "0")
                 self.a[i].toggle()
 
     def reject_image(self):
-        global lock
-        if lock:
-            lock = False
-            #선택된 이미지들을 거절하는 함수
-            for i in range(len(self.a)):
-                if self.a[i].isChecked() == True:
-                    self.b[i].setStyleSheet("background-color : red")
-                    DB.update_image_check_num(self.DB, self.obj_name2id(self.b[i].text()), "2")
-                    self.a[i].toggle()
-            lock = True
+
+        #선택된 이미지들을 거절하는 함수
+        for i, info in enumerate(self.a):
+            if info.isChecked() == True:
+                self.b[i].setStyleSheet("background-color : red")
+                self.DB.update_img_check_num_obj_id(self.obj_name2id(self.b[i].text()), "2")
+                self.a[i].toggle()
+
 
     def change_category(self):
-        global lock
-        if lock:
-            lock = False
-            #물품을 선택했을 때, 해당 물품의 오브젝트만 보여주는 함수
-            #check_window함수와 유사함/ check_window함수 참조
-            cate_info = self.category_box.currentText().split("/")
-            super_id = self.DB.get_supercategory_id_from_args(cate_info[1])
-            self.current_category = str(self.DB.get_category_id_from_args(str(super_id), cate_info[0]))
-            objects = []
-            self.a = []
-            self.b = []
-            for i in reversed(range(self.left_vbox.count())):
-                k = self.left_vbox.itemAt(i).layout()
-                for j in reversed(range(k.count())):
-                    k.itemAt(j).widget().deleteLater()
-                k.deleteLater()
-            # for i in reversed(range(self.left_vbox.count())):
-            #     self.left_vbox.itemAt(i).layout().deleteLater()
-            ob = list(DB.list_object_check_num(self.DB, self.current_category, self.current_grid, "1"))
-            if len(ob) != 0:
-                objects.append(ob)
-            rejected = list(DB.list_object_check_num(self.DB, self.current_category, self.current_grid, "2"))
-            if len(rejected) != 0:
-                objects.append(rejected)
+        #물품을 선택했을 때, 해당 물품의 오브젝트만 보여주는 함수
+        #check_window함수와 유사함/ check_window함수 참조
+        cate_info = self.category_box.currentText().split("/")
+        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
+        objects = []
+        self.a = []
+        self.b = []
 
-            obj_btn_name_list = self.obj_list2name(sum(objects, []))
-            num = 0
-            for i in range(len(sum(objects, []))):
-                check_box = QCheckBox()
-                image_btn = QPushButton(obj_btn_name_list[i])
-                image_btn.setCheckable(True)
-                self.btn_group.addButton(image_btn)
-                # check_box.clicked.connect(self.signal)
-                image_btn.clicked.connect(self.signal)
-                tem_hbox = QHBoxLayout()
-                tem_hbox.addWidget(check_box)
-                tem_hbox.addWidget(image_btn)
+        for i in reversed(range(self.left_vbox.count())):
+            k = self.left_vbox.itemAt(i).layout()
+            for j in reversed(range(k.count())):
+                k.itemAt(j).widget().deleteLater()
+            k.deleteLater()
+        ob = self.DB.list_obj_check_num(self.current_grid, self.current_category, "1")
+        if ob != None:
+            ob = list(ob)
+            objects.append(ob)
+        rejected = self.DB.list_obj_check_num(self.current_grid, self.current_category, "2")
+        if rejected != None:
+            rejected = list(rejected)
+            objects.append(rejected)
+        obj_btn_name_list = self.obj_list2name(sum(objects, []))
+        for i in range(len(sum(objects, []))):
+            check_box = QCheckBox()
+            image_btn = QPushButton(obj_btn_name_list[i])
+            tt_name = image_btn.text().split("_")  # (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
 
-                self.left_vbox.addLayout(tem_hbox)
-                self.a.append(check_box)
-                self.b.append(image_btn)
-                if num == 0:
-                    lock = True
-                    self.b[num].click()
-                num = num + 1
-            self.update()
-            lock = True
+            category_id = str(self.DB.get_cat_id(tt_name[0].split("/")[0], tt_name[0].split("/")[1]))
+            location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))[1:-2]
+            iteration = str(tt_name[2])
+
+            self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
+            # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
+            if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
+                im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[0]), "Image")
+                if im[4] == 2:
+                    image_btn.setStyleSheet("background-color: red")
+            image_btn.setCheckable(True)
+            self.btn_group.addButton(image_btn)
+            image_btn.clicked.connect(self.signal)
+            tem_hbox = QHBoxLayout()
+            tem_hbox.addWidget(check_box)
+            tem_hbox.addWidget(image_btn)
+            self.left_vbox.addLayout(tem_hbox)
+            self.a.append(check_box)
+            self.b.append(image_btn)
+            self.b[0].click()
+        self.update()
+
 
 
     def change_grid(self):
-        global lock
-        if lock:
-            lock = False
-            #그리드가 바뀌었을 때, 해당 그리드와 관련된 오브젝트를 보여주는 함수
-            #check_window, change_category함수와 유사함, check_window, change_category함수 참조
-            self.current_grid = str(self.DB.get_grid_id_from_args(self.grid_box.currentText()))
-            objects = []
-            self.a = []
-            self.b = []
+        lock = False
+        #그리드가 바뀌었을 때, 해당 그리드와 관련된 오브젝트를 보여주는 함수
+        #check_window, change_category함수와 유사함, check_window, change_category함수 참조
+        self.current_grid = str(self.DB.get_grid_id(self.grid_box.currentText()))[1:-2]
+        objects = []
+        self.a = []
+        self.b = []
 
-            for i in reversed(range(self.left_vbox.count())):
-                k = self.left_vbox.itemAt(i).layout()
-                for j in reversed(range(k.count())):
-                    k.itemAt(j).widget().deleteLater()
-                k.deleteLater()
+        for i in reversed(range(self.left_vbox.count())):
+            k = self.left_vbox.itemAt(i).layout()
+            for j in reversed(range(k.count())):
+                k.itemAt(j).widget().deleteLater()
+            k.deleteLater()
+        ob = self.DB.list_obj_check_num(self.current_grid, self.current_category, "1")
+        if ob != None:
+            ob = list(ob)
+            objects.append(ob)
+        rejected = self.DB.list_obj_check_num(self.current_grid, self.current_category, "2")
+        if rejected != None:
+            rejected = list(rejected)
+            objects.append(rejected)
+        num = 0
+        obj_btn_name_list = self.obj_list2name(sum(objects, []))
+        for i in range(len(sum(objects, []))):
+            check_box = QCheckBox()
+            image_btn = QPushButton(obj_btn_name_list[i])
+            tt_name = image_btn.text().split("_")  # (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
 
-            ob = list(DB.list_object_check_num(self.DB, self.current_category, self.current_grid, "1"))
-            if len(ob) != 0:
-                objects.append(ob)
-            rejected = list(DB.list_object_check_num(self.DB, self.current_category, self.current_grid, "2"))
-            if len(rejected) != 0:
-                objects.append(rejected)
-            num = 0
-            obj_btn_name_list = self.obj_list2name(sum(objects, []))
-            for i in range(len(sum(objects, []))):
-                check_box = QCheckBox()
-                image_btn = QPushButton(obj_btn_name_list[i])
-                image_btn.setCheckable(True)
-                self.btn_group.addButton(image_btn)
-                # check_box.clicked.connect(self.signal)
-                image_btn.clicked.connect(self.signal)
-                tem_hbox = QHBoxLayout()
-                tem_hbox.addWidget(check_box)
-                tem_hbox.addWidget(image_btn)
-                self.left_vbox.addLayout(tem_hbox)
-                self.a.append(check_box)
-                self.b.append(image_btn)
-                if num == 0:
-                    lock = True
-                    self.b[num].click()
-                num = num + 1
-            self.update()
-            lock = True
+            category_id = str(self.DB.get_cat_id(tt_name[0].split("/")[0], tt_name[0].split("/")[1]))
+            location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))[1:-2]
+            iteration = str(tt_name[2])
+
+            self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
+            # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
+            if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
+                im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[0]), "Image")
+                if im[4] == 2:
+                    image_btn.setStyleSheet("background-color: red")
+            image_btn.setCheckable(True)
+            self.btn_group.addButton(image_btn)
+            image_btn.clicked.connect(self.signal)
+            tem_hbox = QHBoxLayout()
+            tem_hbox.addWidget(check_box)
+            tem_hbox.addWidget(image_btn)
+            self.left_vbox.addLayout(tem_hbox)
+            self.a.append(check_box)
+            self.b.append(image_btn)
+            self.b[0].click()
+            num = num + 1
+        self.update()
+
 
 
     def obj_list2name(self, obj_list):
         #오브젝트들의 아이디를 참조하여 해당하는 버튼의 이름을 만들어주는 함수
         btn_name_list = []
-        for i in range(len(obj_list)):
+        for i, info in enumerate(obj_list):
             #img_id = obj_list[i][0]
-            loc_id = obj_list[i][1]
-            cate_id = obj_list[i][2]
+            loc_id = info[1]
+            cate_id = info[2]
             # IP 구분이 필요한 경우 사용
             # img = self.DB.get_table(str(img_id), "Image")
             # ip_id = img[0]
@@ -322,7 +344,7 @@ class check_app(QWidget):
             super_cate = self.DB.get_table(str(cate[0]), "SuperCategory")
             super_cate_str = super_cate[1]
 
-            btn_name = cate_str + "/" + super_cate_str + "_" + location_str + "/" + grid_str + "_" + str(obj_list[i][4]+1)
+            btn_name = cate_str + "/" + super_cate_str + "_" + location_str + "/" + grid_str + "_" + str(obj_list[i][4])
             btn_name_list.append(btn_name)
         return btn_name_list
 
@@ -334,11 +356,10 @@ class check_app(QWidget):
         i[0] = i[0].split("/")#  "콜라" "음료" "1x2" "3x3", "1"
         i[1] = i[1].split("/")
 
-        super_id = self.DB.get_supercategory_id_from_args(i[0][1])
-        cate_id = self.DB.get_category_id_from_args(str(super_id), i[0][0])
-        grid_id = self.DB.get_grid_id_from_args(i[1][1])
-        loc_id = self.DB.get_location_id_from_args(str(grid_id), i[1][0])
-        obj_id = self.DB.get_obj_id_from_args(str(loc_id), str(cate_id), (int(i[2])-1), "-1")
+        cate_id = self.DB.get_cat_id(i[0][0], i[0][1])
+        loc_id = str(self.DB.get_loc_id_GL(i[1][1], i[1][0]))[1:-2]
+        obj_id = self.DB.get_obj_id_from_args(str(loc_id), str(cate_id), i[2], "-1")
+
         return str(obj_id)
 
     def select_all(self):
@@ -361,3 +382,13 @@ class check_app(QWidget):
                     if i < (len_a - 1):
                         self.b[i + 1].click()
                         break
+
+    def keyPressEvent(self, QKeyEvent):
+        if QKeyEvent.text() == "s":
+            for i, info in enumerate(self.a):
+                if self.b[i].isChecked():
+                    info.toggle()
+        if QKeyEvent.text() == "f":
+            for i, info in enumerate(self.b):
+                if self.b[i].palette().button().color() != QColor(255, 0, 0):
+                    info.toggle()

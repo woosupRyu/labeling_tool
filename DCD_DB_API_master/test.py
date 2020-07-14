@@ -136,11 +136,11 @@ def read_img_from_db(db, img_id, table):
 
 
 if __name__ == "__main__":
-    img = img_loader('img/example.png')
+    #img = img_loader('img/example.png')
 
     # cunnect to MYSQL Server
     mydb = DB(ip='192.168.10.69',
-              port=20000,
+              port=3306,
               user='root',
               password='return123',
               db_name='test')
@@ -152,31 +152,31 @@ if __name__ == "__main__":
     mydb.init_table()
 
     # # Environment table test
-    check_environment(mydb)
+    #check_environment(mydb)
 
     # SuperCategory table test
-    check_supercategory(mydb)
+    #check_supercategory(mydb)
 
     # Gird table test
-    check_grid(mydb)
+    #check_grid(mydb)
 
     # Image table test
-    check_image(mydb)
+    #check_image(mydb)
 
     # Location table test
-    check_location(mydb)
+    #check_location(mydb)
 
     # Category table test
-    check_category(mydb)
+    #check_category(mydb)
 
     # Object table test
-    check_object(mydb)
+    #check_object(mydb)
 
     # Bbox table test
-    check_bbox(mydb)
+    #check_bbox(mydb)
 
     # Mask table test
-    check_mask(mydb)
+    #check_mask(mydb)
     #
     # get_grid_id(db=mydb, grid_w_h='3x4')
     #

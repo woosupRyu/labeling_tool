@@ -122,13 +122,16 @@ class mask(QWidget):
 
         #현재 물품과 연관된 모든 오브젝트들 호출(mix 제외)
         cate_info = category_box.currentText().split("/")
-        super_id = self.DB.get_supercategory_id_from_args(cate_info[1])
-        self.current_category = str(self.DB.get_category_id_from_args(str(super_id), cate_info[0]))
+        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
 
         objects = []
         for i in self.DB.list_table("Grid"):
             if i[1] != 0:
-                obj = list(DB.list_object_check_num(self.DB, self.current_category, str(i[0]), "0"))
+                obj = self.DB.list_obj_check_num(str(i[0]), self.current_category, "0")
+                if obj == None:
+                    obj = []
+                else:
+                    obj = list(obj)
                 if len(obj) != 0:
                     objects.append(obj)
         objects = sum(objects, [])
@@ -160,7 +163,7 @@ class mask(QWidget):
             self.label_group.addButton(temp_btn)
             self.a.append(temp_btn)
             tem_box = QCheckBox()
-            if len(self.DB.mask_info(self.obj_name2id(i))) != 0:
+            if self.DB.get_mask_info(self.obj_name2id(i)) !=None:
                 tem_box.toggle()
                 progress = progress + 1
             self.b.append(tem_box)
@@ -304,7 +307,7 @@ class mask(QWidget):
         h = im.height()
         qp.begin(im)
         # 오브젝트와 관련된 비박스가 존재할 경우 비박스 출력
-        masks = self.DB.mask_info(img_obj_id)
+        masks = self.DB.get_mask_info(img_obj_id)
         if masks != None:
             maskpoint_value = self.XYvalue2maskvalue(masks)
             maskpoint = self.value2qpoints(maskpoint_value)
@@ -323,7 +326,7 @@ class mask(QWidget):
 
         obj_id = self.obj_name2id(current_object)
 
-        self.DB.delete_mask_from_obj_id(obj_id)
+        self.DB.delete_mask(obj_id)
         if len(maskpoint_value) != 0:
             x, y = self.maskvalue2XYvalue(maskpoint_value)
             for j in range(len(x)):
@@ -374,6 +377,8 @@ class mask(QWidget):
         self.b = []
         count = 0
         scale_factor_w = 1
+        maskpoint = []
+        maskpoint_value = []
 
         # 변경된 물품의 라벨 생성
         cate_info = category_box.currentText().split("/")
@@ -389,13 +394,16 @@ class mask(QWidget):
         self.label_vbox.addWidget(self.label_list)
 
         # 변경된 물품과 관련된 모든 오브젝트 호출(mix 제외)
-        super_id = self.DB.get_supercategory_id_from_args(cate_info[1])
-        self.current_category = str(self.DB.get_category_id_from_args(str(super_id), cate_info[0]))
+        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
 
         objects = []
         for i in self.DB.list_table("Grid"):
             if i[1] != 0:
-                obj = list(DB.list_object_check_num(self.DB, self.current_category, str(i[0]), "0"))
+                obj = self.DB.list_obj_check_num(str(i[0]), self.current_category, "0")
+                if obj == None:
+                    obj = []
+                else:
+                    obj = list(obj)
                 if len(obj) != 0:
                     objects.append(obj)
         objects = sum(objects, [])
@@ -411,7 +419,7 @@ class mask(QWidget):
             self.label_group.addButton(temp_btn)
             self.a.append(temp_btn)
             tem_box = QCheckBox()
-            if len(self.DB.mask_info(self.obj_name2id(i))) != 0:
+            if self.DB.get_mask_info(self.obj_name2id(i)) != None:
                 tem_box.toggle()
                 progress = progress + 1
             self.b.append(tem_box)
@@ -448,8 +456,8 @@ class mask(QWidget):
             im = QPixmap.fromImage(qim)
             qp.begin(im)
             #해당 오브젝트의 마스크가 존재할 경우 출력
-            if self.DB.mask_info(img_obj_id) != None:
-                maskpoint_value = self.XYvalue2maskvalue(self.DB.mask_info(img_obj_id))
+            if self.DB.get_mask_info(img_obj_id) != None:
+                maskpoint_value = self.XYvalue2maskvalue(self.DB.get_mask_info(img_obj_id))
                 maskpoint = self.value2qpoints(maskpoint_value)
                 qp.setPen(line_pen)
                 qp.drawPolygon(QPolygon(maskpoint))
@@ -488,18 +496,17 @@ class mask(QWidget):
         return btn_name_list
 
     def obj_name2id(self, i):
-        # 오브젝트의 버튼 이름을 받아 아이디 반환
+        # 버튼이름을 참조하여 오브젝트 아이디를 반환해주는 함수
+        # 아래 주석이 함수의 예시
         # i = "콜라/음료_1x2/3x3_1"
-
         i = i.split("_")  # "콜라/음료", "1x2/3x3", "1"
         i[0] = i[0].split("/")  # "콜라" "음료" "1x2" "3x3", "1"
         i[1] = i[1].split("/")
 
-        super_id = self.DB.get_supercategory_id_from_args(i[0][1])
-        cate_id = self.DB.get_category_id_from_args(str(super_id), i[0][0])
-        grid_id = self.DB.get_grid_id_from_args(i[1][1])
-        loc_id = self.DB.get_location_id_from_args(str(grid_id), i[1][0])
-        obj_id = self.DB.get_obj_id_from_args(str(loc_id), str(cate_id), i[2], "-1")
+        cate_id = self.DB.get_cat_id(i[0][0], i[0][1])
+        loc_id = str(self.DB.get_loc_id_GL(i[1][1], i[1][0]))[1:-2]
+        obj_id = self.DB.get_obj_id_from_args(loc_id, str(cate_id), i[2], "-1")
+
         return str(obj_id)
 
     def maskvalue2XYvalue(self, maskvalue):
@@ -549,8 +556,12 @@ class tracking_screen(QGraphicsView):
         global point_num
 
         #마우스 위치를 확대, 축소된 이미지에 맞도록 변환
-        x = (view.mapToScene(e.pos()).x()) * scale_factor_w
-        y = (view.mapToScene(e.pos()).y()) * scale_factor_w
+        if scale_factor_w <= 1:
+            x = view.mapToScene(e.pos()).x() * scale_factor_w
+            y = view.mapToScene(e.pos()).y() * scale_factor_w
+        else:
+            x = view.mapToScene(e.pos()).x() / scale_factor_w
+            y = view.mapToScene(e.pos()).y() / scale_factor_w
         if qim != []:
             w = qim.width()
             h = qim.height()
@@ -568,7 +579,7 @@ class tracking_screen(QGraphicsView):
                         maskpoint.append(QPoint(x, y))
                     im = QPixmap.fromImage(qim)
                     im.setDevicePixelRatio(scale_factor_w)
-                    qp.begin(im)#####################################################path 함수로 수정#######################################################
+                    qp.begin(im)
                     qp.setPen(line_pen)
                     qp.drawPolyline(QPolygon(maskpoint))
                     qp.end()
@@ -605,8 +616,12 @@ class tracking_screen(QGraphicsView):
         global scene
 
         # 마우스 위치를 확대, 축소된 이미지에 맞도록 변환
-        x = (view.mapToScene(e.pos()).x()) * scale_factor_w
-        y = (view.mapToScene(e.pos()).y()) * scale_factor_w
+        if scale_factor_w <= 1:
+            x = view.mapToScene(e.pos()).x() * scale_factor_w
+            y = view.mapToScene(e.pos()).y() * scale_factor_w
+        else:
+            x = view.mapToScene(e.pos()).x() / scale_factor_w
+            y = view.mapToScene(e.pos()).y() / scale_factor_w
         if edit_btn.isChecked():
 
             if e.button() == Qt.LeftButton and draggin_idx != -1:
@@ -635,29 +650,27 @@ class tracking_screen(QGraphicsView):
         global qim
         global view
 
-        mods = ev.modifiers()
         delta = ev.angleDelta()
 
         #ctrl+휠을 하면 이미지의 사이즈가 확대, 축소 되도록 수정
-        if Qt.ControlModifier == int(mods):
-            qp.begin(im)
-            #확대, 축소비율 설정 휠이 한번 움직일때마다 10%씩 작아지거나 커짐, 최소, 최대 크기는 0.5배에서 4배로 설정
-            if delta.y() > 0 and scale_factor_w > 0.25:
-                scale_factor_w = scale_factor_w * 0.9
-            elif scale_factor_w < 2 and delta.y() < 0:
-                scale_factor_w = scale_factor_w * 1.1
-            if scale_factor_w < 0.5:
-                line_pen.setWidth(1)
-            else:
-                line_pen.setWidth(3)
+        qp.begin(im)
+        #확대, 축소비율 설정 휠이 한번 움직일때마다 10%씩 작아지거나 커짐, 최소, 최대 크기는 0.5배에서 4배로 설정
+        if delta.y() > 0 and scale_factor_w > 0.25:
+            scale_factor_w = scale_factor_w * 0.9
+        elif scale_factor_w < 2 and delta.y() < 0:
+            scale_factor_w = scale_factor_w * 1.1
+        if scale_factor_w < 0.5:
+            line_pen.setWidth(1)
+        else:
+            line_pen.setWidth(3)
 
-            im.setDevicePixelRatio(scale_factor_w)
-            qp.end()
-            scene.clear()
-            scene.addPixmap(im)
-            w = qim.width()
-            h = qim.height()
-            view.fitInView(QRectF(ev.x() / scale_factor_w, ev.y() / scale_factor_w, w, h), Qt.KeepAspectRatio)
+        im.setDevicePixelRatio(scale_factor_w)
+        qp.end()
+        scene.clear()
+        scene.addPixmap(im)
+        w = qim.width()
+        h = qim.height()
+        view.fitInView(QRectF(ev.x() / scale_factor_w, ev.y() / scale_factor_w, w, h), Qt.KeepAspectRatio)
 
 
     def mousePressEvent(self, e):
@@ -680,8 +693,12 @@ class tracking_screen(QGraphicsView):
         global qim
         global point_num
 
-        x = (view.mapToScene(e.pos()).x()) * scale_factor_w
-        y = (view.mapToScene(e.pos()).y()) * scale_factor_w
+        if scale_factor_w <= 1:
+            x = view.mapToScene(e.pos()).x() * scale_factor_w
+            y = view.mapToScene(e.pos()).y() * scale_factor_w
+        else:
+            x = view.mapToScene(e.pos()).x() / scale_factor_w
+            y = view.mapToScene(e.pos()).y() / scale_factor_w
         w = qim.width()
         h = qim.height()
         mods = e.modifiers()
@@ -744,7 +761,7 @@ class tracking_screen(QGraphicsView):
                     qp.begin(im)
                     qp.setPen(line_pen)
 
-                    qp.drawPolygon(QPolygon(maskpoint))
+                    qp.drawPolygon(QPolygon(maskpoint[:point_num]))
                     qp.end()
 
                     scene.addPixmap(im)

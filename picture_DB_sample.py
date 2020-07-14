@@ -2,13 +2,10 @@ from PyQt5.QtCore import *
 from io import BytesIO
 from PIL import Image
 import numpy as np
-from DCD_DB_API_master.db_api.DB import *
 from MQTT_client import mqtt_connector
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-
-global lock
-lock = True
+import copy
 
 class picture_app(QWidget):
     """
@@ -44,12 +41,12 @@ class picture_app(QWidget):
         self.device_box = QComboBox()
 
         #박스에 현재 존재하는 환경을 추가
-        for i in range(len(self.environment_cash)):
-            self.device_box.addItem(str(self.environment_cash[i][1]) + "/" + str(self.environment_cash[i][2]))
+        for i in self.environment_cash:
+            self.device_box.addItem(str(i[1]) + "/" + str(i[2]))
 
         #박스에 현재 존재하는 그리드를 추가
-        for i in range(len(self.grid_cash)):
-            self.grid_box.addItem(str(self.grid_cash[i][1]) + "x" + str(self.grid_cash[i][2]))
+        for i in self.grid_cash:
+            self.grid_box.addItem(str(i[1]) + "x" + str(i[2]))
 
         #선택할 수 있는 카테고리(물품)를 보여주는 트리 생성
         self.object_list = QTreeWidget(self)
@@ -119,28 +116,21 @@ class picture_app(QWidget):
 
         #DB에서 카테고리(물품)를 불러와 물품트리에 보여주는 파트
         self.setLayout(main_layout)
-        self.objects = QTreeWidgetItem(self.object_list)
-        self.objects.setText(0, "물품")
-        self.objects.setExpanded(True)
-        for i in self.category_cash:
-            super_name = self.DB.get_table(i[0], "SuperCategory")[1]
-            if super_name != "mix" and super_name != "background":
-                item = self.make_tree_item(i[2] + "/" + self.DB.get_table(i[0], "SuperCategory")[1], 0)
-                self.objects.addChild(item)
-        self.object = QTreeWidgetItem(self.object_list)
-        self.object.setText(0, "Mix")
-        for i in self.category_cash:
-            super_name = self.DB.get_table(i[0], "SuperCategory")[1]
-            if super_name == "mix":
-                item = self.make_tree_item(i[2] + "/" + self.DB.get_table(i[0], "SuperCategory")[1], 0)
-                self.object.addChild(item)
-        self.objec = QTreeWidgetItem(self.object_list)
-        self.objec.setText(0, "배경")
-        for i in self.category_cash:
-            super_name = self.DB.get_table(i[0], "SuperCategory")[1]
-            if super_name == "background":
-                item = self.make_tree_item(i[2] + "/" + self.DB.get_table(i[0], "SuperCategory")[1], 0)
-                self.objec.addChild(item)
+        self.objects = QTreeWidget.invisibleRootItem(self.object_list)
+        super_len = len(self.DB.list_table("SuperCategory"))
+        for j in range(super_len):
+            for i in self.category_cash:
+                super_name = self.DB.get_table(i[0], "SuperCategory")[1]
+                if i[0] == j + 1 and super_name != "mix" and super_name != "background":
+                    item = self.make_tree_item(i[2] + "/" + super_name, 0)
+                    self.objects.addChild(item)
+
+        for j in range(super_len):
+            for i in self.category_cash:
+                super_name = self.DB.get_table(i[0], "SuperCategory")[1]
+                if i[0] == j + 1 and (super_name == "mix" or super_name == "background"):
+                    item = self.make_tree_item(i[2] + "/" + super_name, 0)
+                    self.objects.addChild(item)
 
         self.move_right.clicked.connect(self.move_object)
         self.move_left.clicked.connect(self.move_object)
@@ -153,63 +143,60 @@ class picture_app(QWidget):
 
 
     def add_category(self):
-        global lock
-        if lock:
-            lock = False
-            # 물건추가 버튼을 눌렀을 경우 추가를원하는 물품을 보여주는 트리에 있는 물품들을 실제 촬영단계로 넘기는 트리로 넘기는 함수
-            self.add_category = QTreeWidget.invisibleRootItem(self.added_list)
-            for i in range(self.add_list.topLevelItemCount()):
-                item = self.add_list.topLevelItem(i)
-                for j in range(len(self.category_cash)):
-                    if self.category_cash[j][2] + "/" + self.DB.get_table(self.category_cash[j][0], "SuperCategory")[1] == item.text(0):
-                        if item.text(0).split("/")[1] == "mix":
-                            add_item = self.make_multi_tree_item([item.text(0), "0x0", self.category_cash[j][6]])
-                        elif item.text(0).split("/")[1] == "background":
-                            add_item = self.make_multi_tree_item([item.text(0), "1x1", self.category_cash[j][6]])
-                        else:
-                            add_item = self.make_multi_tree_item([item.text(0), self.grid_box.currentText(), self.category_cash[j][6]])
-                self.add_category.addChild(add_item)
+        # 물건추가 버튼을 눌렀을 경우 추가를원하는 물품을 보여주는 트리에 있는 물품들을 실제 촬영단계로 넘기는 트리로 넘기는 함수
+        self.add_category = QTreeWidget.invisibleRootItem(self.added_list)
+        for i in range(self.add_list.topLevelItemCount()):
+            item = self.add_list.topLevelItem(i)
+            for j in self.category_cash:
+                if j[2] + "/" + self.DB.get_table(j[0], "SuperCategory")[1] == item.text(0):
+                    if item.text(0).split("/")[1] == "mix":
+                        add_item = self.make_multi_tree_item([item.text(0), "0x0", j[6]])
+                    elif item.text(0).split("/")[1] == "background":
+                        add_item = self.make_multi_tree_item([item.text(0), "1x1", j[6]])
+                    else:
+                        add_item = self.make_multi_tree_item([item.text(0), self.grid_box.currentText(), j[6]])
+            self.add_category.addChild(add_item)
 
-            # 추가 완료된 아이템을 리스트에서 방출
-            source_tw = self.add_list
-            target_tw = self.object_list
-            source = QTreeWidget.invisibleRootItem(source_tw)
-            for i in range(source_tw.topLevelItemCount()):
-                item = source_tw.topLevelItem(0)
-                source.removeChild(item)
-            lock = True
+        # 추가 완료된 아이템을 리스트에서 방출
+        source_tw = self.add_list
+        target_tw = self.object_list
+        source = QTreeWidget.invisibleRootItem(source_tw)
+        root = QTreeWidget.invisibleRootItem(target_tw)
+        for i in range(source_tw.topLevelItemCount()):
+            item = source_tw.topLevelItem(0)
+            source.removeChild(item)
+            root.addChild(item)
+
+
 
     def select_object(self):
-        global lock
-        if lock:
-            lock = False
+
         # 물품선택 화면에서 확인버튼을 누르면 선택된 물품정보들을 다음 화면으로 넘기며 실제 촬영화면을 띄워주는 함수
-            self.category_list = []
-            self.grid_list = []
-            self.iterate_list = []
+        self.category_list = []
+        self.grid_list = []
+        self.iterate_list = []
 
-            for i in range(self.added_list.topLevelItemCount()):
-                item = self.added_list.topLevelItem(i)
-                self.category_list.append(item.text(0))
-                self.grid_list.append(item.text(1))
-                self.iterate_list.append(item.text(2))
-            self.picture_data = list(zip(self.category_list, self.grid_list, self.iterate_list))
+        for i in range(self.added_list.topLevelItemCount()):
+            item = self.added_list.topLevelItem(i)
+            self.category_list.append(item.text(0))
+            self.grid_list.append(item.text(1))
+            self.iterate_list.append(item.text(2))
+        self.picture_data = list(zip(self.category_list, self.grid_list, self.iterate_list))
 
-            #촬영을 원하는 물품들의 정보들로 오브젝트를 생성하는 부분(이미지는 None)
-            for i in self.picture_data:
-                cate_super_cate = i[0].split("/")
-                set_object_list(self.DB, self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(cate_super_cate[1])), cate_super_cate[0]), str(self.DB.get_grid_id_from_args(i[1])), -1)
+        #촬영을 원하는 물품들의 정보들로 오브젝트를 생성하는 부분(이미지는 None)
+        for i in self.picture_data:
+            cate_super_cate = i[0].split("/")
+            cate_id = str(self.DB.get_cat_id(cate_super_cate[0], cate_super_cate[1]))
+            self.DB.set_obj_list(str(self.DB.get_grid_id(i[1]))[1:-2], cate_id, str(self.DB.get_table(cate_id, "Category")[6]), "-1")
 
-            #모든 오브젝트를 생성한 후 오브젝트 정보들 캐싱
-            self.object_cash = self.DB.list_table("Object")
-            self.close()
-            lock = True
-            self.shoot_window()
+        #모든 오브젝트를 생성한 후 오브젝트 정보들 캐싱
+        self.object_cash = self.DB.list_table("Object")
+        self.close()
+        self.shoot_window()
 
 
     def make_tree_item(cls, name, i):
         # 물품 트리에 아이템을 추가하는 함수
-
         item = QTreeWidgetItem()
         item.setText(i, name)
         return item
@@ -228,33 +215,28 @@ class picture_app(QWidget):
         if self.move_right == sender:
             source_tw = self.object_list
             target_tw = self.add_list
-            item = source_tw.currentItem()
-
-            root = QTreeWidget.invisibleRootItem(target_tw)
-            add_item = self.make_tree_item(item.text(0), 0)
-            root.addChild(add_item)
         else:
             source_tw = self.add_list
-            item = source_tw.currentItem()
-            source = QTreeWidget.invisibleRootItem(source_tw)
-            source.removeChild(item)
+            target_tw = self.object_list
+
+        # 현재 선택된 아이템을 꺼내어 반대편 쪽으로 전달(초기화)
+        item = source_tw.currentItem()
+        source = QTreeWidget.invisibleRootItem(source_tw)
+        source.removeChild(item)
+
+        root = QTreeWidget.invisibleRootItem(target_tw)
+        root.addChild(item)
 
     def delete_category(self):
-        global lock
-        if lock:
-            lock = False
-            #잘못 만들어진 물품을 삭제하는 함수
-            ans = QMessageBox.question(self, "삭제확인", "삭제하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
-            if ans == QMessageBox.Yes:
-                category = self.object_list.currentItem()
-                cate_str = category.text(0)
-                cate_str = cate_str.split("/")
-                source = QTreeWidget.invisibleRootItem(self.object_list)
-                source.removeChild(category)
-
-                superid = str(self.DB.get_supercategory_id_from_args(cate_str[1]))
-                self.DB.delete_table(str(self.DB.get_category_id_from_args(superid, cate_str[0])), "Category")
-            lock = True
+        #잘못 만들어진 물품을 삭제하는 함수
+        ans = QMessageBox.question(self, "삭제확인", "삭제하시겠습니까?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        if ans == QMessageBox.Yes:
+            category = self.object_list.currentItem()
+            cate_str = category.text(0)
+            cate_str = cate_str.split("/")
+            source = QTreeWidget.invisibleRootItem(self.object_list)
+            source.removeChild(category)
+            self.DB.delete_table(str(self.DB.get_cat_id(cate_str[0], cate_str[1])), "Category")
 
     def delete_object(self):
         item = self.added_list.currentItem()
@@ -279,7 +261,7 @@ class picture_app(QWidget):
         self.picture_data = list(zip(self.category_list, self.grid_x_list, self.grid_y_list, self.iterate_list))
 
         device = self.device_box.currentText().split("/")
-        self.device_id = str(self.DB.get_env_id_from_args(device[0], device[1]))
+        self.device_id = str(self.DB.get_env_id(device[0], device[1]))
         #물품추가 윈도우를 닫음
         self.close()
 
@@ -328,20 +310,32 @@ class picture_app(QWidget):
         # mix데이터가 들어올 경우 iteration 수만큼 오브젝트 생성
         for i in self.picture_data:
             if i[1] == "0" and i[2] == "0":
-                for j in range(1, 2):
+                for k in range(int(i[3])):
+                    tt = QPushButton(str(i[0]) + "_0x0/0x0_" + str(k + 1))
+                    tt.setCheckable(True)
+                    self.btn_group.addButton(tt)
+                    self.a.append(tt)
+            else:
+                for j in range(1, int(i[1]) * int(i[2]) + 1):
                     for k in range(int(i[3])):
-                        tt = QPushButton(str(i[0]) + "_0x0/0x0_" + str(k + 1))
+                        tt = QPushButton(
+                            str(i[0]) + "_" + str((j - 1) % int(i[1]) + 1) + "x" + str((j - 1) // int(i[1]) + 1) + "/" +
+                            i[1] + "x" + i[2] + "_" + str(k + 1))
+                        tt_name = tt.text().split("_")  # (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
+                        category_id = str(self.DB.get_cat_id(tt_name[0].split("/")[0], tt_name[0].split("/")[1]))
+                        location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))[1:-2]
+                        iteration = str(tt_name[2])
+                        self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
+                        # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
+
+                        if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
+                            im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[0]), "Image")
+                            if im[4] == 2:
+                                tt.setStyleSheet("background-color: red")
                         tt.setCheckable(True)
                         self.btn_group.addButton(tt)
                         self.a.append(tt)
 
-            else:
-                for j in range(1, int(i[1]) * int(i[2]) + 1):
-                    for k in range(int(i[3])):
-                        tt = QPushButton(str(i[0]) + "_" + str((j - 1) % int(i[1]) + 1) + "x" + str((j - 1) // int(i[1]) + 1) + "/" + i[1] + "x" + i[2] + "_" + str(k + 1))
-                        tt.setCheckable(True)
-                        self.btn_group.addButton(tt)
-                        self.a.append(tt)
         #생성된 버튼과 오브젝트 정보를 연동
         for i in range(len(self.a)):
             if i == 0:
@@ -385,51 +379,77 @@ class picture_app(QWidget):
         splitter4 = QSplitter(Qt.Vertical)
         splitter4.addWidget(shoot_btn)
         splitter4.addWidget(self.right_frame)
+        splitter4.splitterMoved.connect(self.print_xy)
 
         splitter1 = QSplitter(Qt.Horizontal)
         splitter1.addWidget(splitter3)
         splitter1.addWidget(splitter2)
         splitter1.addWidget(splitter4)
+        splitter1.splitterMoved.connect(self.print_xy)
 
         hbox.addWidget(splitter1)
         self.shoot_windows.setLayout(hbox)
         self.shoot_windows.setWindowTitle("촬영")
         self.shoot_windows.show()
 
+    def print_xy(self):
+        print(self.right_frame.width())
+        print(self.right_frame.height())
+        self.image_label.clear()
+        width = copy.deepcopy(self.right_frame.width())
+        height = copy.deepcopy(self.right_frame.height())
+        if self.right_frame.width() > 1500:
+            width = 1500
+            print("width max")
+        if self.right_frame.height() > 800:
+            height = 800
+            print("height max")
+        self.image_label.setPixmap(self.image_data.scaled(width, height))
+
+
     def load_image_grid(self):
         #버튼이 클릭됬을 때, 해당 오브젝트의 이미지를 띄워주는 함수
         #버튼으로 부터 어떤 오브젝트를 접근해야 하는지 확인
         self.image_name = self.sender()
         self.image_name = self.image_name.text()
-        self.image_name = self.image_name.replace("_", " ")# (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
-        self.image_name = self.image_name.split()
+        self.image_name = self.image_name.split("_")
 
-        category_id = str(self.DB.get_category_id_from_args(str(self.DB.get_supercategory_id_from_args(self.image_name[0].split("/")[1])), self.image_name[0].split("/")[0]))
-        location_id = str(self.DB.get_location_id_from_args(str(self.DB.get_grid_id_from_args(self.image_name[1].split("/")[1])), self.image_name[1].split("/")[0]))
-        iteration = str(int(self.image_name[2]))
+        category_id = str(self.DB.get_cat_id(self.image_name[0].split("/")[0], self.image_name[0].split("/")[1]))
+        location_id = str(self.DB.get_loc_id_GL(self.image_name[1].split("/")[1], self.image_name[1].split("/")[0]))[1:-2]
+        iteration = str(self.image_name[2])
 
         self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
         #해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
         if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
             im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[0]), "Image")
-            if im[4] == 2:
-                self.sender().setStyleSheet("background-color: red")
             im_data = np.array(Image.open(BytesIO(im[2])).convert("RGB"))
             qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
             self.image_data = QPixmap.fromImage(qim)
             self.image_label.clear()
-            self.image_label.setPixmap(self.image_data.scaledToWidth(1500))
+            width = self.right_frame.width()
+            height = self.right_frame.height()
+            if self.right_frame.width() > 1500:
+                width = 1500
+            if self.right_frame.height() > 800:
+                height = 800
+            self.image_label.setPixmap(self.image_data.scaled(width, height))
+
 
         #해당 오브젝트가 이미지를 가지고 있지 않으면(첫 촬영인 경우) 썸네일을 보여줌
         else:
-            for i in range(len(self.category_cash)):
-                if category_id == str(self.category_cash[i][1]):
-                    im = self.category_cash[i][7]
-                    im_data = np.array(Image.open(BytesIO(im)).convert("RGB"))
+            for i in self.category_cash:
+                if category_id == str(i[1]):
+                    im_data = np.array(Image.open(BytesIO(i[7])).convert("RGB"))
                     qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
                     self.image_data = QPixmap.fromImage(qim)
                     self.image_label.clear()
-                    self.image_label.setPixmap(self.image_data.scaledToWidth(500))
+                    width = self.right_frame.width()
+                    height = self.right_frame.height()
+                    if self.right_frame.width() > 1500:
+                        width = 1500
+                    if self.right_frame.height() > 800:
+                        height = 800
+                    self.image_label.setPixmap(self.image_data.scaled(width, height))
 
     def move_image(self):
         # 다음, 이전이미지로 이동하는 함수
@@ -449,30 +469,26 @@ class picture_app(QWidget):
                         break
 
     def shoot(self):
-        global lock
-        if lock:
-            lock = False
-            #촬영 버튼과 연동된 실제 촬영 및, 이미지 업데이트 함수
-            #촬영하여 이미지를 DB에 저장하는 함수
-            conn = mqtt_connector('192.168.10.19', 1883, self.device_id)
-            conn.collect_dataset(self.device_id, 1)# ip, port  collect: env_id , image_type
-            image_id = conn.get_result()
-            #저장된 이미지를 읽어보여주는 함수
-            tem_img = self.DB.get_table(str(image_id), "Image")
-            self.image1 = np.array(Image.open(BytesIO(tem_img[2])).convert("RGB"))
-            #self.image1[:, :, [0, 2]] = self.image1[:, :, [2, 0]]
-            qim = QImage(self.image1, self.image1.shape[1], self.image1.shape[0], self.image1.strides[0],
-                         QImage.Format_RGB888)
-            im = QPixmap.fromImage(qim)
+        #촬영 버튼과 연동된 실제 촬영 및, 이미지 업데이트 함수
+        #촬영하여 이미지를 DB에 저장하는 함수
+        conn = mqtt_connector('192.168.10.71', 1883, self.device_id)
+        conn.collect_dataset(self.device_id, 1)# ip, port  collect: env_id , image_type
+        image_id = conn.get_result()
+        #저장된 이미지를 읽어보여주는 함수
+        tem_img = self.DB.get_table(str(image_id), "Image")
+        self.image1 = np.array(Image.open(BytesIO(tem_img[2])).convert("RGB"))
+        #self.image1[:, :, [0, 2]] = self.image1[:, :, [2, 0]]
+        qim = QImage(self.image1, self.image1.shape[1], self.image1.shape[0], self.image1.strides[0],
+                     QImage.Format_RGB888)
+        im = QPixmap.fromImage(qim)
 
-            #이미지 사이즈를 조정
-            self.image_label.setPixmap(im.scaledToWidth(1500))
+        #이미지 사이즈를 조정
+        self.image_label.setPixmap(im.scaledToWidth(1500))
 
-            #현재 오브젝트에 촬영된 이미지 업데이트
-            self.DB.update_object(self.current_obj_id, img_id=tem_img[1])
-            self.DB.update_image_img(self.current_obj_id, self.image1)
+        #현재 오브젝트에 촬영된 이미지 업데이트
+        self.DB.update_object(self.current_obj_id, img_id=tem_img[1])
+        self.DB.update_img_img_obj_id(self.current_obj_id, tem_img[2])
 
-            #믹스인 경우 데이터 타입을 2로 설정
-            if self.image_name[0].split("/")[1] == "mix":
-                self.DB.update_image(self.DB.get_table(self.current_obj_id, "Object")[0], type=2)
-            lock = True
+        #믹스인 경우 데이터 타입을 2로 설정
+        if self.image_name[0].split("/")[1] == "mix":
+            self.DB.update_image(self.DB.get_table(self.current_obj_id, "Object")[0], type=2)

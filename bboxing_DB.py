@@ -5,7 +5,6 @@ import numpy as np
 import random
 from io import BytesIO
 from PIL import Image
-from DCD_DB_API_master.db_api import DB
 
 # 그래픽스 클래스에서도 참조해야할 변수들 글로벌로 선언
 
@@ -113,13 +112,13 @@ class bbox(QWidget):
 
         #현재 선택된 물품의 모든 오브젝트 호출(mix 제외)
         cate_info = category_box.currentText().split("/")
-        super_id = self.DB.get_supercategory_id_from_args(cate_info[1])
-        self.current_category = str(self.DB.get_category_id_from_args(str(super_id), cate_info[0]))
+        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
         objects = []
         for i in self.DB.list_table("Grid"):
             if i[1] != 0:
-                obj = list(DB.list_object_check_num(self.DB, self.current_category, str(i[0]), "0"))
-                if len(obj) != 0:
+                obj = self.DB.list_obj_check_num(str(i[0]), self.current_category, "0")
+                if obj != None:
+                    obj = list(obj)
                     objects.append(obj)
         objects = sum(objects, [])
         btn_names = self.obj_list2name(objects)
@@ -148,7 +147,7 @@ class bbox(QWidget):
             self.label_group.addButton(temp_btn)
             self.a.append(temp_btn)
             tem_box = QCheckBox()
-            if len(self.DB.get_bbox_info(self.obj_name2id(i))) != 0:
+            if self.DB.get_bbox_info(self.obj_name2id(i)) != None:
                 tem_box.toggle()
                 progress = progress + 1
             self.b.append(tem_box)
@@ -171,12 +170,12 @@ class bbox(QWidget):
         category_box.currentIndexChanged.connect(self.list_change)
 
         #생성한 버튼들과 기능들 연동
-        for i in range(len(self.a)):
+        for i, info in enumerate(self.b):
             left_hbox = QHBoxLayout()
             #self.a[i].clicked.connect(self.image_state)
-            self.b[i].stateChanged.connect(self.save_state)
+            info.stateChanged.connect(self.save_state)
             left_hbox.addWidget(self.a[i])
-            left_hbox.addWidget(self.b[i])
+            left_hbox.addWidget(info)
             left_vboxx.addLayout(left_hbox)
 
         left_frame.setLayout(left_vboxx)
@@ -295,11 +294,12 @@ class bbox(QWidget):
         qp.begin(im)
 
         #해당 오브젝트에 연관된 비박스가 있는 경우 비박스 표시
-        if len(sum(self.DB.get_bbox_info(img_obj_id), ())) != 0:
-
-            coordinates = self.bbox2coordinate(self.DB.get_table(str(self.DB.get_bbox_id_from_args(img_obj_id)), "Bbox"))
-            qp.setPen(line_pen)
-            qp.drawRect(QRect(coordinates[0][0], coordinates[0][1], coordinates[3][0] - coordinates[0][0], coordinates[3][1] - coordinates[0][1]))
+        po = self.DB.get_bbox_info(img_obj_id)
+        if po != None:
+            if len(sum(po, ())) != 0:
+                coordinates = self.bbox2coordinate(self.DB.get_table(str(self.DB.get_bbox_id(img_obj_id))[1:-2], "Bbox"))
+                qp.setPen(line_pen)
+                qp.drawRect(QRect(coordinates[0][0], coordinates[0][1], coordinates[3][0] - coordinates[0][0], coordinates[3][1] - coordinates[0][1]))
         qp.end()
         scene.clear()
         scene.addPixmap(im)
@@ -312,13 +312,13 @@ class bbox(QWidget):
         global coordinates
         obj_id = self.obj_name2id(current_object)
         #해당된 오브젝트에 존재하는 비박스를 지운 후 현재 비박스 추가
-        self.DB.delete_bbox_from_obj_id(obj_id)
+        self.DB.delete_bbox(obj_id)
         if len(coordinates) != 0:
             box_info = self.coordinate2bbox(coordinates)
             self.DB.set_bbox(obj_id, box_info[0], box_info[1], box_info[2], box_info[3])
 
-            for i in range(len(self.a)):
-                if self.a[i].isChecked():
+            for i, info in enumerate(self.a):
+                if info.isChecked():
                     self.b[i].setCheckState(Qt.Checked)
 
     def move_image(self):
@@ -352,7 +352,7 @@ class bbox(QWidget):
         progress = 0 #불러온 오브젝트들 중 bbox작업이 완료된 오브젝트들의 개수를 저장하는 변수
         self.a = []
         self.b = []
-        count = 0
+
 
         cate_info = category_box.currentText().split("/")
 
@@ -366,35 +366,33 @@ class bbox(QWidget):
         for i in reversed(range(self.label_vbox.count())):
             self.label_vbox.itemAt(i).widget().deleteLater()
         self.label_vbox.addWidget(self.label_list)
-
-        super_id = self.DB.get_supercategory_id_from_args(cate_info[1])
-        self.current_category = str(self.DB.get_category_id_from_args(str(super_id), cate_info[0]))
+        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
 
         #바뀐 물품과 관련된 오브젝트들 호출 및 버튼생성(mix제외)
         objects = []
         for i in self.DB.list_table("Grid"):
             if i[1] != 0:
-                obj = list(DB.list_object_check_num(self.DB, self.current_category, str(i[0]), "0"))
-                if len(obj) != 0:
+                obj = self.DB.list_obj_check_num(str(i[0]), self.current_category, "0")
+                if obj != None:
+                    obj = list(obj)
                     objects.append(obj)
         objects = sum(objects, [])
         btn_names = self.obj_list2name(objects)
-        if len(btn_names) > 0:
-            current_object = btn_names[0]
-        for i in btn_names:
-            temp_btn = QPushButton(i)
+        for i, info in enumerate(btn_names):
+            temp_btn = QPushButton(info)
+            temp_btn.clicked.connect(self.image_state)
             temp_btn.setCheckable(True)
-            if count == 0:
-                temp_btn.toggle()
+            if i == 0:
+                # temp_btn.click()
+                current_object = btn_names[0]
                 current_object = temp_btn.text()
             self.label_group.addButton(temp_btn)
             self.a.append(temp_btn)
             tem_box = QCheckBox()
-            if len(self.DB.get_bbox_info(self.obj_name2id(i))) != 0:
+            if self.DB.get_bbox_info(self.obj_name2id(info)) != None:
                 tem_box.toggle()
                 progress = progress + 1
             self.b.append(tem_box)
-            count = count + 1
         # 진행도 갱신
         len_a = len(self.a)
         self.progress_state.setText("진행도 : " + str(progress) + "/" + str(len_a))
@@ -406,11 +404,11 @@ class bbox(QWidget):
             left_vboxx.itemAt(i).layout().deleteLater()
 
         #바뀐 후의 오브젝트들(버튼 및 박스) 추가
-        for i in range(len(self.a)):
+        for i, info in enumerate(self.a):
             left_hbox = QHBoxLayout()
-            self.a[i].clicked.connect(self.image_state)
+            info.clicked.connect(self.image_state)
             self.b[i].stateChanged.connect(self.save_state)
-            left_hbox.addWidget(self.a[i])
+            left_hbox.addWidget(info)
             left_hbox.addWidget(self.b[i])
             left_vboxx.addLayout(left_hbox)
         scene.clear()
@@ -434,10 +432,12 @@ class bbox(QWidget):
             qp.begin(im)
 
             # 현재 오브젝트와 연관된 bbox가 존재할 경우 표시
-            if len(sum(self.DB.get_bbox_info(img_obj_id), ())) != 0:
-                coordinates = self.bbox2coordinate(self.DB.get_table(str(self.DB.get_bbox_id_from_args(img_obj_id)), "Bbox"))
-                qp.setPen(line_pen)
-                qp.drawRect(QRect(coordinates[0][0], coordinates[0][1], coordinates[3][0] - coordinates[0][0], coordinates[3][1] - coordinates[0][1]))
+            po = self.DB.get_bbox_info(img_obj_id)
+            if po != None:
+                if len(sum(po, ())) != 0:
+                    coordinates = self.bbox2coordinate(self.DB.get_table(str(self.DB.get_bbox_id(img_obj_id))[1:-2], "Bbox"))
+                    qp.setPen(line_pen)
+                    qp.drawRect(QRect(coordinates[0][0], coordinates[0][1], coordinates[3][0] - coordinates[0][0], coordinates[3][1] - coordinates[0][1]))
             qp.end()
             scene.clear()
             scene.addPixmap(im)
@@ -448,10 +448,10 @@ class bbox(QWidget):
     def obj_list2name(self, obj_list):
         #오브젝트 테이블을 받아 버튼 이름 반환
         btn_name_list = []
-        for i in range(len(obj_list)):
+        for i in obj_list:
             #img_id = obj_list[i][0]
-            loc_id = obj_list[i][1]
-            cate_id = obj_list[i][2]
+            loc_id = i[1]
+            cate_id = i[2]
             # IP 구분이 필요한 경우 사용
             # img = self.DB.get_table(str(img_id), "Image")
             # ip_id = img[0]
@@ -468,23 +468,22 @@ class bbox(QWidget):
             super_cate = self.DB.get_table(str(cate[0]), "SuperCategory")
             super_cate_str = super_cate[1]
 
-            btn_name = cate_str + "/" + super_cate_str + "_" + location_str + "/" + grid_str + "_" + str(obj_list[i][4])
+            btn_name = cate_str + "/" + super_cate_str + "_" + location_str + "/" + grid_str + "_" + str(i[4])
             btn_name_list.append(btn_name)
         return btn_name_list
 
     def obj_name2id(self, i):
-        # 오브젝트의 버튼 이름을 받아 아이디 반환
-        #i = "콜라/음료_1x2/3x3_1"
-
-        i = i.split("_")#  "콜라/음료", "1x2/3x3", "1"
-        i[0] = i[0].split("/")#  "콜라" "음료" "1x2" "3x3", "1"
+        # 버튼이름을 참조하여 오브젝트 아이디를 반환해주는 함수
+        # 아래 주석이 함수의 예시
+        # i = "콜라/음료_1x2/3x3_1"
+        i = i.split("_")  # "콜라/음료", "1x2/3x3", "1"
+        i[0] = i[0].split("/")  # "콜라" "음료" "1x2" "3x3", "1"
         i[1] = i[1].split("/")
 
-        super_id = self.DB.get_supercategory_id_from_args(i[0][1])
-        cate_id = self.DB.get_category_id_from_args(str(super_id), i[0][0])
-        grid_id = self.DB.get_grid_id_from_args(i[1][1])
-        loc_id = self.DB.get_location_id_from_args(str(grid_id), i[1][0])
-        obj_id = self.DB.get_obj_id_from_args(str(loc_id), str(cate_id), i[2], "-1")
+        cate_id = self.DB.get_cat_id(i[0][0], i[0][1])
+        loc_id = str(self.DB.get_loc_id_GL(i[1][1], i[1][0]))[1:-2]
+        obj_id = self.DB.get_obj_id_from_args(loc_id, str(cate_id), i[2], "-1")
+
         return str(obj_id)
 
     def coordinate2bbox(self, coordinate):
@@ -520,8 +519,12 @@ class tracking_screen(QGraphicsView):
         global line_pen
 
         # 마우스 위치를 확대, 축소된 이미지에 맞도록 변환
-        x = (view.mapToScene(e.pos()).x()) * scale_factor_w
-        y = (view.mapToScene(e.pos()).y()) * scale_factor_w
+        if scale_factor_w <= 1:
+            x = view.mapToScene(e.pos()).x() * scale_factor_w
+            y = view.mapToScene(e.pos()).y() * scale_factor_w
+        else:
+            x = view.mapToScene(e.pos()).x()
+            y = view.mapToScene(e.pos()).y()
         if qim != []:
             w = im.width()
             h = im.height()
@@ -601,14 +604,19 @@ class tracking_screen(QGraphicsView):
         global coordinates
 
         # 마우스 위치를 확대, 축소된 이미지에 맞도록 변환
-        x = (view.mapToScene(e.pos()).x()) * scale_factor_w
-        y = (view.mapToScene(e.pos()).y()) * scale_factor_w
+        if scale_factor_w <= 1:
+            x = view.mapToScene(e.pos()).x() * scale_factor_w
+            y = view.mapToScene(e.pos()).y() * scale_factor_w
+        else:
+            x = view.mapToScene(e.pos()).x()
+            y = view.mapToScene(e.pos()).y()
 
 
         mods = e.modifiers()
+
         if Qt.ControlModifier != int(mods):
             # Ctrl이 눌려 있을 경우 아무 작업도 실행되지 않음
-            if mask_btn.isChecked():
+            if mask_btn.isChecked() and e.button() == Qt.LeftButton:
                 # 현재 비박스 정보를 갱신
                 coordinates = [[self.start_point.x(), self.start_point.y()], [x, self.start_point.y()], [self.start_point.x(), y], [x, y]]
 
@@ -680,25 +688,25 @@ class tracking_screen(QGraphicsView):
         global line_pen
 
         # ctrl+휠을 하면 이미지의 사이즈가 확대, 축소 되도록 수정
-        if Qt.ControlModifier == int(mods):
-            qp = QPainter()
-            qp.begin(im)
-            # 확대, 축소비율 설정 휠이 한번 움직일때마다 10%씩 작아지거나 커짐, 최소, 최대 크기는 0.5배에서 4배로 설정
-            if delta.y() > 0 and scale_factor_w > 0.25:
-                scale_factor_w = scale_factor_w * 0.9
-            elif scale_factor_w < 2 and delta.y() < 0:
-                scale_factor_w = scale_factor_w * 1.1
-            if scale_factor_w < 0.5:
-                line_pen.setWidth(2)
-            else:
-                line_pen.setWidth(4)
-            im.setDevicePixelRatio(scale_factor_w)
-            qp.end()
-            scene.clear()
-            scene.addPixmap(im)
-            w = qim.width()
-            h = qim.height()
-            view.fitInView(QRectF(ev.x() / scale_factor_w, ev.y() / scale_factor_w, w, h), Qt.KeepAspectRatio)
+
+        qp = QPainter()
+        qp.begin(im)
+        # 확대, 축소비율 설정 휠이 한번 움직일때마다 10%씩 작아지거나 커짐, 최소, 최대 크기는 0.5배에서 4배로 설정
+        if delta.y() > 0 and scale_factor_w > 0.25:
+            scale_factor_w = scale_factor_w * 0.9
+        elif scale_factor_w < 2 and delta.y() < 0:
+            scale_factor_w = scale_factor_w * 1.1
+        if scale_factor_w < 0.5:
+            line_pen.setWidth(2)
+        else:
+            line_pen.setWidth(4)
+        im.setDevicePixelRatio(scale_factor_w)
+        qp.end()
+        scene.clear()
+        scene.addPixmap(im)
+        w = qim.width()
+        h = qim.height()
+        view.fitInView(QRectF(ev.x() / scale_factor_w, ev.y() / scale_factor_w, w, h), Qt.KeepAspectRatio)
 
 
     def mousePressEvent(self, e):
@@ -716,8 +724,12 @@ class tracking_screen(QGraphicsView):
         global im
         global color_value
 
-        x = (view.mapToScene(e.pos()).x()) * scale_factor_w
-        y = (view.mapToScene(e.pos()).y()) * scale_factor_w
+        if scale_factor_w <= 1:
+            x = view.mapToScene(e.pos()).x() * scale_factor_w
+            y = view.mapToScene(e.pos()).y() * scale_factor_w
+        else:
+            x = view.mapToScene(e.pos()).x()
+            y = view.mapToScene(e.pos()).y()
         w = im.width()
         h = im.height()
         mods = e.modifiers()
@@ -767,4 +779,6 @@ class tracking_screen(QGraphicsView):
         # 비박스의 x, y, w, h를 받아 네 점의 좌표를 반환
         coor = [[bbox[0], bbox[1]], [bbox[0] + bbox[2], bbox[1]], [bbox[0], bbox[1] + bbox[3]], [bbox[0] + bbox[2], bbox[1] + bbox[3]]]
         return coor
+
+
 
