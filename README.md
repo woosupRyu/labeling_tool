@@ -3,8 +3,15 @@
     
   임시로 공유한 툴이기 때문에 메뉴얼도 미흡하고 미완성된 부분이 많습니다. 주석 후 수정된 코드도 많고 주석을 달지못한 코드도 있습니다. 사용, 확인해보시고 수정해야할 점 Github이나 Notion에 최대한 많이 올려주시기 바랍니다~   
     
-## 필요 설치모듈  
-Python3.7, PyQt5(5.14), opencv-python(4.2.0.34), pillow(7.1.2), paho-mqtt(1.5.0), PyMySQL(0.9.3) 추후 한번에 설치할 수 있는 스크립트를 추가할 예정입니다
+## 필요 설치모듈
+Linux, Window  
+Python3.7, PyQt5(5.14), opencv-python(4.2.0.34), pillow(7.1.2), paho-mqtt(1.5.0), PyMySQL(0.9.3)
+  
+Mac  
+Python3.7, PyQt5(5.14), opencv-contrib-python-headless, pillow(7.1.2), paho-mqtt(1.5.0), PyMySQL(0.9.3)
+
+**모듈들은 상위버전이어도 상관없으나 Linux PyQt5의 경우 5.15(최신)버전을 사용했을 때, 에러가 발생했습니다.**
+
   
 ## 참고사항  
 main.py를 실행시킨 후 등록 -> 촬영 -> 검수 -> 라벨링 -> 합성 순으로 작업을 진행  
@@ -51,7 +58,7 @@ Environment, Grid, SuperCategory, Category 정보를 등록하는 작업 환경
   
 물품등록  
     분류 : 이름 위의 박스에서 물품의 분류를 선택(mix물품은 반드시 분류 : mix를, 물품 background는 반드시 분류 : background를 선택)  
-    이름 : (str)**(언더바("_"), 슬래시("/"), 띄어쓰기(" ")는 들어갈 경우 뒤의 코드에서 에러 발생)**  
+    이름 : (str)**(언더바("_"), 슬래시("/")는 들어갈 경우 뒤의 코드에서 에러 발생)**  
     가로 : 1\~x (정수)  
     깊이 : 1\~x (정수)  
     높이 : 1\~x (정수)  
@@ -63,8 +70,14 @@ Environment, Grid, SuperCategory, Category 정보를 등록하는 작업 환경
 ### 촬영
 ---
 Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택 하고 촬영하는 환경  
+  
+현재 테스트용 두가지 UI를 구현  
+메뉴얼은 코드를 받아 실행시키면 적용되는 UI 기준으로 설명이 되어 있으며, 다른 UI는 main함수의 import picture_DB를 import picture_DB_sample로 수정 후, 83번쨰 줄의 picture_DB를 picture_DB_sample로 수정 후 실행시키면 적용 가능  
+  
 1. 원하는 디바이스, 그리드 선택  
   <img src="https://user-images.githubusercontent.com/46614789/86326580-e5777800-bc7c-11ea-95f6-77ce4f08f65f.png"  width="60%" height="30%">  
+  아래의 이미지는 코드를 picture_DB_sample로 수정 후 실행시켰을 경우의 UI  
+  <img src="https://user-images.githubusercontent.com/46614789/86573009-b3348600-bfae-11ea-9dcf-e46088c03563.png"  width="60%" height="30%">  
 2. 물품 리스트에서 원하는 물품을 선택 후, ->버튼 클릭(추가할 물품 리스트로 물품 이동)  
   <img src="https://user-images.githubusercontent.com/46614789/86326590-e90aff00-bc7c-11ea-88d0-5c778a58c5fe.png"  width="60%" height="30%">  
 3. 원하는 물품을 모두 추가할 물품 리스트로 옮긴 후, 물건추가 버튼 클릭  
@@ -73,7 +86,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   <img src="https://user-images.githubusercontent.com/46614789/86326601-eb6d5900-bc7c-11ea-9eef-5b9a8618b22c.png"  width="60%" height="30%">  
   우측 공간에 물품을 잘못 추가했을 경우, 해당 항목을 클릭한 후, 삭제(Delete)버튼을 누르면 해당 항목이 제거됨
 5. 확인버튼 클릭  
-  <img src="https://user-images.githubusercontent.com/46614789/84611140-e6c44900-aef7-11ea-976a-adf1e6462c2d.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86730036-14209480-c069-11ea-9924-49b9eaaa046d.png"  width="60%" height="30%">  
 6. 촬영  
   촬영버튼을 누르면 냉장고 문이 열리고 물품을 배치 후, 문을 닫으면 사진이 찍힘  
   
@@ -81,14 +94,16 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 ### 검수
 ---
 촬영된 이미지가 데이터로 쓰일 수 있는지 체크하는 환경   
-1. 원하는 카테고리와 그리드 선택  
-  <img src="https://user-images.githubusercontent.com/46614789/84611733-a6fe6100-aef9-11ea-8159-cf839288ca7c.png"  width="60%" height="30%">  
-2. 허락(거절)할 오브젝트들 선택  
-  <img src="https://user-images.githubusercontent.com/46614789/84611737-a8c82480-aef9-11ea-928f-c631ad98e11d.png"  width="60%" height="30%">  
+1. 원하는 카테고리와 그리드 선택, 이전에 검수과정을 진행했었고 그때 거절된 이미지는 붉은색으로 버튼이 생성됨  
+  <img src="https://user-images.githubusercontent.com/46614789/86754141-9d40c700-c07b-11ea-8dee-84b433550841.png"  width="60%" height="30%">  
+2. 허락(거절)할 오브젝트들 선택(S를 누를 시, 해당 이미지의 체크박스 상태가 바뀌며, F를 누를 시, 거절된 이미지를 제외한 나머지 이미지의 체크박스 상태가 바뀜)   
+  <img src="https://user-images.githubusercontent.com/46614789/86754149-9e71f400-c07b-11ea-80d3-14bc1363a9c6.png"  width="60%" height="30%">  
 3. 허락(거절)버튼 클릭  
-  <img src="https://user-images.githubusercontent.com/46614789/84611739-a960bb00-aef9-11ea-932b-ac1a23967355.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86754155-9f0a8a80-c07b-11ea-8641-bf7a9c5e82a3.png"  width="60%" height="30%">  
 4. 허락(거절)된 버튼을 제외한 나머지 버튼 클릭 및 거절  
-  <img src="https://user-images.githubusercontent.com/46614789/84611740-a9f95180-aef9-11ea-8d26-b3eb38c107e2.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/86754159-9fa32100-c07b-11ea-87f8-7aa2e2286027.png"  width="60%" height="30%">  
+5. 거절한 데이터의 경우 촬영 작업 시 버튼이 붉은색으로 표시   
+  <img src="https://user-images.githubusercontent.com/46614789/86728974-e850df00-c067-11ea-9bda-67bb444fad18.png"  width="60%" height="30%"> 
   
   한번 허락하거나 거절해서 버튼색이 변한 버튼도 다시 거절, 허락 할 수 있음. 단, 한번 리스트를 갱신하거나 창을 재시작하면 허락된 오브젝트들은 나타나지 않음
 **(허락한 데이터는 추후 검수리스트에 보이지 않으니 신중히 선택)** 
@@ -134,7 +149,7 @@ Mix 데이터는 테스트 데이터로 합성하기 위해 사용되는 마스�
   
 삭제 : 수정 환경에서 원하는 마스크 내부를 클릭한 뒤 삭제버튼 클릭
   
-라벨수정 : 변경하고 싶은 라벨과 마스크를 선택한 뒤 라벨수정 버튼 클릭  
+라벨수정 : 수정 환경에서 변경하고 싶은 라벨과 마스크를 선택한 뒤 라벨수정 버튼 클릭  
   
   <img src="https://user-images.githubusercontent.com/46614789/86441947-ede8b500-bd47-11ea-88d0-6e22d6e41da2.png"  width="60%" height="30%">  
   
@@ -142,9 +157,9 @@ Mix 데이터는 테스트 데이터로 합성하기 위해 사용되는 마스�
   
   <img src="https://user-images.githubusercontent.com/46614789/86441950-efb27880-bd47-11ea-80a4-467a5ba89487.png"  width="60%" height="30%">  
     
-  다음 라벨을 클릭할 경우 현재 작업라벨(우측에 선택되어 있는 라벨)이 다음 라벨로 바뀜  
+  다음 라벨(C)을 클릭할 경우 현재 작업라벨(우측에 선택되어 있는 라벨)이 다음 라벨로 바뀜  
     
-  이전 라벨을 클릭할 경우 현재 작업라벨(우측에 선택되어 있는 라벨)이 이전 라벨로 바뀜  
+  이전 라벨(Z)을 클릭할 경우 현재 작업라벨(우측에 선택되어 있는 라벨)이 이전 라벨로 바뀜  
   
 ### 합성
 ---
@@ -153,9 +168,12 @@ Mix 데이터는 테스트 데이터로 합성하기 위해 사용되는 마스�
 합성 환경을 설정하기위해 그리드, 배경, 물품을 선택  
 (물품별 그리드 기능과 augment 옵션 기능은 현재 합성에선 사용되지 않는다)  
 
-<img src="https://user-images.githubusercontent.com/46614789/86327272-f5438c00-bc7d-11ea-8be7-52509aec3664.png"  width="60%" height="30%">  
+<img src="https://user-images.githubusercontent.com/46614789/86729401-6ca36200-c068-11ea-90a2-9dbafdf939d3.png"  width="60%" height="30%">  
   
-합성하기 클릭  
+합성하기 클릭      
+  
+  <img src="https://user-images.githubusercontent.com/46614789/86729414-6e6d2580-c068-11ea-8b69-3003f8cb88cd.png"  width="60%" height="30%">  
+ 
   
   
 
