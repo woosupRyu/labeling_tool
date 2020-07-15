@@ -11,6 +11,7 @@ from MQTT_client import mqtt_connector
 from io import BytesIO
 from PIL import Image
 import numpy as np
+from PyQt5.QtCore import *
 
 class MyApp(QWidget):
     """
@@ -28,24 +29,7 @@ class MyApp(QWidget):
         super().__init__()
         self.initUI()
         self.DB = db
-        # for i in self.DB.list_table("Object"):
-        #     if i[2] == 1:
-        #         print(i)
-        #
-        # print(self.DB.list_table("Grid"))
-        #
-        # self.DB.set_obj_list(str(10), str(40), str(3), str(-1))
-        # for i in self.DB.list_table("Object"):
-        #     if i[2] == 40:
-        #         print(i)
-        # print(self.DB.list_table("Grid"))
-        # for i in range(len(a)):
-        #     if a[i][2] == 19:
-        #         print(a[i])
-        # print(self.DB.get_mix_num("5", "19", "1"))
-        # print(self.DB.get_table("19", "Category")[2])
-        obj = self.DB.list_obj_check_num("1", "7", "0")
-        print(obj)
+
 
 
     def initUI(self):
@@ -136,8 +120,6 @@ class MyApp(QWidget):
         vbox.addWidget(img_label)
         self.open_window.setLayout(vbox)
         self.open_window.show()
-
-
 
 
 #실제 코드를 실행

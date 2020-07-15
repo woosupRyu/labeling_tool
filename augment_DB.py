@@ -5,6 +5,8 @@ import numpy as np
 import augment_v3
 from DCD_DB_API_master.db_api import DB
 
+#디바이스 (id(int)) 그리드(x(int),y(int), id(int)) 카테고리 (id(list), iteration(int)), 배경 이미지 (id(int))
+
 class project_app(QWidget):
     def __init__(self, db):
         super().__init__()
@@ -236,7 +238,8 @@ class project_app(QWidget):
 
 
         # 실제 사용함수
-
+        # 디바이스 (id(int)) 그리드(x(int),y(int), id(int)) 카테고리 (id(list), iteration(int)), 배경 이미지 (id(int))
+        # 20001, 2, 3, 1, [1, 2], 3, 29
         aug1 = augment_v3.augment(grid, category_id, batch_method, background_image)
         aug1.compose_batch()
         aug1.load_DB()

@@ -369,23 +369,28 @@ class picture_app(QWidget):
         splitter2 = QSplitter(Qt.Vertical)
         splitter2.addWidget(grid_label)
         splitter2.addWidget(self.mid_frame)
+        splitter2.setStyleSheet("background-image: url(beyless.png)")
+
 
         splitter3 = QSplitter(Qt.Vertical)
         splitter3.addWidget(title)
         splitter3.addWidget(device_label)
         splitter3.addWidget(self._scrollArea)
         splitter3.addWidget(btn_frame)
+        splitter3.handle(10)
 
         splitter4 = QSplitter(Qt.Vertical)
         splitter4.addWidget(shoot_btn)
         splitter4.addWidget(self.right_frame)
         splitter4.splitterMoved.connect(self.print_xy)
+        splitter4.handle(100)
 
         splitter1 = QSplitter(Qt.Horizontal)
         splitter1.addWidget(splitter3)
         splitter1.addWidget(splitter2)
         splitter1.addWidget(splitter4)
         splitter1.splitterMoved.connect(self.print_xy)
+        splitter1.handle(200)
 
         hbox.addWidget(splitter1)
         self.shoot_windows.setLayout(hbox)
@@ -393,18 +398,10 @@ class picture_app(QWidget):
         self.shoot_windows.show()
 
     def print_xy(self):
-        print(self.right_frame.width())
-        print(self.right_frame.height())
         self.image_label.clear()
-        width = copy.deepcopy(self.right_frame.width())
-        height = copy.deepcopy(self.right_frame.height())
-        if self.right_frame.width() > 1500:
-            width = 1500
-            print("width max")
-        if self.right_frame.height() > 800:
-            height = 800
-            print("height max")
-        self.image_label.setPixmap(self.image_data.scaled(width, height))
+        width = self.right_frame.width() - 30
+        if width < 1700:
+            self.image_label.setPixmap(self.image_data.scaledToWidth(width))
 
 
     def load_image_grid(self):
@@ -426,13 +423,9 @@ class picture_app(QWidget):
             qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
             self.image_data = QPixmap.fromImage(qim)
             self.image_label.clear()
-            width = self.right_frame.width()
-            height = self.right_frame.height()
-            if self.right_frame.width() > 1500:
-                width = 1500
-            if self.right_frame.height() > 800:
-                height = 800
-            self.image_label.setPixmap(self.image_data.scaled(width, height))
+            width = self.right_frame.width() - 30
+            if width < 1700:
+                self.image_label.setPixmap(self.image_data.scaledToWidth(width))
 
 
         #해당 오브젝트가 이미지를 가지고 있지 않으면(첫 촬영인 경우) 썸네일을 보여줌
@@ -443,13 +436,9 @@ class picture_app(QWidget):
                     qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
                     self.image_data = QPixmap.fromImage(qim)
                     self.image_label.clear()
-                    width = self.right_frame.width()
-                    height = self.right_frame.height()
-                    if self.right_frame.width() > 1500:
-                        width = 1500
-                    if self.right_frame.height() > 800:
-                        height = 800
-                    self.image_label.setPixmap(self.image_data.scaled(width, height))
+                    width = self.right_frame.width() - 30
+                    if width < 1700:
+                        self.image_label.setPixmap(self.image_data.scaledToWidth(width))
 
     def move_image(self):
         # 다음, 이전이미지로 이동하는 함수
@@ -492,3 +481,6 @@ class picture_app(QWidget):
         #믹스인 경우 데이터 타입을 2로 설정
         if self.image_name[0].split("/")[1] == "mix":
             self.DB.update_image(self.DB.get_table(self.current_obj_id, "Object")[0], type=2)
+
+    def keyPressEvent(self, QKeyEvent):
+        print(QKeyEvent.key())

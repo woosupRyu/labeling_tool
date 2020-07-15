@@ -176,11 +176,12 @@ class mask(QWidget):
 
         left_vboxx = QVBoxLayout()
         left_vboxp = QVBoxLayout()
-        left_vboxp.addWidget(next_btn)
-        left_vboxp.addWidget(before_btn)
+
         left_vboxp.addWidget(category_box)
         left_vboxp.addWidget(self.progress_state)
         left_vboxx.addLayout(left_vboxp)
+        left_vboxp.addWidget(next_btn)
+        left_vboxp.addWidget(before_btn)
         category_box.currentIndexChanged.connect(self.list_change)
 
         # 진행도 체크박스 기능 연동
@@ -196,6 +197,8 @@ class mask(QWidget):
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidget(left_frame)
         self.vertical_box = QVBoxLayout()
+        self.current_object_label = QLabel(current_object)
+        self.vertical_box.addWidget(self.current_object_label)
         self.vertical_box.addWidget(category_box)
         self.vertical_box.addWidget(self.progress_state)
         self.vertical_box.addWidget(self.scroll_area)
@@ -288,6 +291,7 @@ class mask(QWidget):
         #작업상태 및 변수들 초기화
         check_state = 100
         current_object = self.sender().text()
+        self.current_object_label.setText(current_object)
 
         scale_factor_w = 1
         mask_num = 1000000
@@ -323,18 +327,30 @@ class mask(QWidget):
         #저장버튼과 연결된 함수, 마스크값을 저장하고, 해당 이미지 비박스 체크
         global current_object
         global maskpoint_value
+        global scale_factor_w
 
         obj_id = self.obj_name2id(current_object)
 
         self.DB.delete_mask(obj_id)
-        if len(maskpoint_value) != 0:
-            x, y = self.maskvalue2XYvalue(maskpoint_value)
-            for j in range(len(x)):
-                self.DB.set_mask(obj_id, x[j], y[j])
 
-            for i in range(len(self.a)):
-                if self.a[i].isChecked():
-                    self.b[i].setCheckState(Qt.Checked)
+        if scale_factor_w > 1:
+            if len(maskpoint_value) != 0:
+                x, y = self.maskvalue2XYvalue(maskpoint_value)
+                for j in range(len(x)):
+                    self.DB.set_mask(obj_id, x[j] * scale_factor_w, y[j] * scale_factor_w)
+
+                for i in range(len(self.a)):
+                    if self.a[i].isChecked():
+                        self.b[i].setCheckState(Qt.Checked)
+        else:
+            if len(maskpoint_value) != 0:
+                x, y = self.maskvalue2XYvalue(maskpoint_value)
+                for j in range(len(x)):
+                    self.DB.set_mask(obj_id, x[j], y[j])
+
+                for i in range(len(self.a)):
+                    if self.a[i].isChecked():
+                        self.b[i].setCheckState(Qt.Checked)
 
     def move_image(self):
         # 다음, 이전이미지로 이동하는 함수
@@ -414,8 +430,9 @@ class mask(QWidget):
             temp_btn = QPushButton(i)
             temp_btn.setCheckable(True)
             if count == 0:
-                temp_btn.toggle()
+                temp_btn.click()
                 current_object = temp_btn.text()
+                self.current_object_label.setText(current_object)
             self.label_group.addButton(temp_btn)
             self.a.append(temp_btn)
             tem_box = QCheckBox()
@@ -560,8 +577,8 @@ class tracking_screen(QGraphicsView):
             x = view.mapToScene(e.pos()).x() * scale_factor_w
             y = view.mapToScene(e.pos()).y() * scale_factor_w
         else:
-            x = view.mapToScene(e.pos()).x() / scale_factor_w
-            y = view.mapToScene(e.pos()).y() / scale_factor_w
+            x = view.mapToScene(e.pos()).x()
+            y = view.mapToScene(e.pos()).y()
         if qim != []:
             w = qim.width()
             h = qim.height()
@@ -620,8 +637,8 @@ class tracking_screen(QGraphicsView):
             x = view.mapToScene(e.pos()).x() * scale_factor_w
             y = view.mapToScene(e.pos()).y() * scale_factor_w
         else:
-            x = view.mapToScene(e.pos()).x() / scale_factor_w
-            y = view.mapToScene(e.pos()).y() / scale_factor_w
+            x = view.mapToScene(e.pos()).x()
+            y = view.mapToScene(e.pos()).y()
         if edit_btn.isChecked():
 
             if e.button() == Qt.LeftButton and draggin_idx != -1:
@@ -697,8 +714,8 @@ class tracking_screen(QGraphicsView):
             x = view.mapToScene(e.pos()).x() * scale_factor_w
             y = view.mapToScene(e.pos()).y() * scale_factor_w
         else:
-            x = view.mapToScene(e.pos()).x() / scale_factor_w
-            y = view.mapToScene(e.pos()).y() / scale_factor_w
+            x = view.mapToScene(e.pos()).x()
+            y = view.mapToScene(e.pos()).y()
         w = qim.width()
         h = qim.height()
         mods = e.modifiers()

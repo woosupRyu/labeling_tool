@@ -250,6 +250,8 @@ class mix(QWidget):
         left_vboxx = QVBoxLayout()
         left_vboxp = QVBoxLayout()
         #left_vboxp.addWidget(label_label)
+        self.current_object_label = QLabel(current_object)
+        left_vboxp.addWidget(self.current_object_label)
         left_vboxp.addWidget(next_btn)
         left_vboxp.addWidget(before_btn)
         left_vboxp.addWidget(current_label)
@@ -431,6 +433,7 @@ class mix(QWidget):
         fill_color = []
         coordinates = []
         current_object = self.sender().text()
+        self.current_object_label.setText(current_object)
         img_obj_id = self.obj_name2id(current_object)
 
         imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[0], "Image")[2]
@@ -496,6 +499,7 @@ class mix(QWidget):
         global label_line_color
         global fill_color
         global category_id_list
+        global scale_factor_w
 
         # 이미지와 관련된 모든 비박스 삭제
         img_obj_id = self.obj_name2id(current_object)
@@ -506,19 +510,34 @@ class mix(QWidget):
         self.DB.delete_nomix_img(str(img_id))
 
         #현재의 비박스 정보들을 저장
-        if len(coordinates) != 0:
-            for i in range(len(category_id_list)):
-                for j in coordinates:
-                    if j[4] == category_id_list[i]:
+        if scale_factor_w > 1:
+            if len(coordinates) != 0:
+                for i in range(len(category_id_list)):
+                    for j in coordinates:
+                        if j[4] == category_id_list[i]:
+                            num = self.DB.get_mix_num(loc_id, str(j[4]), iteration)
 
-                        num = self.DB.get_mix_num(loc_id, str(j[4]), iteration)
+                            self.DB.set_object(img_id, loc_id, str(j[4]), iteration, str(int(num + 1)))
+                            box_info = self.coordinate2bbox(j)
+                            self.DB.set_bbox(str(self.DB.get_last_id("Object")), str(box_info[0] * scale_factor_w), str(box_info[1] * scale_factor_w),
+                                             str(box_info[2] * scale_factor_w), str(box_info[3] * scale_factor_w))
+                for i in range(len(self.a)):
+                    if self.a[i].isChecked():
+                        self.b[i].setCheckState(Qt.Checked)
+        else:
+            if len(coordinates) != 0:
+                for i in range(len(category_id_list)):
+                    for j in coordinates:
+                        if j[4] == category_id_list[i]:
 
-                        self.DB.set_object(img_id, loc_id, str(j[4]), iteration, str(int(num+1)))
-                        box_info = self.coordinate2bbox(j)
-                        self.DB.set_bbox(str(self.DB.get_last_id("Object")), str(box_info[0]), str(box_info[1]), str(box_info[2]), str(box_info[3]))
-            for i in range(len(self.a)):
-                if self.a[i].isChecked():
-                    self.b[i].setCheckState(Qt.Checked)
+                            num = self.DB.get_mix_num(loc_id, str(j[4]), iteration)
+
+                            self.DB.set_object(img_id, loc_id, str(j[4]), iteration, str(int(num+1)))
+                            box_info = self.coordinate2bbox(j)
+                            self.DB.set_bbox(str(self.DB.get_last_id("Object")), str(box_info[0]), str(box_info[1]), str(box_info[2]), str(box_info[3]))
+                for i in range(len(self.a)):
+                    if self.a[i].isChecked():
+                        self.b[i].setCheckState(Qt.Checked)
 
     def move_image(self):
         # 보여지는 이미지를 이동하는 함수
@@ -617,6 +636,7 @@ class mix(QWidget):
             if count == 0:
                 temp_btn.toggle()
                 current_object = temp_btn.text()
+                self.current_object_label.setText(current_object)
             self.label_group.addButton(temp_btn)
             self.a.append(temp_btn)
             tem_box = QCheckBox()
@@ -661,8 +681,6 @@ class mix(QWidget):
                 fill_color.append(QBrush(mix_label_color[i[4]], Qt.Dense2Pattern))
         len_a = len(self.a)
         self.progress_state.setText("진행도 : " + str(progress) + "/" + str(len_a))
-
-        print(left_vboxx.itemAt(1).widget().deleteLater)
 
         lvbox = QVBoxLayout()
         lframe = QFrame()
@@ -986,8 +1004,8 @@ class tracking_screen(QGraphicsView):
             x = view.mapToScene(e.pos()).x() * scale_factor_w
             y = view.mapToScene(e.pos()).y() * scale_factor_w
         else:
-            x = view.mapToScene(e.pos()).x() / scale_factor_w
-            y = view.mapToScene(e.pos()).y() / scale_factor_w
+            x = view.mapToScene(e.pos()).x()
+            y = view.mapToScene(e.pos()).y()
         if qim != []:
             w = qim.width()
             h = qim.height()
@@ -1074,8 +1092,8 @@ class tracking_screen(QGraphicsView):
             x = view.mapToScene(e.pos()).x() * scale_factor_w
             y = view.mapToScene(e.pos()).y() * scale_factor_w
         else:
-            x = view.mapToScene(e.pos()).x() / scale_factor_w
-            y = view.mapToScene(e.pos()).y() / scale_factor_w
+            x = view.mapToScene(e.pos()).x()
+            y = view.mapToScene(e.pos()).y()
         mods = e.modifiers()
         if Qt.ControlModifier == int(mods):
             print("nothing")
@@ -1198,7 +1216,6 @@ class tracking_screen(QGraphicsView):
         # 마우스를 클릭했을 때, 발생하는 이벤트트
         global view
         global scale_factor_w
-
         global draggin_idx
         global minimum_mask
         global edit_btn
@@ -1219,8 +1236,8 @@ class tracking_screen(QGraphicsView):
             x = view.mapToScene(e.pos()).x() * scale_factor_w
             y = view.mapToScene(e.pos()).y() * scale_factor_w
         else:
-            x = view.mapToScene(e.pos()).x() / scale_factor_w
-            y = view.mapToScene(e.pos()).y() / scale_factor_w
+            x = view.mapToScene(e.pos()).x()
+            y = view.mapToScene(e.pos()).y()
         w = qim.width()
         h = qim.height()
         mods = e.modifiers()

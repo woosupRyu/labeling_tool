@@ -7,7 +7,7 @@ from io import BytesIO
 from PIL import Image
 
 # 그래픽스 클래스에서도 참조해야할 변수들 글로벌로 선언
-
+global sig
 global view  # 이미지 보여주는 공간
 global scale_factor_w  # 이미지 확대, 축소 배율
 global edit_btn  # 수정 버튼
@@ -40,6 +40,7 @@ class bbox(QWidget):
         global color_value
         global coordinates
         global qim
+        global sig
 
         #변수들 초기화
         self.collect_color = [[255, 0, 0], [255, 255, 0], [0, 255, 255], [0, 255, 0], [255, 0, 255]]
@@ -51,6 +52,7 @@ class bbox(QWidget):
         color_value = []
         self.label_list = []
         qim = []
+        sig = 0
 
     def bboxing(self):
 
@@ -182,6 +184,8 @@ class bbox(QWidget):
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidget(left_frame)
         self.vertical_box = QVBoxLayout()
+        self.current_object_label = QLabel(current_object)
+        self.vertical_box.addWidget(self.current_object_label)
         self.vertical_box.addWidget(category_box)
         self.vertical_box.addWidget(self.progress_state)
         self.vertical_box.addWidget(self.scroll_area)
@@ -278,6 +282,8 @@ class bbox(QWidget):
 
         #현재 오브젝트와 연관된 이미지 표시
         current_object = self.sender().text()
+        self.current_object_label.setText(current_object)
+
         img_obj_id = self.obj_name2id(current_object)
 
         imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[0], "Image")[2]
@@ -305,21 +311,33 @@ class bbox(QWidget):
         scene.addPixmap(im)
         view.fitInView(QRectF(0, 0, w, h), Qt.KeepAspectRatio)
         scene.update()
+        self.update()
 
     def save_info(self):
         # 저장버튼과 연결된 함수, 마스크값을 저장하고, 해당 이미지에 작업이 완료됬다는 체크표시를 해줌
         global current_object
         global coordinates
+        global scale_factor_w
         obj_id = self.obj_name2id(current_object)
         #해당된 오브젝트에 존재하는 비박스를 지운 후 현재 비박스 추가
-        self.DB.delete_bbox(obj_id)
-        if len(coordinates) != 0:
-            box_info = self.coordinate2bbox(coordinates)
-            self.DB.set_bbox(obj_id, box_info[0], box_info[1], box_info[2], box_info[3])
+        if scale_factor_w > 1:
+            self.DB.delete_bbox(obj_id)
+            if len(coordinates) != 0:
+                box_info = self.coordinate2bbox(coordinates)
+                self.DB.set_bbox(obj_id, box_info[0] * scale_factor_w, box_info[1] * scale_factor_w, box_info[2] * scale_factor_w, box_info[3] * scale_factor_w)
 
-            for i, info in enumerate(self.a):
-                if info.isChecked():
-                    self.b[i].setCheckState(Qt.Checked)
+                for i, info in enumerate(self.a):
+                    if info.isChecked():
+                        self.b[i].setCheckState(Qt.Checked)
+        else:
+            self.DB.delete_bbox(obj_id)
+            if len(coordinates) != 0:
+                box_info = self.coordinate2bbox(coordinates)
+                self.DB.set_bbox(obj_id, box_info[0], box_info[1], box_info[2], box_info[3])
+
+                for i, info in enumerate(self.a):
+                    if info.isChecked():
+                        self.b[i].setCheckState(Qt.Checked)
 
     def move_image(self):
         #다음, 이전 이미지로 이동하는 버튼과 연동된 함수
@@ -383,9 +401,10 @@ class bbox(QWidget):
             temp_btn.clicked.connect(self.image_state)
             temp_btn.setCheckable(True)
             if i == 0:
-                # temp_btn.click()
+                temp_btn.click()
                 current_object = btn_names[0]
                 current_object = temp_btn.text()
+                self.current_object_label.setText(current_object)
             self.label_group.addButton(temp_btn)
             self.a.append(temp_btn)
             tem_box = QCheckBox()
@@ -530,11 +549,9 @@ class tracking_screen(QGraphicsView):
             h = im.height()
 
         # Ctrl + 마우스드래그를 할 경우, 화면이 이동
-        mods = e.modifiers()
-        if Qt.ControlModifier == int(mods) and e.buttons() == Qt.LeftButton:
+        if sig == 1 and e.buttons() == Qt.LeftButton:
             view.fitInView(QRectF(e.x()/scale_factor_w, e.y()/scale_factor_w, w, h), Qt.KeepAspectRatio)
         else:
-
             # 비박싱 작업 중 드래그 했을 때, 점과 선이 실시간으로 갱신되도록 설정
             if mask_btn.isChecked():
                 if draggin_idx == 10:# 비박싱 작업중인 경우 draggin_inx = 10 아닐경우 -1
@@ -602,6 +619,7 @@ class tracking_screen(QGraphicsView):
         global qim
         global mask_btn
         global coordinates
+        global sig
 
         # 마우스 위치를 확대, 축소된 이미지에 맞도록 변환
         if scale_factor_w <= 1:
@@ -611,10 +629,7 @@ class tracking_screen(QGraphicsView):
             x = view.mapToScene(e.pos()).x()
             y = view.mapToScene(e.pos()).y()
 
-
-        mods = e.modifiers()
-
-        if Qt.ControlModifier != int(mods):
+        if sig != 1:
             # Ctrl이 눌려 있을 경우 아무 작업도 실행되지 않음
             if mask_btn.isChecked() and e.button() == Qt.LeftButton:
                 # 현재 비박스 정보를 갱신
@@ -667,13 +682,12 @@ class tracking_screen(QGraphicsView):
                     qp.drawRect(QRect(coordinates[0][0], coordinates[0][1], x - coordinates[0][0], y - coordinates[0][1]))
                     tem_coor = self.bbox2coordinate([coordinates[0][0], coordinates[0][1], x - coordinates[0][0], y - coordinates[0][1]])
                     coordinates = self.point_sort(tem_coor)
-
-
                 qp.end()
                 scene.addPixmap(im)
                 draggin_idx = -1
 
-
+        else:
+            sig = 0
 
     def wheelEvent(self, ev):
         # 휠이 움직일때 발생하는 이벤트
@@ -732,9 +746,9 @@ class tracking_screen(QGraphicsView):
             y = view.mapToScene(e.pos()).y()
         w = im.width()
         h = im.height()
-        mods = e.modifiers()
+
         #Ctrl + 좌클릭을 할 경우 화면이동
-        if Qt.ControlModifier == int(mods) and e.buttons() == Qt.LeftButton:
+        if sig == 1 and e.buttons() == Qt.LeftButton:
             view.fitInView(QRectF(e.x()/scale_factor_w, e.y()/scale_factor_w, w, h), Qt.KeepAspectRatio)
         else:
             # 마스킹 작업 중 이벤트
@@ -779,6 +793,12 @@ class tracking_screen(QGraphicsView):
         # 비박스의 x, y, w, h를 받아 네 점의 좌표를 반환
         coor = [[bbox[0], bbox[1]], [bbox[0] + bbox[2], bbox[1]], [bbox[0], bbox[1] + bbox[3]], [bbox[0] + bbox[2], bbox[1] + bbox[3]]]
         return coor
+
+    def keyPressEvent(self, QKeyEvent):
+        global sig
+        if QKeyEvent.key() == Qt.Key_Space:
+            sig = 1
+
 
 
 
