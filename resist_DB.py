@@ -212,7 +212,7 @@ class resist_app(QWidget):
         self.category_a = []
         self.category_b = []
         self.category_vbox = QVBoxLayout()
-        if self.grid_cash != None:
+        if self.category_cash != None:
             for i in self.category_cash:
                 category_hbox = QHBoxLayout()
                 name = QLabel(i[2] + "/" + self.DB.get_table(str(i[0]), "SuperCategory")[1])

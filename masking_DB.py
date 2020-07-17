@@ -46,6 +46,10 @@ class mask(QWidget):
         global qim
         global qp
         global point_num
+        global current_object
+
+        current_object = ""
+
 
         #변수들 초기화
         self.collect_color = [[255, 0, 0], [255, 255, 0], [0, 255, 255], [0, 255, 0], [255, 0, 255]]
@@ -195,6 +199,7 @@ class mask(QWidget):
 
         left_frame.setLayout(left_vboxx)
         self.scroll_area = QScrollArea()
+        self.scroll_area.setWidgetResizable(True)
         self.scroll_area.setWidget(left_frame)
         self.vertical_box = QVBoxLayout()
         self.current_object_label = QLabel(current_object)

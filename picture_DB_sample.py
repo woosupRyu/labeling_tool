@@ -5,7 +5,6 @@ import numpy as np
 from MQTT_client import mqtt_connector
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
-import copy
 
 class picture_app(QWidget):
     """
@@ -66,16 +65,16 @@ class picture_app(QWidget):
         #촬영 정보를 선택하는 버튼들 생성
         self.move_left = QPushButton("<-(A)")
         self.move_left.setStyleSheet("background-color : yellow")
-        self.move_left.setShortcut("A")
+        self.move_left.setShortcut("A")#65
         self.move_left.setToolTip("A")
         self.move_right = QPushButton("->(D)")
         self.move_right.setStyleSheet("background-color : yellow")
-        self.move_right.setShortcut("D")
+        self.move_right.setShortcut("D")#68
         self.move_right.setToolTip("D")
         self.confirm_btn = QPushButton("확인")
         self.confirm_btn.setStyleSheet("background-color : blue")
         self.add_category_btn = QPushButton("물품 추가(F)")
-        self.add_category_btn.setShortcut("F")
+        self.add_category_btn.setShortcut("F")#83
         self.add_category_btn.setToolTip("F")
         self.add_category_btn.setStyleSheet("background-color : green")
         self.obj_delete_btn = QPushButton("삭제(Delete)")
@@ -423,9 +422,7 @@ class picture_app(QWidget):
             qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
             self.image_data = QPixmap.fromImage(qim)
             self.image_label.clear()
-            width = self.right_frame.width() - 30
-            if width < 1700:
-                self.image_label.setPixmap(self.image_data.scaledToWidth(width))
+            self.image_label.setPixmap(self.image_data.scaledToWidth(1080))
 
 
         #해당 오브젝트가 이미지를 가지고 있지 않으면(첫 촬영인 경우) 썸네일을 보여줌
@@ -436,9 +433,7 @@ class picture_app(QWidget):
                     qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
                     self.image_data = QPixmap.fromImage(qim)
                     self.image_label.clear()
-                    width = self.right_frame.width() - 30
-                    if width < 1700:
-                        self.image_label.setPixmap(self.image_data.scaledToWidth(width))
+                    self.image_label.setPixmap(self.image_data)
 
     def move_image(self):
         # 다음, 이전이미지로 이동하는 함수
@@ -460,7 +455,7 @@ class picture_app(QWidget):
     def shoot(self):
         #촬영 버튼과 연동된 실제 촬영 및, 이미지 업데이트 함수
         #촬영하여 이미지를 DB에 저장하는 함수
-        conn = mqtt_connector('192.168.10.71', 1883, self.device_id)
+        conn = mqtt_connector('192.168.10.69', 1883, self.device_id)
         conn.collect_dataset(self.device_id, 1)# ip, port  collect: env_id , image_type
         image_id = conn.get_result()
         #저장된 이미지를 읽어보여주는 함수
@@ -472,7 +467,7 @@ class picture_app(QWidget):
         im = QPixmap.fromImage(qim)
 
         #이미지 사이즈를 조정
-        self.image_label.setPixmap(im.scaledToWidth(1500))
+        self.image_label.setPixmap(im.scaledToWidth(1080))
 
         #현재 오브젝트에 촬영된 이미지 업데이트
         self.DB.update_object(self.current_obj_id, img_id=tem_img[1])

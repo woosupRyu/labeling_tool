@@ -177,7 +177,7 @@ class check_app(QWidget):
 
     def print_xy(self):
         self.image_label.clear()
-        width = self.mid_frame.width() - 30
+        width = self.mid_frame.width() - 400
         if width < 1700:
             self.image_label.setPixmap(self.image_data.scaledToWidth(width))
 
@@ -192,7 +192,7 @@ class check_app(QWidget):
         qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
         self.image_data = QPixmap.fromImage(qim)
         self.image_label.clear()
-        width = self.mid_frame.width() - 30
+        width = self.mid_frame.width() - 400
         if width < 1700:
             self.image_label.setPixmap(self.image_data.scaledToWidth(width))
 
@@ -224,11 +224,13 @@ class check_app(QWidget):
         self.a = []
         self.b = []
 
+        print(self.left_vbox.count())
         for i in reversed(range(self.left_vbox.count())):
             k = self.left_vbox.itemAt(i).layout()
             for j in reversed(range(k.count())):
                 k.itemAt(j).widget().deleteLater()
             k.deleteLater()
+        print(self.left_vbox.count())
         ob = self.DB.list_obj_check_num(self.current_grid, self.current_category, "1")
         if ob != None:
             ob = list(ob)
@@ -264,6 +266,7 @@ class check_app(QWidget):
             self.b.append(image_btn)
             self.b[0].click()
         self.update()
+
 
 
 

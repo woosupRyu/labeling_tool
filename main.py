@@ -10,8 +10,8 @@ from DCD_DB_API_master.db_api import DB
 from MQTT_client import mqtt_connector
 from io import BytesIO
 from PIL import Image
+import cv2
 import numpy as np
-from PyQt5.QtCore import *
 
 class MyApp(QWidget):
     """
@@ -29,6 +29,30 @@ class MyApp(QWidget):
         super().__init__()
         self.initUI()
         self.DB = db
+
+        for i in self.DB.list_table("Category"):
+            print(i[2])
+            print(i[1])
+
+        for i in self.DB.list_table("Object"):
+            if i[2] == 6:
+                print(i)
+
+
+
+#         for i in [17, 47, 77]:
+#             image_id = self.DB.get_table(str(i), "Object")[0]
+#             tem_img = self.DB.get_table(str(image_id), "Image")
+#             im_data = np.array(Image.open(BytesIO(tem_img[2])).convert("RGB"))
+#             im_data[:, :, [0, 2]] = im_data[:, :, [2, 0]]
+#             cv2.imwrite(str(i) + ".png", im_data)
+#
+#         for i in range(48, 58):
+#             image_id = self.DB.get_table(str(i), "Object")[0]
+#             tem_img = self.DB.get_table(str(image_id), "Image")
+#             im_data = np.array(Image.open(BytesIO(tem_img[2])).convert("RGB"))
+#             im_data[:, :, [0, 2]] = im_data[:, :, [2, 0]]
+#             cv2.imwrite(str(i) + ".png", im_data)
 
 
 
@@ -96,12 +120,13 @@ class MyApp(QWidget):
     def open(self):
         self.open_window = QWidget()
         img_label = QLabel()
-        conn = mqtt_connector('192.168.10.71', 1883, "20001")
+        conn = mqtt_connector('192.168.10.69', 1883, "20001")
         conn.collect_dataset("20001", 1)  # ip, port  collect: env_id , image_type
         image_id = conn.get_result()
         # 저장된 이미지를 읽어보여주는 함수
         tem_img = self.DB.get_table(str(image_id), "Image")
         im_data = np.array(Image.open(BytesIO(tem_img[2])).convert("RGB"))
+        cv2.imwrite("dd.png", im_data)
         qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
         self.image_data = QPixmap.fromImage(qim)
         img_label.clear()
@@ -120,6 +145,9 @@ class MyApp(QWidget):
         vbox.addWidget(img_label)
         self.open_window.setLayout(vbox)
         self.open_window.show()
+
+    def keyPressEvent(self, QKeyEvent):
+        print(QKeyEvent.key())
 
 
 #실제 코드를 실행

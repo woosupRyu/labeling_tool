@@ -41,6 +41,9 @@ class bbox(QWidget):
         global coordinates
         global qim
         global sig
+        global current_object
+
+        current_object = ""
 
         #변수들 초기화
         self.collect_color = [[255, 0, 0], [255, 255, 0], [0, 255, 255], [0, 255, 0], [255, 0, 255]]
@@ -65,7 +68,6 @@ class bbox(QWidget):
         global category_box
         global left_vboxx
         global line_pen
-        global left_vboxx
         global current_object
         global coordinates
         progress = 0
@@ -125,6 +127,7 @@ class bbox(QWidget):
         objects = sum(objects, [])
         btn_names = self.obj_list2name(objects)
 
+
         #현재 오브젝트의 라벨 표시
         category_name = category_box.currentText()
 
@@ -159,16 +162,12 @@ class bbox(QWidget):
         len_a = len(self.a)
         self.progress_state = QLabel("진행도 : " + str(progress) + "/" + str(len_a))
 
+        scroll_area = QScrollArea()
+        scroll_area.setWidgetResizable(True)
         #윈도우에 기능 배치
-        left_frame = QFrame()
+        self.left_frame = QFrame()
 
         left_vboxx = QVBoxLayout()
-        left_vboxp = QVBoxLayout()
-        left_vboxp.addWidget(next_btn)
-        left_vboxp.addWidget(before_btn)
-        left_vboxp.addWidget(category_box)
-
-        left_vboxx.addLayout(left_vboxp)
         category_box.currentIndexChanged.connect(self.list_change)
 
         #생성한 버튼들과 기능들 연동
@@ -180,15 +179,15 @@ class bbox(QWidget):
             left_hbox.addWidget(info)
             left_vboxx.addLayout(left_hbox)
 
-        left_frame.setLayout(left_vboxx)
-        self.scroll_area = QScrollArea()
-        self.scroll_area.setWidget(left_frame)
+        self.left_frame.setLayout(left_vboxx)
+
+        scroll_area.setWidget(self.left_frame)
         self.vertical_box = QVBoxLayout()
         self.current_object_label = QLabel(current_object)
         self.vertical_box.addWidget(self.current_object_label)
         self.vertical_box.addWidget(category_box)
         self.vertical_box.addWidget(self.progress_state)
-        self.vertical_box.addWidget(self.scroll_area)
+        self.vertical_box.addWidget(scroll_area)
         self.vertical_box.addWidget(next_btn)
         self.vertical_box.addWidget(before_btn)
 
@@ -210,6 +209,9 @@ class bbox(QWidget):
         vbox.addWidget(label_box)
         right_frame = QFrame()
         right_frame.setLayout(vbox)
+
+        # view_vbox = QVBoxLayout()
+        # view_vbox.addWidget(self.current_object_label)
 
         hbox = QHBoxLayout()
         vertical_splitter = QSplitter(Qt.Vertical)
@@ -371,7 +373,6 @@ class bbox(QWidget):
         self.a = []
         self.b = []
 
-
         cate_info = category_box.currentText().split("/")
 
         # 바뀐 물품의 라벨 추가 및 색 설정
@@ -396,73 +397,72 @@ class bbox(QWidget):
                     objects.append(obj)
         objects = sum(objects, [])
         btn_names = self.obj_list2name(objects)
+
         for i, info in enumerate(btn_names):
             temp_btn = QPushButton(info)
             temp_btn.clicked.connect(self.image_state)
             temp_btn.setCheckable(True)
+            self.label_group.addButton(temp_btn)
             if i == 0:
                 temp_btn.click()
                 current_object = btn_names[0]
                 current_object = temp_btn.text()
                 self.current_object_label.setText(current_object)
-            self.label_group.addButton(temp_btn)
             self.a.append(temp_btn)
             tem_box = QCheckBox()
             if self.DB.get_bbox_info(self.obj_name2id(info)) != None:
                 tem_box.toggle()
                 progress = progress + 1
             self.b.append(tem_box)
+
         # 진행도 갱신
         len_a = len(self.a)
         self.progress_state.setText("진행도 : " + str(progress) + "/" + str(len_a))
 
         #바뀌기 전의 오브젝트들을 삭제
-        for i in reversed(range(1, left_vboxx.count())):
-            left_vboxx.itemAt(i).layout().itemAt(1).widget().deleteLater()
+        for i in reversed(range(0, left_vboxx.count())):
             left_vboxx.itemAt(i).layout().itemAt(0).widget().deleteLater()
+            left_vboxx.itemAt(i).layout().itemAt(1).widget().deleteLater()
             left_vboxx.itemAt(i).layout().deleteLater()
 
         #바뀐 후의 오브젝트들(버튼 및 박스) 추가
-        for i, info in enumerate(self.a):
+        for i, info in enumerate(self.b):
             left_hbox = QHBoxLayout()
-            info.clicked.connect(self.image_state)
-            self.b[i].stateChanged.connect(self.save_state)
+            info.stateChanged.connect(self.save_state)
+            left_hbox.addWidget(self.a[i])
             left_hbox.addWidget(info)
-            left_hbox.addWidget(self.b[i])
             left_vboxx.addLayout(left_hbox)
-        scene.clear()
-
-        #오브젝트가 존재할 경우 이미지 표시
-        if len(objects) >= 1:
-
-            img_obj_id = self.obj_name2id(current_object)
-
-            imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[0], "Image")[2]
-            self.img_data = np.array(Image.open(BytesIO(imgd)).convert("RGB"))
-
-            qim = QImage(self.img_data, self.img_data.shape[1], self.img_data.shape[0], self.img_data.strides[0],
-                         QImage.Format_RGB888)
-            w = qim.width()
-            h = qim.height()
-            im = QPixmap.fromImage(qim)
-
-            qp = QPainter()
-            im.setDevicePixelRatio(scale_factor_w)
-            qp.begin(im)
-
-            # 현재 오브젝트와 연관된 bbox가 존재할 경우 표시
-            po = self.DB.get_bbox_info(img_obj_id)
-            if po != None:
-                if len(sum(po, ())) != 0:
-                    coordinates = self.bbox2coordinate(self.DB.get_table(str(self.DB.get_bbox_id(img_obj_id))[1:-2], "Bbox"))
-                    qp.setPen(line_pen)
-                    qp.drawRect(QRect(coordinates[0][0], coordinates[0][1], coordinates[3][0] - coordinates[0][0], coordinates[3][1] - coordinates[0][1]))
-            qp.end()
-            scene.clear()
-            scene.addPixmap(im)
-            view.fitInView(QRectF(0, 0, w, h), Qt.KeepAspectRatio)
-            scene.update()
         self.update()
+        #오브젝트가 존재할 경우 이미지 표시
+        # if len(objects) >= 1:
+        #     img_obj_id = self.obj_name2id(current_object)
+        #
+        #     imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[0], "Image")[2]
+        #     self.img_data = np.array(Image.open(BytesIO(imgd)).convert("RGB"))
+        #
+        #     qim = QImage(self.img_data, self.img_data.shape[1], self.img_data.shape[0], self.img_data.strides[0],
+        #                  QImage.Format_RGB888)
+        #     w = qim.width()
+        #     h = qim.height()
+        #     im = QPixmap.fromImage(qim)
+        #
+        #     qp = QPainter()
+        #     im.setDevicePixelRatio(scale_factor_w)
+        #     qp.begin(im)
+        #
+        #     # 현재 오브젝트와 연관된 bbox가 존재할 경우 표시
+        #     po = self.DB.get_bbox_info(img_obj_id)
+        #     if po != None:
+        #         if len(sum(po, ())) != 0:
+        #             coordinates = self.bbox2coordinate(self.DB.get_table(str(self.DB.get_bbox_id(img_obj_id))[1:-2], "Bbox"))
+        #             qp.setPen(line_pen)
+        #             qp.drawRect(QRect(coordinates[0][0], coordinates[0][1], coordinates[3][0] - coordinates[0][0], coordinates[3][1] - coordinates[0][1]))
+        #     qp.end()
+        #     scene.clear()
+        #     scene.addPixmap(im)
+        #     view.fitInView(QRectF(0, 0, w, h), Qt.KeepAspectRatio)
+        #     scene.update()
+
 
     def obj_list2name(self, obj_list):
         #오브젝트 테이블을 받아 버튼 이름 반환

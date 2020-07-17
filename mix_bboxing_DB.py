@@ -55,6 +55,9 @@ class mix(QWidget):
         global label_list
         global qim
         global mix_label_color
+        global current_object
+
+        current_object = ""
 
         #초기값 설정
         self.collect_color = [[255, 0, 0], [255, 0, 80], [255, 0, 160], [255, 0, 240], [110, 0, 255], [30, 0, 255], [0, 130, 255], [0, 210, 255], [0, 255, 220], [0, 255, 140], [0, 255, 60], [100, 255, 0], [180, 255, 0], [240, 255, 0], [255, 160, 0], [255, 80, 0], [128, 64, 64], [112, 64, 128], [64, 96, 128], [64, 128, 80], [128, 128, 64], [190, 94, 94], [190, 94, 174], [126, 94, 190], [94, 142, 190], [94, 190, 158]]
@@ -265,6 +268,7 @@ class mix(QWidget):
         lframe = QFrame()
         lvbox = QVBoxLayout()
         self.lscroll = QScrollArea()
+        self.lscroll.setWidgetResizable(True)
         for i in range(len(self.a)):
             left_hbox = QHBoxLayout()
             self.a[i].clicked.connect(self.image_state)
@@ -525,6 +529,8 @@ class mix(QWidget):
                     if self.a[i].isChecked():
                         self.b[i].setCheckState(Qt.Checked)
         else:
+            print(category_id_list)
+            print(len(coordinates))
             if len(coordinates) != 0:
                 for i in range(len(category_id_list)):
                     for j in coordinates:
