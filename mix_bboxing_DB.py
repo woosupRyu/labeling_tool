@@ -168,7 +168,7 @@ class mix(QWidget):
 
         #분류가 mix인 물품중 작업할 물품을 선택할 수 있는 박스 생생
         for i in self.DB.list_table("Category"):
-            super_name = self.DB.get_table(str(i[0]), "SuperCategory")[1]
+            super_name = self.DB.get_table(str(i[1]), "SuperCategory")[1]
             if super_name == "mix":
                 category_box.addItem(i[2] + "/" + super_name)
 
@@ -177,12 +177,11 @@ class mix(QWidget):
         count = 0
 
         #현재 물품의 모든 오브젝트와 연동되는 버튼 생성
-        cate_info = category_box.currentText().split("/")
-        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
+
         objects = []
         for i in self.DB.list_table("Grid"):
             if i[1] == 0:
-                obj = self.DB.list_obj_check_num(str(i[0]), self.current_category, "0")
+                obj = self.DB.list_obj_CN_NULL(str(i[0]), "0")
                 if obj == None:
                     obj = []
                 else:
@@ -207,7 +206,7 @@ class mix(QWidget):
             count = count + 1
         obj_id = self.obj_name2id(current_object)
 
-        exist_bbox = self.DB.get_bbox_img(str(self.DB.get_table(obj_id, "Object")[0]))
+        exist_bbox = self.DB.get_bbox_img(str(self.DB.get_table(obj_id, "Object")[3]))
 
         self.label_vbox = QVBoxLayout()
         self.label_box = QGroupBox()
@@ -221,7 +220,7 @@ class mix(QWidget):
             label_list.clicked.connect(self.color_select)
             label_list.setStyleSheet(back_label_color)
             label_list.toggle()
-            self.addlabel()
+            #self.addlabel()
         else:
             cate_list = []
             for j in exist_bbox:
@@ -298,7 +297,7 @@ class mix(QWidget):
         if len(objects) >= 1:
             img_obj_id = self.obj_name2id(current_object)
 
-            imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[0], "Image")[2]
+            imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[3], "Image")[2]
             self.img_data = np.array(Image.open(BytesIO(imgd)).convert("RGB"))
 
             qim = QImage(self.img_data, self.img_data.shape[1], self.img_data.shape[0], self.img_data.strides[0],
@@ -317,7 +316,7 @@ class mix(QWidget):
                     brush = fill_color[i]
                     qp.setPen(line_pen)
                     qp.drawRect(QRect(coordinates[i][0][0], coordinates[i][0][1], coordinates[i][3][0] - coordinates[i][0][0], coordinates[i][3][1] - coordinates[i][0][1]))
-            self.color_select()
+                    self.color_select()
             qp.end()
             scene.clear()
             scene.addPixmap(im)
@@ -440,7 +439,7 @@ class mix(QWidget):
         self.current_object_label.setText(current_object)
         img_obj_id = self.obj_name2id(current_object)
 
-        imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[0], "Image")[2]
+        imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[3], "Image")[2]
         self.img_data = np.array(Image.open(BytesIO(imgd)).convert("RGB"))
 
         qim = QImage(self.img_data, self.img_data.shape[1], self.img_data.shape[0], self.img_data.strides[0],
@@ -455,7 +454,7 @@ class mix(QWidget):
 
         # 이미지에 비박스가 존재할 경우 필요라벨 호출 및 표시
         category_name_list = self.category_list2name(self.DB.list_table("Category"))
-        exist_bbox = self.DB.get_bbox_img(str(self.DB.get_table(img_obj_id, "Object")[0]))
+        exist_bbox = self.DB.get_bbox_img(str(self.DB.get_table(img_obj_id, "Object")[3]))
         if exist_bbox != None:
             cate_list = []
             for j in exist_bbox:
@@ -507,11 +506,11 @@ class mix(QWidget):
 
         # 이미지와 관련된 모든 비박스 삭제
         img_obj_id = self.obj_name2id(current_object)
-        img_id = str(self.DB.get_table(img_obj_id, "Object")[0])
-        loc_id = str(self.DB.get_loc_id_GL("0x0", '0x0'))[1:-2]
+        img_id = str(self.DB.get_table(img_obj_id, "Object")[3])
+        loc_id = str(self.DB.get_loc_id_GL("0x0", '0x0'))
         category_id_list = sorted(category_id_list)
         iteration = current_object.split("_")[2]
-        self.DB.delete_nomix_img(str(img_id))
+        self.DB.delete_mix_obj(iteration)
 
         #현재의 비박스 정보들을 저장
         if scale_factor_w > 1:
@@ -519,8 +518,7 @@ class mix(QWidget):
                 for i in range(len(category_id_list)):
                     for j in coordinates:
                         if j[4] == category_id_list[i]:
-                            num = self.DB.get_mix_num(loc_id, str(j[4]), iteration)
-
+                            num = self.DB.get_max_mix_num()
                             self.DB.set_object(img_id, loc_id, str(j[4]), iteration, str(int(num + 1)))
                             box_info = self.coordinate2bbox(j)
                             self.DB.set_bbox(str(self.DB.get_last_id("Object")), str(box_info[0] * scale_factor_w), str(box_info[1] * scale_factor_w),
@@ -529,16 +527,12 @@ class mix(QWidget):
                     if self.a[i].isChecked():
                         self.b[i].setCheckState(Qt.Checked)
         else:
-            print(category_id_list)
-            print(len(coordinates))
             if len(coordinates) != 0:
                 for i in range(len(category_id_list)):
                     for j in coordinates:
                         if j[4] == category_id_list[i]:
-
-                            num = self.DB.get_mix_num(loc_id, str(j[4]), iteration)
-
-                            self.DB.set_object(img_id, loc_id, str(j[4]), iteration, str(int(num+1)))
+                            num = self.DB.get_max_mix_num()
+                            self.DB.set_object(img_id, loc_id, str(j[4]), iteration, str(int(num + 1)))
                             box_info = self.coordinate2bbox(j)
                             self.DB.set_bbox(str(self.DB.get_last_id("Object")), str(box_info[0]), str(box_info[1]), str(box_info[2]), str(box_info[3]))
                 for i in range(len(self.a)):
@@ -603,8 +597,6 @@ class mix(QWidget):
         coordinates = []
         self.collect_color = [[255, 0, 0], [255, 0, 80], [255, 0, 160], [255, 0, 240], [110, 0, 255], [30, 0, 255], [0, 130, 255], [0, 210, 255], [0, 255, 220], [0, 255, 140], [0, 255, 60], [100, 255, 0], [180, 255, 0], [240, 255, 0], [255, 160, 0], [255, 80, 0], [128, 64, 64], [112, 64, 128], [64, 96, 128], [64, 128, 80], [128, 128, 64], [190, 94, 94], [190, 94, 174], [126, 94, 190], [94, 142, 190], [94, 190, 158]]
 
-        cate_info = category_box.currentText().split("/")
-
         #선택된 라벨 초기화
         for i in self.label_name_list:
             i.setCheckState(Qt.Unchecked)
@@ -621,11 +613,9 @@ class mix(QWidget):
             self.label_vbox.itemAt(i).widget().deleteLater()
         self.label_vbox.addWidget(label_list)
 
-        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
-
         objects = []
         for i in self.DB.list_table("Grid"):
-            obj = self.DB.list_obj_check_num(str(i[0]), self.current_category, "0")
+            obj = self.DB.list_obj_CN_NULL(str(i[0]), "0")
             if obj == None:
                 obj = []
             else:
@@ -653,7 +643,7 @@ class mix(QWidget):
             count = count + 1
 
         obj_id = self.obj_name2id(current_object)
-        exist_bbox = self.DB.get_bbox_img(str(self.DB.get_table(obj_id, "Object")[0]))
+        exist_bbox = self.DB.get_bbox_img(str(self.DB.get_table(obj_id, "Object")[3]))
         category_name = category_box.currentText()
         if exist_bbox == None:
             RGB = random.choice(self.collect_color)
@@ -706,7 +696,7 @@ class mix(QWidget):
 
             img_obj_id = self.obj_name2id(current_object)
 
-            imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[0], "Image")[2]
+            imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[3], "Image")[2]
             self.img_data = np.array(Image.open(BytesIO(imgd)).convert("RGB"))
 
             qim = QImage(self.img_data, self.img_data.shape[1], self.img_data.shape[0], self.img_data.strides[0],
@@ -738,7 +728,6 @@ class mix(QWidget):
         for i in range(len(obj_list)):
             img_id = obj_list[i][0]
             loc_id = obj_list[i][1]
-            cate_id = obj_list[i][2]
             # IP 구분이 필요한 경우 사용
             # img = self.DB.get_table(str(img_id), "Image")
             # ip_id = img[0]
@@ -747,15 +736,9 @@ class mix(QWidget):
 
             loc = self.DB.get_table(str(loc_id), "Location")
             location_str = str(loc[2]) + "x" + str(loc[3])
-            grid = self.DB.get_table(str(loc[0]), "Grid")
+            grid = self.DB.get_table(str(loc[1]), "Grid")
             grid_str = str(grid[1]) + "x" + str(grid[2])
-
-            cate = self.DB.get_table(str(cate_id), "Category")
-            cate_str = cate[2]
-            super_cate = self.DB.get_table(str(cate[0]), "SuperCategory")
-            super_cate_str = super_cate[1]
-
-            btn_name = cate_str + "/" + super_cate_str + "_" + location_str + "/" + grid_str + "_" + str(obj_list[i][4])
+            btn_name = "mix/mix" + "_" + location_str + "/" + grid_str + "_" + str(obj_list[i][4])
             btn_name_list.append(btn_name)
         return btn_name_list
 
@@ -764,12 +747,10 @@ class mix(QWidget):
         # 아래 주석이 함수의 예시
         # i = "콜라/음료_1x2/3x3_1"
         i = i.split("_")  # "콜라/음료", "1x2/3x3", "1"
-        i[0] = i[0].split("/")  # "콜라" "음료" "1x2" "3x3", "1"
         i[1] = i[1].split("/")
 
-        cate_id = self.DB.get_cat_id(i[0][0], i[0][1])
-        loc_id = str(self.DB.get_loc_id_GL(i[1][1], i[1][0]))[1:-2]
-        obj_id = self.DB.get_obj_id_from_args(str(loc_id), str(cate_id), (int(i[2])), "-1")
+        loc_id = str(self.DB.get_loc_id_GL(i[1][1], i[1][0]))
+        obj_id = self.DB.get_obj_id_cat_id_NULL(str(loc_id), (int(i[2])), "-1", "-1")
 
         return str(obj_id)
 
@@ -789,18 +770,18 @@ class mix(QWidget):
     def category_list2name(self, category_list):
         cate_name = []
         for i in category_list:
-            a = self.DB.get_table(str(i[0]), "SuperCategory")[1]
+            a = self.DB.get_table(str(i[1]), "SuperCategory")[1]
             if a == "mix" or a == "background":
                 continue
             else:
-                cate_name.append(i[2] + "/" + self.DB.get_table(str(i[0]), "SuperCategory")[1])
+                cate_name.append(i[2] + "/" + self.DB.get_table(str(i[1]), "SuperCategory")[1])
         return cate_name
 
     def category_id2name(self, category_id):
         cate_name = []
         for i in category_id:
             a = self.DB.get_table(str(i), "Category")
-            b = self.DB.get_table(str(a[0]), "SuperCategory")[1]
+            b = self.DB.get_table(str(a[1]), "SuperCategory")[1]
             if a == "mix" or a == "background":
                 continue
             else:
@@ -827,7 +808,7 @@ class mix(QWidget):
                 back_label_color = "background-color: " + label_col.name()
                 label_str = i.text()
                 label_list.append(QRadioButton(label_str))
-                label_id = self.DB.get_cat_id(label_str.split("/")[0], label_str.split("/")[1])
+                label_id = self.DB.get_cat_id_SN(label_str.split("/")[1], label_str.split("/")[0])
                 mix_label_color[label_id] = label_col
 
 
@@ -853,11 +834,11 @@ class mix(QWidget):
             for i in label_list:
                 cate_name = i.text()
                 cate_name = cate_name.split("/")
-                category_id_list.append(self.DB.get_cat_id(cate_name[0], cate_name[1]))
+                category_id_list.append(self.DB.get_cat_id_SN(cate_name[1], cate_name[0]))
         else:
             cate_name = label_list.text()
             cate_name = cate_name.split("/")
-            category_id_list.append(self.DB.get_cat_id(cate_name[0], cate_name[1]))
+            category_id_list.append(self.DB.get_cat_id_SN(cate_name[1], cate_name[0]))
         self.color_select()
         for i in reversed(range(self.label_vbox.count())):
            self.label_vbox.itemAt(i).widget().deleteLater()
@@ -957,16 +938,16 @@ class mix(QWidget):
         self.repaint()
 
     def bbox2cate_id(self, bbox):
-        cate_table = self.DB.get_table(str(self.DB.get_table(str(bbox[0]), "Object")[2]), "Category")[1]
+        cate_table = self.DB.get_table(str(self.DB.get_table(str(bbox[0]), "Object")[2]), "Category")[0]
         return cate_table
 
     def obj_name2img_id(self, obj_name):
         obj_id = self.obj_name2id(obj_name)
-        return self.DB.get_table(obj_id, "Object")[0]
+        return self.DB.get_table(obj_id, "Object")[3]
 
     def category_name2id(self, name):
         name = name.split("/")
-        return self.DB.get_cat_id(name[0], name[1])
+        return self.DB.get_cat_id_SN(name[1], name[0])
 
     def change_current_label(self):
         global label_list
@@ -1111,7 +1092,6 @@ class tracking_screen(QGraphicsView):
                     if QColor(color_value[i][0], color_value[i][1], color_value[i][2]) == line_pen.color():
                         cate_id = self.name2cate_id(label_list[i].text())
                 coordinates.append([[self.start_point.x(), self.start_point.y()], [x, self.start_point.y()], [self.start_point.x(), y], [x, y], cate_id])
-
 
                 qp = QPainter()
                 im.setDevicePixelRatio(scale_factor_w)
@@ -1365,7 +1345,7 @@ class tracking_screen(QGraphicsView):
     def name2cate_id(self, name):
         mydb = DB.DB('192.168.10.69', 3306, 'root', 'return123', 'test')
         name = name.split("/")
-        cate_id = mydb.get_cat_id(name[0], name[1])
+        cate_id = mydb.get_cat_id_SN(name[1], name[0])
         return cate_id
 
     def point_sort(self, coordinate):

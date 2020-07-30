@@ -110,17 +110,17 @@ class bbox(QWidget):
         #물품선택 박스에 선택 가능한 물품 추가(mix 제외)
         category_box = QComboBox()
         for i in self.DB.list_table("Category"):
-            super_name = self.DB.get_table(str(i[0]), "SuperCategory")[1]
-            if super_name != "mix" and super_name != "background":
+            super_name = self.DB.get_table(str(i[1]), "SuperCategory")[1]
+            if super_name != "background":
                 category_box.addItem(i[2] + "/" + super_name)
 
         #현재 선택된 물품의 모든 오브젝트 호출(mix 제외)
         cate_info = category_box.currentText().split("/")
-        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
+        self.current_category = str(self.DB.get_cat_id_SN(cate_info[1], cate_info[0]))
         objects = []
         for i in self.DB.list_table("Grid"):
             if i[1] != 0:
-                obj = self.DB.list_obj_check_num(str(i[0]), self.current_category, "0")
+                obj = self.DB.list_obj_CN(str(i[0]), self.current_category, "0")
                 if obj != None:
                     obj = list(obj)
                     objects.append(obj)
@@ -152,7 +152,7 @@ class bbox(QWidget):
             self.label_group.addButton(temp_btn)
             self.a.append(temp_btn)
             tem_box = QCheckBox()
-            if self.DB.get_bbox_info(self.obj_name2id(i)) != None:
+            if self.DB.get_bbox(self.obj_name2id(i)) != None:
                 tem_box.toggle()
                 progress = progress + 1
             self.b.append(tem_box)
@@ -288,7 +288,7 @@ class bbox(QWidget):
 
         img_obj_id = self.obj_name2id(current_object)
 
-        imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[0], "Image")[2]
+        imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[3], "Image")[2]
         self.img_data = np.array(Image.open(BytesIO(imgd)).convert("RGB"))
 
         qim = QImage(self.img_data, self.img_data.shape[1], self.img_data.shape[0], self.img_data.strides[0],
@@ -302,7 +302,7 @@ class bbox(QWidget):
         qp.begin(im)
 
         #해당 오브젝트에 연관된 비박스가 있는 경우 비박스 표시
-        po = self.DB.get_bbox_info(img_obj_id)
+        po = self.DB.get_bbox(img_obj_id)
         if po != None:
             if len(sum(po, ())) != 0:
                 coordinates = self.bbox2coordinate(self.DB.get_table(str(self.DB.get_bbox_id(img_obj_id))[1:-2], "Bbox"))
@@ -385,13 +385,13 @@ class bbox(QWidget):
         for i in reversed(range(self.label_vbox.count())):
             self.label_vbox.itemAt(i).widget().deleteLater()
         self.label_vbox.addWidget(self.label_list)
-        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
+        self.current_category = str(self.DB.get_cat_id_SN(cate_info[1], cate_info[0]))
 
         #바뀐 물품과 관련된 오브젝트들 호출 및 버튼생성(mix제외)
         objects = []
         for i in self.DB.list_table("Grid"):
             if i[1] != 0:
-                obj = self.DB.list_obj_check_num(str(i[0]), self.current_category, "0")
+                obj = self.DB.list_obj_CN(str(i[0]), self.current_category, "0")
                 if obj != None:
                     obj = list(obj)
                     objects.append(obj)
@@ -410,7 +410,7 @@ class bbox(QWidget):
                 self.current_object_label.setText(current_object)
             self.a.append(temp_btn)
             tem_box = QCheckBox()
-            if self.DB.get_bbox_info(self.obj_name2id(info)) != None:
+            if self.DB.get_bbox(self.obj_name2id(info)) != None:
                 tem_box.toggle()
                 progress = progress + 1
             self.b.append(tem_box)
@@ -451,7 +451,7 @@ class bbox(QWidget):
         #     qp.begin(im)
         #
         #     # 현재 오브젝트와 연관된 bbox가 존재할 경우 표시
-        #     po = self.DB.get_bbox_info(img_obj_id)
+        #     po = self.DB.get_bbox(img_obj_id)
         #     if po != None:
         #         if len(sum(po, ())) != 0:
         #             coordinates = self.bbox2coordinate(self.DB.get_table(str(self.DB.get_bbox_id(img_obj_id))[1:-2], "Bbox"))
@@ -479,12 +479,12 @@ class bbox(QWidget):
 
             loc = self.DB.get_table(str(loc_id), "Location")
             location_str = str(loc[2]) + "x" + str(loc[3])
-            grid = self.DB.get_table(str(loc[0]), "Grid")
+            grid = self.DB.get_table(str(loc[1]), "Grid")
             grid_str = str(grid[1]) + "x" + str(grid[2])
 
             cate = self.DB.get_table(str(cate_id), "Category")
             cate_str = cate[2]
-            super_cate = self.DB.get_table(str(cate[0]), "SuperCategory")
+            super_cate = self.DB.get_table(str(cate[1]), "SuperCategory")
             super_cate_str = super_cate[1]
 
             btn_name = cate_str + "/" + super_cate_str + "_" + location_str + "/" + grid_str + "_" + str(i[4])
@@ -499,9 +499,9 @@ class bbox(QWidget):
         i[0] = i[0].split("/")  # "콜라" "음료" "1x2" "3x3", "1"
         i[1] = i[1].split("/")
 
-        cate_id = self.DB.get_cat_id(i[0][0], i[0][1])
-        loc_id = str(self.DB.get_loc_id_GL(i[1][1], i[1][0]))[1:-2]
-        obj_id = self.DB.get_obj_id_from_args(loc_id, str(cate_id), i[2], "-1")
+        cate_id = self.DB.get_cat_id_SN(i[0][1], i[0][0])
+        loc_id = str(self.DB.get_loc_id_GL(i[1][1], i[1][0]))
+        obj_id = self.DB.get_obj_id_from_args(loc_id, str(cate_id), i[2], "-1", "-1")
 
         return str(obj_id)
 

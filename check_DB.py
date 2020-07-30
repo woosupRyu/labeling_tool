@@ -61,8 +61,9 @@ class check_app(QWidget):
         # 카테고리 및 그리드 선택 박스 생성
         self.category_box = QComboBox()
         for i in self.DB.list_table("Category"):
-            super_name = self.DB.get_table(i[0], "SuperCategory")
+            super_name = self.DB.get_table(str(i[1]), "SuperCategory")
             self.category_box.addItem(i[2] + "/" + super_name[1])
+        self.category_box.addItem("mix/mix")
         self.category_box.currentIndexChanged.connect(self.change_category)
         self.category_box.resize(self.category_box.sizeHint())
 
@@ -81,36 +82,56 @@ class check_app(QWidget):
         self.b = []
         self.btn_group = QButtonGroup()
         cate_info = self.category_box.currentText().split("/")
-        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
-        self.current_grid = str(self.DB.get_grid_id(self.grid_box.currentText()))[1:-2]
+        if cate_info[1] != "mix":
+            self.current_category = str(self.DB.get_cat_id_SN(cate_info[1], cate_info[0]))
+            self.current_grid = str(self.DB.get_grid_id(self.grid_box.currentText()))
 
-        #현재 물품과 그리드를 참고하여 검수되지 않았거나 거절된 이미지를 가진 오브젝트만 호출
-        objects = []
-        ob = self.DB.list_obj_check_num(self.current_grid, self.current_category, "1")
-        if ob != None:
-            ob = list(ob)
-            objects.append(ob)
-        rejected = self.DB.list_obj_check_num(self.current_grid, self.current_category, "2")
-        if rejected != None:
-            rejected = list(rejected)
-            objects.append(rejected)
+
+            #현재 물품과 그리드를 참고하여 검수되지 않았거나 거절된 이미지를 가진 오브젝트만 호출
+            objects = []
+            ob = self.DB.list_obj_CN(self.current_grid, self.current_category, "1")
+            if ob != None:
+                ob = list(ob)
+                objects.append(ob)
+            rejected = self.DB.list_obj_CN(self.current_grid, self.current_category, "2")
+            if rejected != None:
+                rejected = list(rejected)
+                objects.append(rejected)
+
+        else:
+            self.current_grid = str(self.DB.get_grid_id(self.grid_box.currentText()))
+
+            # 현재 물품과 그리드를 참고하여 검수되지 않았거나 거절된 이미지를 가진 오브젝트만 호출
+            objects = []
+            ob = self.DB.list_obj_CN_NULL(self.current_grid, "1")
+            if ob != None:
+                ob = list(ob)
+                objects.append(ob)
+            rejected = self.DB.list_obj_CN_NULL(self.current_grid, "2")
+            if rejected != None:
+                rejected = list(rejected)
+                objects.append(rejected)
+
         #호출된 오브젝트들로 버튼 생성 및 연동
-
         obj_btn_name_list = self.obj_list2name(sum(objects, []))
         for i in range(len(sum(objects, []))):
             check_box = QCheckBox()
             image_btn = QPushButton(obj_btn_name_list[i])
             tt_name = image_btn.text().split("_")  # (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
 
+            if tt_name[0].split("/")[1] != "mix":
+                category_id = str(self.DB.get_cat_id_SN(tt_name[0].split("/")[1], tt_name[0].split("/")[0]))
+                location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))
+                iteration = str(tt_name[2])
+                self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1", "-1")
+            else:
+                location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))
+                iteration = str(tt_name[2])
+                self.current_obj_id = self.DB.get_obj_id_cat_id_NULL(location_id, iteration, "-1", "-1")
 
-            category_id = str(self.DB.get_cat_id(tt_name[0].split("/")[0], tt_name[0].split("/")[1]))
-            location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))[1:-2]
-            iteration = str(tt_name[2])
-
-            self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
             # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
             if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
-                im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[0]), "Image")
+                im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[3]), "Image")
                 if im[4] == 2:
                     image_btn.setStyleSheet("background-color: red")
             image_btn.setCheckable(True)
@@ -186,7 +207,7 @@ class check_app(QWidget):
         btn_name = self.sender().text()
         obj_id = self.obj_name2id(btn_name)
 
-        im = self.DB.get_table(str(self.DB.get_table(obj_id, "Object")[0]), "Image")
+        im = self.DB.get_table(str(self.DB.get_table(obj_id, "Object")[3]), "Image")
 
         im_data = np.array(Image.open(BytesIO(im[2])).convert("RGB"))
         qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
@@ -202,7 +223,7 @@ class check_app(QWidget):
         for i, info in enumerate(self.a):
             if info.isChecked() == True:
                 self.b[i].setStyleSheet("background-color : green")
-                self.DB.update_img_check_num_obj_id(self.obj_name2id(self.b[i].text()), "0")
+                self.DB.update_img_CN_OI(self.obj_name2id(self.b[i].text()), "0")
                 self.a[i].toggle()
 
     def reject_image(self):
@@ -211,7 +232,7 @@ class check_app(QWidget):
         for i, info in enumerate(self.a):
             if info.isChecked() == True:
                 self.b[i].setStyleSheet("background-color : red")
-                self.DB.update_img_check_num_obj_id(self.obj_name2id(self.b[i].text()), "2")
+                self.DB.update_img_CN_OI(self.obj_name2id(self.b[i].text()), "2")
                 self.a[i].toggle()
 
 
@@ -219,42 +240,73 @@ class check_app(QWidget):
         #물품을 선택했을 때, 해당 물품의 오브젝트만 보여주는 함수
         #check_window함수와 유사함/ check_window함수 참조
         cate_info = self.category_box.currentText().split("/")
-        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
-        objects = []
-        self.a = []
-        self.b = []
+        if cate_info[1] != "mix":
+            self.current_category = str(self.DB.get_cat_id_SN(cate_info[1], cate_info[0]))
+            objects = []
+            self.a = []
+            self.b = []
 
-        print(self.left_vbox.count())
-        for i in reversed(range(self.left_vbox.count())):
-            k = self.left_vbox.itemAt(i).layout()
-            for j in reversed(range(k.count())):
-                k.itemAt(j).widget().deleteLater()
-            k.deleteLater()
-        print(self.left_vbox.count())
-        ob = self.DB.list_obj_check_num(self.current_grid, self.current_category, "1")
-        if ob != None:
-            ob = list(ob)
-            objects.append(ob)
-        rejected = self.DB.list_obj_check_num(self.current_grid, self.current_category, "2")
-        if rejected != None:
-            rejected = list(rejected)
-            objects.append(rejected)
+            for i in reversed(range(self.left_vbox.count())):
+                k = self.left_vbox.itemAt(i).layout()
+                for j in reversed(range(k.count())):
+                    k.itemAt(j).widget().deleteLater()
+                k.deleteLater()
+
+            ob = self.DB.list_obj_CN(self.current_grid, self.current_category, "1")
+            if ob != None:
+                ob = list(ob)
+                objects.append(ob)
+            rejected = self.DB.list_obj_CN(self.current_grid, self.current_category, "2")
+            if rejected != None:
+                rejected = list(rejected)
+                objects.append(rejected)
+        else:
+            objects = []
+            self.a = []
+            self.b = []
+
+            for i in reversed(range(self.left_vbox.count())):
+                k = self.left_vbox.itemAt(i).layout()
+                for j in reversed(range(k.count())):
+                    k.itemAt(j).widget().deleteLater()
+                k.deleteLater()
+
+            ob = self.DB.list_obj_CN_NULL(self.current_grid, "1")
+            if ob != None:
+                ob = list(ob)
+                objects.append(ob)
+            rejected = self.DB.list_obj_CN_NULL(self.current_grid, "2")
+            if rejected != None:
+                rejected = list(rejected)
+                objects.append(rejected)
+
         obj_btn_name_list = self.obj_list2name(sum(objects, []))
         for i in range(len(sum(objects, []))):
             check_box = QCheckBox()
             image_btn = QPushButton(obj_btn_name_list[i])
             tt_name = image_btn.text().split("_")  # (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
 
-            category_id = str(self.DB.get_cat_id(tt_name[0].split("/")[0], tt_name[0].split("/")[1]))
-            location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))[1:-2]
-            iteration = str(tt_name[2])
+            if tt_name[0].split("/")[1] != "mix":
+                category_id = str(self.DB.get_cat_id_SN(tt_name[0].split("/")[1], tt_name[0].split("/")[0]))
+                location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))
+                iteration = str(tt_name[2])
 
-            self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
-            # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
-            if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
-                im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[0]), "Image")
-                if im[4] == 2:
-                    image_btn.setStyleSheet("background-color: red")
+                self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1", "-1")
+                # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
+                if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
+                    im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[3]), "Image")
+                    if im[4] == 2:
+                        image_btn.setStyleSheet("background-color: red")
+            else:
+                location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))
+                iteration = str(tt_name[2])
+
+                self.current_obj_id = self.DB.get_obj_id_cat_id_NULL(location_id, iteration, "-1", "-1")
+                # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
+                if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
+                    im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[3]), "Image")
+                    if im[4] == 2:
+                        image_btn.setStyleSheet("background-color: red")
             image_btn.setCheckable(True)
             self.btn_group.addButton(image_btn)
             image_btn.clicked.connect(self.signal)
@@ -271,44 +323,79 @@ class check_app(QWidget):
 
 
     def change_grid(self):
-        lock = False
         #그리드가 바뀌었을 때, 해당 그리드와 관련된 오브젝트를 보여주는 함수
         #check_window, change_category함수와 유사함, check_window, change_category함수 참조
-        self.current_grid = str(self.DB.get_grid_id(self.grid_box.currentText()))[1:-2]
-        objects = []
-        self.a = []
-        self.b = []
+        cate_info = self.category_box.currentText().split("/")
+        if cate_info[1] != "mix":
+            self.current_grid = str(self.DB.get_grid_id(self.grid_box.currentText()))
 
-        for i in reversed(range(self.left_vbox.count())):
-            k = self.left_vbox.itemAt(i).layout()
-            for j in reversed(range(k.count())):
-                k.itemAt(j).widget().deleteLater()
-            k.deleteLater()
-        ob = self.DB.list_obj_check_num(self.current_grid, self.current_category, "1")
-        if ob != None:
-            ob = list(ob)
-            objects.append(ob)
-        rejected = self.DB.list_obj_check_num(self.current_grid, self.current_category, "2")
-        if rejected != None:
-            rejected = list(rejected)
-            objects.append(rejected)
-        num = 0
+            objects = []
+            self.a = []
+            self.b = []
+
+            for i in reversed(range(self.left_vbox.count())):
+                k = self.left_vbox.itemAt(i).layout()
+                for j in reversed(range(k.count())):
+                    k.itemAt(j).widget().deleteLater()
+                k.deleteLater()
+            ob = self.DB.list_obj_CN(self.current_grid, self.current_category, "1")
+            if ob != None:
+                ob = list(ob)
+                objects.append(ob)
+            rejected = self.DB.list_obj_CN(self.current_grid, self.current_category, "2")
+            if rejected != None:
+                rejected = list(rejected)
+                objects.append(rejected)
+            num = 0
+        else:
+            self.current_grid = str(self.DB.get_grid_id(self.grid_box.currentText()))
+
+            objects = []
+            self.a = []
+            self.b = []
+
+            for i in reversed(range(self.left_vbox.count())):
+                k = self.left_vbox.itemAt(i).layout()
+                for j in reversed(range(k.count())):
+                    k.itemAt(j).widget().deleteLater()
+                k.deleteLater()
+            ob = self.DB.list_obj_CN_NULL(self.current_grid, "1")
+            if ob != None:
+                ob = list(ob)
+                objects.append(ob)
+            rejected = self.DB.list_obj_CN_NULL(self.current_grid, "2")
+            if rejected != None:
+                rejected = list(rejected)
+                objects.append(rejected)
+            num = 0
         obj_btn_name_list = self.obj_list2name(sum(objects, []))
         for i in range(len(sum(objects, []))):
             check_box = QCheckBox()
             image_btn = QPushButton(obj_btn_name_list[i])
             tt_name = image_btn.text().split("_")  # (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
 
-            category_id = str(self.DB.get_cat_id(tt_name[0].split("/")[0], tt_name[0].split("/")[1]))
-            location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))[1:-2]
-            iteration = str(tt_name[2])
+            if tt_name[0].split("/")[1] != "mix":
+                category_id = str(self.DB.get_cat_id_SN(tt_name[0].split("/")[1], tt_name[0].split("/")[0]))
+                location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))
+                iteration = str(tt_name[2])
 
-            self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1")
-            # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
-            if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
-                im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[0]), "Image")
-                if im[4] == 2:
-                    image_btn.setStyleSheet("background-color: red")
+                self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1", "-1")
+                # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
+                if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
+                    im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[3]), "Image")
+                    if im[4] == 2:
+                        image_btn.setStyleSheet("background-color: red")
+            else:
+                location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))
+                iteration = str(tt_name[2])
+
+                self.current_obj_id = self.DB.get_obj_id_cat_id_NULL(location_id, iteration, "-1", "-1")
+                # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
+                if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
+                    im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[3]), "Image")
+                    if im[4] == 2:
+                        image_btn.setStyleSheet("background-color: red")
+
             image_btn.setCheckable(True)
             self.btn_group.addButton(image_btn)
             image_btn.clicked.connect(self.signal)
@@ -322,33 +409,35 @@ class check_app(QWidget):
             num = num + 1
         self.update()
 
-
-
     def obj_list2name(self, obj_list):
         #오브젝트들의 아이디를 참조하여 해당하는 버튼의 이름을 만들어주는 함수
         btn_name_list = []
         for i, info in enumerate(obj_list):
             #img_id = obj_list[i][0]
             loc_id = info[1]
-            cate_id = info[2]
-            # IP 구분이 필요한 경우 사용
-            # img = self.DB.get_table(str(img_id), "Image")
-            # ip_id = img[0]
-            # env = self.DB.get_table(str(ip_id), "Environment")
-            # ipv4 = env[1]
+            if info[2] != None:
+                cate_id = info[2]
 
-            loc = self.DB.get_table(str(loc_id), "Location")
-            location_str = str(loc[2]) + "x" + str(loc[3])
-            grid = self.DB.get_table(str(loc[0]), "Grid")
-            grid_str = str(grid[1]) + "x" + str(grid[2])
+                loc = self.DB.get_table(str(loc_id), "Location")
+                location_str = str(loc[2]) + "x" + str(loc[3])
+                grid = self.DB.get_table(str(loc[1]), "Grid")
+                grid_str = str(grid[1]) + "x" + str(grid[2])
 
-            cate = self.DB.get_table(str(cate_id), "Category")
-            cate_str = cate[2]
-            super_cate = self.DB.get_table(str(cate[0]), "SuperCategory")
-            super_cate_str = super_cate[1]
+                cate = self.DB.get_table(str(cate_id), "Category")
+                cate_str = cate[2]
+                super_cate = self.DB.get_table(str(cate[1]), "SuperCategory")
+                super_cate_str = super_cate[1]
 
-            btn_name = cate_str + "/" + super_cate_str + "_" + location_str + "/" + grid_str + "_" + str(obj_list[i][4])
-            btn_name_list.append(btn_name)
+                btn_name = cate_str + "/" + super_cate_str + "_" + location_str + "/" + grid_str + "_" + str(obj_list[i][4])
+                btn_name_list.append(btn_name)
+            else:
+                loc = self.DB.get_table(str(loc_id), "Location")
+                location_str = str(loc[2]) + "x" + str(loc[3])
+                grid = self.DB.get_table(str(loc[1]), "Grid")
+                grid_str = str(grid[1]) + "x" + str(grid[2])
+
+                btn_name = "mix/mix" + "_" + location_str + "/" + grid_str + "_" + str(obj_list[i][4])
+                btn_name_list.append(btn_name)
         return btn_name_list
 
     def obj_name2id(self, i):
@@ -359,9 +448,13 @@ class check_app(QWidget):
         i[0] = i[0].split("/")#  "콜라" "음료" "1x2" "3x3", "1"
         i[1] = i[1].split("/")
 
-        cate_id = self.DB.get_cat_id(i[0][0], i[0][1])
-        loc_id = str(self.DB.get_loc_id_GL(i[1][1], i[1][0]))[1:-2]
-        obj_id = self.DB.get_obj_id_from_args(str(loc_id), str(cate_id), i[2], "-1")
+        if i[0][1] != "mix":
+            cate_id = str(self.DB.get_cat_id_SN(i[0][1], i[0][0]))
+            loc_id = str(self.DB.get_loc_id_GL(i[1][1], i[1][0]))
+            obj_id = self.DB.get_obj_id_from_args(loc_id, cate_id, i[2], "-1", "-1")
+        else:
+            loc_id = str(self.DB.get_loc_id_GL(i[1][1], i[1][0]))
+            obj_id = self.DB.get_obj_id_cat_id_NULL(loc_id, i[2], "-1", "-1")
 
         return str(obj_id)
 

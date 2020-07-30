@@ -4,6 +4,7 @@ from PIL import Image
 import numpy as np
 import augment_v3
 from DCD_DB_API_master.db_api import DB
+from jihun_augment_master import augmain
 
 #디바이스 (id(int)) 그리드(x(int),y(int), id(int)) 카테고리 (id(list), iteration(int)), 배경 이미지 (id(int))
 
@@ -60,7 +61,7 @@ class project_app(QWidget):
         for i in category_table_list:
             mix_or_not = self.DB.get_table(str(i[0]), "SuperCategory")[1]
 
-            if self.DB.check_process(str(i[1])):
+            if self.DB.check_nomix_OBM(str(i[1])):
                 if mix_or_not != "mix" and mix_or_not != "background":
                     product_name = i[2] + "/" + mix_or_not
                     ad = QCheckBox(product_name)
@@ -213,6 +214,8 @@ class project_app(QWidget):
 
     def augment(self):
         grid = self.current_grid
+        grid_x = grid[0]
+        grid_y = grid[1]
         category_name = []
         category_id = []
         for i in self.a:
@@ -221,33 +224,36 @@ class project_app(QWidget):
 
         for i in category_name:
             name = i.split("/")
-            super_id = self.DB.get_supercategory_id(name[1])
-            cate_id = self.DB.get_category_id(str(super_id), name[0])
+            cate_id = self.DB.get_cat_id_SN(name[1], name[0])
             category_id.append(cate_id)
 
         batch_method = 3
         back_name = self.current_background.split("/")
-        back_super_id = self.DB.get_supercategory_id(back_name[1])
-        back_cate_id = self.DB.get_category_id(str(back_super_id), back_name[0])
+        back_super_id = self.DB.get_super_id_SN(back_name[1])
+        back_cate_id = self.DB.get_cat_id_SI(str(back_super_id), back_name[0])
         grid_id = self.DB.get_grid_id("1x1")
-        loc_id = self.DB.get_loc_id_from_args(str(grid_id), "1x1")
-        object_id = self.DB.get_obj_id_from_args(loc_id, back_cate_id, "1", "-1")
+        loc_id = self.DB.get_loc_id(str(grid_id), "1x1")
+        object_id = self.DB.get_obj_id_from_args(loc_id, back_cate_id, "1", "-1", "-1")
         obj = self.DB.get_table(str(object_id), "Object")
-        background = self.DB.get_table(str(obj[0]), "Image")[2]
-        background_image = np.array(Image.open(BytesIO(background)).convert("RGB"))
+
 
 
         # 실제 사용함수
         # 디바이스 (id(int)) 그리드(x(int),y(int), id(int)) 카테고리 (id(list), iteration(int)), 배경 이미지 (id(int))
         # 20001, 2, 3, 1, [1, 2], 3, 29
-        aug1 = augment_v3.augment(grid, category_id, batch_method, background_image)
-        aug1.compose_batch()
-        aug1.load_DB()
-        aug1.make_background()
-        aug1.make_maskmap()
-        aug1.augment_image()
-        aug1.re_segmentation()
-        result = aug1.save_DB()
+        # 이건 tool에서 입력으로 받아와야 하는 변수들
+        # 20001, 2, 3, 1, [1, 2], 3, 29
+        device_id = 20001
+        grid = (grid_x, grid_y)
+        grid_id = self.DB.get_grid_id(str(grid_x) + "x" + str(grid_y))
+        object_category = category_id
+        background_id = self.DB.get_table(str(obj[3]), "Image")[0]
+        print("배경 아이디 : " + str(background_id))
+        iteration = 3  #######################
+        batch_num = [3, 3, 3]
+        # bright_param : [bright_flag, mode_flag, flag1, flag2, flag3, th1, th2, th3, rect x, rect y, rect w, rect h]
+        bright_param = [1, 1, 1, 1, 1, 78, 36, 113, 1140, 440, 100, 200]
+        augmain.aug_main(device_id, grid, grid_id, object_category, background_id, iteration, batch_num, bright_param)
 
         print("finish")
 

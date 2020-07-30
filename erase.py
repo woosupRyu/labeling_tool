@@ -16,7 +16,7 @@ def reset_table(db):
 if __name__ == "__main__":
 
     # cunnect to MYSQL Server
-    mydb = DB(ip='192.168.10.69',
+    mydb = DB.DB(ip='192.168.10.69',
               port=3306,
               user='root',
               password='return123',

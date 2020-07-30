@@ -30,23 +30,38 @@ class MyApp(QWidget):
         self.initUI()
         self.DB = db
 
-        for i in self.DB.list_table("Category"):
-            print(i[2])
-            print(i[1])
+        # for i in self.DB.list_table("Image"):
+        #     print(str(i[0]) + "," + str(i[3]))
+        #
+        #
+        # for i in self.DB.list_table("Category"):
+        #     print(i[2])
+        #     print(i[0])
+        # for i in self.DB.list_table("Grid"):
+        #     print(str(i[1]) + "x" + str(i[2]))
+        #     print(i[0])
 
-        for i in self.DB.list_table("Object"):
-            if i[2] == 6:
-                print(i)
+        # for i in self.DB.list_table("Image"):
+        #     i[2]
+
+        # for i in self.DB.list_table("Object"):
+        #     print(i)
+        # for i in self.DB.list_table("Bbox"):
+        #     print(i)
+        # for i in range(20, 26):
+        #     print(self.DB.get_table(str(i), "Image")[4])
+        # for i in range(20, 26):
+        #     print(self.DB.get_table(str(i), "Image")[3])
+        # print(self.DB.list_img_id_TC("3", "1"))
 
 
 
-#         for i in [17, 47, 77]:
-#             image_id = self.DB.get_table(str(i), "Object")[0]
-#             tem_img = self.DB.get_table(str(image_id), "Image")
-#             im_data = np.array(Image.open(BytesIO(tem_img[2])).convert("RGB"))
-#             im_data[:, :, [0, 2]] = im_data[:, :, [2, 0]]
-#             cv2.imwrite(str(i) + ".png", im_data)
-#
+        # for i in range(20, 26):
+        #     tem_img = self.DB.get_table(str(i), "Image")
+        #     im_data = np.array(Image.open(BytesIO(tem_img[2])).convert("RGB"))
+        #     im_data[:, :, [0, 2]] = im_data[:, :, [2, 0]]
+        #     cv2.imwrite(str(i) + ".png", im_data)
+# #
 #         for i in range(48, 58):
 #             image_id = self.DB.get_table(str(i), "Object")[0]
 #             tem_img = self.DB.get_table(str(image_id), "Image")
@@ -123,8 +138,10 @@ class MyApp(QWidget):
         conn = mqtt_connector('192.168.10.69', 1883, "20001")
         conn.collect_dataset("20001", 1)  # ip, port  collect: env_id , image_type
         image_id = conn.get_result()
+        print(image_id)
         # 저장된 이미지를 읽어보여주는 함수
         tem_img = self.DB.get_table(str(image_id), "Image")
+        print(tem_img[0])
         im_data = np.array(Image.open(BytesIO(tem_img[2])).convert("RGB"))
         cv2.imwrite("dd.png", im_data)
         qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)

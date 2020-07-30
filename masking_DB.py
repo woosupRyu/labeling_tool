@@ -3,27 +3,17 @@ from PyQt5.QtGui import *
 from PyQt5.QtWidgets import *
 import numpy as np
 import random
-from DCD_DB_API_master.db_api import DB
 from io import BytesIO
 from PIL import Image
-import copy
+import viewer
 #그래픽스 클래스에서도 참조해야할 변수들 글로벌로 선언
 
 global check_state #마스킹 작업 상태 표시
-global view # 이미지 보여주는 공간
-global scale_factor_w #이미지 확대, 축소 배율
 global edit_btn # 수정 버튼
 global draggin_idx # 드래그 작업 참조 변수
 global mask_btn # 마스킹 버튼
-global maskpoint # 마스크 값(QPoint)
-global maskpoint_value # 마스크 값 (lsit)
-global qp # QPainter
-global scene # 이미지 보여주는 공간
 global im # 마스크를 포함한 이미지
-global pen # 마스크 포인트 그리는 펜
-global mask_num # 선택된 마스크의 순서
 global qim # 마스크 없는 원 이미지
-global line_pen # 마스크 선 그리는 펜
 global label_name #라벨 이름
 global color_value # 색의 실제 값
 global category_box # 현재 선택할 수 있는 물품을 보여주는 박스
@@ -35,16 +25,11 @@ class mask(QWidget):
     def __init__(self, db):
         super().__init__()
         self.DB = db
-        global scale_factor_w
         global draggin_idx
-        global mask_num
-        global maskpoint
-        global maskpoint_value
         global label_name
         global color_value
         global check_state
         global qim
-        global qp
         global point_num
         global current_object
 
@@ -55,36 +40,25 @@ class mask(QWidget):
         self.collect_color = [[255, 0, 0], [255, 255, 0], [0, 255, 255], [0, 255, 0], [255, 0, 255]]
 
         check_state = 100 # 작업중이 아님을 나타내는 값 선언
-        scale_factor_w = 1 # 이미지 사이즈의 배율이므로 1로 초기화
-        mask_num = 1000000 # 마스크 개수의 초기값
-        maskpoint = []
-        maskpoint_value = []
         draggin_idx = -1
         color_value = []
         self.label_list = []
         qim = []
-        qp = QPainter()
         point_num = 0
 
     def masking(self):
-
-        global view
         global edit_btn
-        global scene
         global im
         global mask_btn
         global qim
         global category_box
         global left_vboxx
-        global pen
-        global line_pen
         global current_object
         progress = 0
         #이미지를 보여줄 그래픽스 공간 생성
-        scene = QGraphicsScene()
-        view = tracking_screen(scene)
-        view.setMouseTracking(True)
-        view.setInteractive(True)
+        self.view = viewer.QViewer()
+        self.view.setMouseTracking(True)
+        self.view.setInteractive(True)
 
         # 편의 기능들 생성
         self.btn_group = QButtonGroup()
@@ -94,12 +68,19 @@ class mask(QWidget):
         edit_btn.setCheckable(True)
         edit_btn.setShortcut("E")
         edit_btn.setToolTip("E")
+        edit_btn.clicked.connect(self.edit_mode)
         mask_btn = QPushButton("마스킹(Q)")
         mask_btn.setCheckable(True)
         mask_btn.setShortcut("Q")
         mask_btn.setToolTip("Q")
-        mask_btn.toggle()
-        original_size_btn = QPushButton("기본크기(G)")
+        mask_btn.clicked.connect(self.mask_mode)
+        mask_btn.click()
+        move_btn = QPushButton("화면 이동(W)")
+        move_btn.setCheckable(True)
+        move_btn.setShortcut("W")
+        move_btn.setToolTip("W")
+        move_btn.clicked.connect(self.move_mode)
+        original_size_btn = QPushButton("이미지 리셋(G)")
         original_size_btn.setToolTip("G")
         original_size_btn.setShortcut("G")
         original_size_btn.clicked.connect(self.set_original_size)
@@ -120,18 +101,18 @@ class mask(QWidget):
 
         #현재 작업할 수 있는 물품들 박스에 추가(mix 제외)
         for i in self.DB.list_table("Category"):
-            super_name = self.DB.get_table(str(i[0]), "SuperCategory")[1]
+            super_name = self.DB.get_table(str(i[1]), "SuperCategory")[1]
             if super_name != "mix" and super_name != "background":
                 category_box.addItem(i[2] + "/" + super_name)
 
         #현재 물품과 연관된 모든 오브젝트들 호출(mix 제외)
         cate_info = category_box.currentText().split("/")
-        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
+        self.current_category = str(self.DB.get_cat_id_SN(cate_info[1], cate_info[0]))
 
         objects = []
         for i in self.DB.list_table("Grid"):
             if i[1] != 0:
-                obj = self.DB.list_obj_check_num(str(i[0]), self.current_category, "0")
+                obj = self.DB.list_obj_CN(str(i[0]), self.current_category, "0")
                 if obj == None:
                     obj = []
                 else:
@@ -149,12 +130,11 @@ class mask(QWidget):
         category_name = category_box.currentText()
 
         RGB = random.choice(self.collect_color)
+        self.view.scene.push_color(RGB)
         back_label_color = "background-color: " + QColor(RGB[0], RGB[1], RGB[2]).name()
         self.label_list = QRadioButton(category_name)
         self.label_list.setStyleSheet(back_label_color)
         self.label_list.toggle()
-        pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 4)
-        line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 2)
 
         #호출된 오브젝트들로 버튼 생성
         for i in btn_names:
@@ -167,7 +147,7 @@ class mask(QWidget):
             self.label_group.addButton(temp_btn)
             self.a.append(temp_btn)
             tem_box = QCheckBox()
-            if self.DB.get_mask_info(self.obj_name2id(i)) !=None:
+            if self.DB.get_mask(self.obj_name2id(i)) !=None:
                 tem_box.toggle()
                 progress = progress + 1
             self.b.append(tem_box)
@@ -212,6 +192,7 @@ class mask(QWidget):
 
         self.btn_group.addButton(edit_btn)
         self.btn_group.addButton(mask_btn)
+        self.btn_group.addButton(move_btn)
 
         self.label_vbox = QVBoxLayout()
         label_box = QGroupBox()
@@ -221,6 +202,7 @@ class mask(QWidget):
         vbox = QVBoxLayout()
         vbox.addWidget(edit_btn)
         vbox.addWidget(mask_btn)
+        vbox.addWidget(move_btn)
         vbox.addWidget(original_size_btn)
         vbox.addWidget(save_btn)
         vbox.addWidget(label_box)
@@ -232,7 +214,7 @@ class mask(QWidget):
         vertical_splitter.setLayout(self.vertical_box)
         left_splitter = QSplitter(Qt.Horizontal)
         left_splitter.addWidget(vertical_splitter)
-        left_splitter.addWidget(view)
+        left_splitter.addWidget(self.view)
         left_splitter.addWidget(right_frame)
         left_splitter.setStretchFactor(1, 5)
         hbox.addWidget(left_splitter)
@@ -243,31 +225,25 @@ class mask(QWidget):
         self.show()
         if len(self.a) != 0:
             self.a[0].click()
+    def mask_mode(self):
+        self.view.scene.mode = 0
+        self.view.scene.set_poly_mode(0)
+        self.view.setDragMode(QGraphicsView.NoDrag)
+    def edit_mode(self):
+        self.view.scene.mode = 1
+        self.view.scene.set_poly_mode(1)
+        self.view.setDragMode(QGraphicsView.NoDrag)
+    def move_mode(self):
+        self.view.scene.mode = 2
+        self.view.scene.set_poly_mode(2)
+        if self.sender().isChecked():
+            print("on")
+            self.view.setDragMode(QGraphicsView.ScrollHandDrag)
 
     def set_original_size(self):
-        # 이미지를 원래 크기로 되돌리는 버튼과 연결된 함수
-        global scale_factor_w
-        global qp
-        global mask_num
-        global scene
-        global im
-        global maskpoint
-        global view
-        global scene
-
-        #이미지 스케일을 1로 수정 후 다시 출력
-        scale_factor_w = 1
-        im.setDevicePixelRatio(scale_factor_w)
-        qp.begin(im)
-        qp.setPen(line_pen)
-        qp.drawPolygon(QPolygon(maskpoint))
-        qp.end()
-        w = im.width()
-        h = im.height()
-        scene.clear()
-        scene.addPixmap(im)
-        view.fitInView(QRectF(0, 0, w, h), Qt.KeepAspectRatio)
-        scene.update()
+        for i in self.a:
+            if i.text() == self.current_object_label.text():
+                i.click()
 
     def save_state(self):
         #현재 진행도(체크박스의 체크 개수)를 보여주는 함수
@@ -280,82 +256,50 @@ class mask(QWidget):
 
     def image_state(self):
         #이미지이름을 누르면 해당 이미지가 보이도록 해주는 함수
-        global scale_factor_w
         global draggin_idx
-        global mask_num
-        global maskpoint
-        global maskpoint_value
         global im
         global qim
         global current_object
         global check_state
-        global view
-        global scene
-        global qp
 
         #작업상태 및 변수들 초기화
         check_state = 100
         current_object = self.sender().text()
         self.current_object_label.setText(current_object)
-
-        scale_factor_w = 1
-        mask_num = 1000000
-        maskpoint = []
-        maskpoint_value = []
-        draggin_idx = -1
+        self.view.scene.reset_mask()
 
         #현재의 오브젝트의 이미지 출력
         img_obj_id = self.obj_name2id(current_object)
-        imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[0], "Image")[2]
+        imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[3], "Image")[2]
         self.img_data = np.array(Image.open(BytesIO(imgd)).convert("RGB"))
         qim = QImage(self.img_data, self.img_data.shape[1], self.img_data.shape[0], self.img_data.strides[0],
                      QImage.Format_RGB888)
         im = QPixmap.fromImage(qim)
-        im.setDevicePixelRatio(scale_factor_w)
-        w = im.width()
-        h = im.height()
-        qp.begin(im)
-        # 오브젝트와 관련된 비박스가 존재할 경우 비박스 출력
-        masks = self.DB.get_mask_info(img_obj_id)
+        self.view.setPhoto(im)
+        # 오브젝트와 관련된 비박스가 존재할 경우 마스크 출력
+        masks = self.DB.get_mask(img_obj_id)
         if masks != None:
             maskpoint_value = self.XYvalue2maskvalue(masks)
             maskpoint = self.value2qpoints(maskpoint_value)
-            qp.setPen(line_pen)
-            qp.drawPolygon(QPolygon(maskpoint))
-        qp.end()
-        scene.clear()
-        scene.addPixmap(im)
-        view.fitInView(QRectF(0, 0, w, h), Qt.KeepAspectRatio)
-        scene.update()
+            self.view.scene.setPoint(maskpoint)
+            self.view.scene.mask_show()
+        self.update()
+
 
     def save_info(self):
         #저장버튼과 연결된 함수, 마스크값을 저장하고, 해당 이미지 비박스 체크
         global current_object
-        global maskpoint_value
-        global scale_factor_w
-
         obj_id = self.obj_name2id(current_object)
-
         self.DB.delete_mask(obj_id)
+        if len(self.view.scene.poly.points) != 0:
+            value = self.qpoint2value(self.view.scene.poly.points)
+            x, y = self.maskvalue2XYvalue(value)
+            for j in range(len(x)):
+                self.DB.set_mask(obj_id, x[j], y[j])
 
-        if scale_factor_w > 1:
-            if len(maskpoint_value) != 0:
-                x, y = self.maskvalue2XYvalue(maskpoint_value)
-                for j in range(len(x)):
-                    self.DB.set_mask(obj_id, x[j] * scale_factor_w, y[j] * scale_factor_w)
-
-                for i in range(len(self.a)):
-                    if self.a[i].isChecked():
-                        self.b[i].setCheckState(Qt.Checked)
-        else:
-            if len(maskpoint_value) != 0:
-                x, y = self.maskvalue2XYvalue(maskpoint_value)
-                for j in range(len(x)):
-                    self.DB.set_mask(obj_id, x[j], y[j])
-
-                for i in range(len(self.a)):
-                    if self.a[i].isChecked():
-                        self.b[i].setCheckState(Qt.Checked)
+            for i in range(len(self.a)):
+                if self.a[i].isChecked():
+                    self.b[i].setCheckState(Qt.Checked)
 
     def move_image(self):
         # 다음, 이전이미지로 이동하는 함수
@@ -378,18 +322,10 @@ class mask(QWidget):
         # 변경된 물품의 모든 오브젝트들을 호출하는 함수
         global category_box
         global left_vboxx
-        global pen
-        global line_pen
         global im
         global qim
-        global maskpoint
-        global maskpoint_value
         global check_state
         global current_object
-        global scene
-        global view
-        global qp
-        global scale_factor_w
 
         # 변수들 초기화
         progress = 0
@@ -397,30 +333,27 @@ class mask(QWidget):
         self.a = []
         self.b = []
         count = 0
-        scale_factor_w = 1
-        maskpoint = []
-        maskpoint_value = []
+        self.view.scene.reset_mask()
 
         # 변경된 물품의 라벨 생성
         cate_info = category_box.currentText().split("/")
         RGB = random.choice(self.collect_color)
+        self.view.scene.push_color(RGB)
         back_label_color = "background-color: " + QColor(RGB[0], RGB[1], RGB[2]).name()
         self.label_list = QRadioButton(category_box.currentText())
         self.label_list.setStyleSheet(back_label_color)
         self.label_list.toggle()
-        pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 4)
-        line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 2)
         for i in reversed(range(self.label_vbox.count())):
             self.label_vbox.itemAt(i).widget().deleteLater()
         self.label_vbox.addWidget(self.label_list)
 
         # 변경된 물품과 관련된 모든 오브젝트 호출(mix 제외)
-        self.current_category = str(self.DB.get_cat_id(cate_info[0], cate_info[1]))
+        self.current_category = str(self.DB.get_cat_id_SN(cate_info[1], cate_info[0]))
 
         objects = []
         for i in self.DB.list_table("Grid"):
             if i[1] != 0:
-                obj = self.DB.list_obj_check_num(str(i[0]), self.current_category, "0")
+                obj = self.DB.list_obj_CN(str(i[0]), self.current_category, "0")
                 if obj == None:
                     obj = []
                 else:
@@ -441,7 +374,7 @@ class mask(QWidget):
             self.label_group.addButton(temp_btn)
             self.a.append(temp_btn)
             tem_box = QCheckBox()
-            if self.DB.get_mask_info(self.obj_name2id(i)) != None:
+            if self.DB.get_mask(self.obj_name2id(i)) != None:
                 tem_box.toggle()
                 progress = progress + 1
             self.b.append(tem_box)
@@ -463,31 +396,23 @@ class mask(QWidget):
             left_hbox.addWidget(self.a[i])
             left_hbox.addWidget(self.b[i])
             left_vboxx.addLayout(left_hbox)
-        scene.clear()
 
         # 변경된 물품의 오브젝트가 1개이상일 경우 첫번째 오브젝트의 이미지 출력
         if len(objects) >= 1:
             first_image_name = self.a[0].text()
             img_obj_id = self.obj_name2id(first_image_name)
             obj_info1 = self.DB.get_table(img_obj_id, "Object")
-            img_info1 = self.DB.get_table(str(obj_info1[0]), "Image")
+            img_info1 = self.DB.get_table(str(obj_info1[3]), "Image")
             img = np.array(Image.open(BytesIO(img_info1[2])).convert("RGB"))
             qim = QImage(img, img.shape[1], img.shape[0], img.strides[0], QImage.Format_RGB888)
-            w = qim.width()
-            h = qim.height()
             im = QPixmap.fromImage(qim)
-            qp.begin(im)
+            self.view.setPhoto(im)
             #해당 오브젝트의 마스크가 존재할 경우 출력
-            if self.DB.get_mask_info(img_obj_id) != None:
-                maskpoint_value = self.XYvalue2maskvalue(self.DB.get_mask_info(img_obj_id))
+            if self.DB.get_mask(img_obj_id) != None:
+                maskpoint_value = self.XYvalue2maskvalue(self.DB.get_mask(img_obj_id))
                 maskpoint = self.value2qpoints(maskpoint_value)
-                qp.setPen(line_pen)
-                qp.drawPolygon(QPolygon(maskpoint))
-            qp.end()
-            scene.clear()
-            scene.addPixmap(im)
-            view.fitInView(QRectF(0, 0, w, h), Qt.KeepAspectRatio)
-            scene.update()
+                self.view.scene.setPoint(maskpoint)
+                self.view.scene.mask_show()
         self.update()
 
     def obj_list2name(self, obj_list):
@@ -505,12 +430,12 @@ class mask(QWidget):
 
             loc = self.DB.get_table(str(loc_id), "Location")
             location_str = str(loc[2]) + "x" + str(loc[3])
-            grid = self.DB.get_table(str(loc[0]), "Grid")
+            grid = self.DB.get_table(str(loc[1]), "Grid")
             grid_str = str(grid[1]) + "x" + str(grid[2])
 
             cate = self.DB.get_table(str(cate_id), "Category")
             cate_str = cate[2]
-            super_cate = self.DB.get_table(str(cate[0]), "SuperCategory")
+            super_cate = self.DB.get_table(str(cate[1]), "SuperCategory")
             super_cate_str = super_cate[1]
 
             btn_name = cate_str + "/" + super_cate_str + "_" + location_str + "/" + grid_str + "_" + str(obj_list[i][4])
@@ -525,9 +450,9 @@ class mask(QWidget):
         i[0] = i[0].split("/")  # "콜라" "음료" "1x2" "3x3", "1"
         i[1] = i[1].split("/")
 
-        cate_id = self.DB.get_cat_id(i[0][0], i[0][1])
-        loc_id = str(self.DB.get_loc_id_GL(i[1][1], i[1][0]))[1:-2]
-        obj_id = self.DB.get_obj_id_from_args(loc_id, str(cate_id), i[2], "-1")
+        cate_id = self.DB.get_cat_id_SN(i[0][1], i[0][0])
+        loc_id = str(self.DB.get_loc_id_GL(i[1][1], i[1][0]))
+        obj_id = self.DB.get_obj_id_from_args(loc_id, str(cate_id), i[2], "-1", "-1")
 
         return str(obj_id)
 
@@ -555,251 +480,12 @@ class mask(QWidget):
         maskpoint = []
 
         for i in maskpoint_value:
-            maskpoint.append(QPoint(i[0], i[1]))
+            maskpoint.append(QPointF(i[0], i[1]))
         return maskpoint
 
+    def qpoint2value(self, points):
+        value = []
+        for i in points:
+             value.append([i.x(), i.y()])
+        return value
 
-
-class tracking_screen(QGraphicsView):
-    #그래픽스(이미지를 보여주는 공간)의 마우스 함수를 커스터마이징 하기위해 만든 새로운 클래스
-
-    def mouseMoveEvent(self, e):
-        #마우스가 움직일 때, 일어나는 이벤트
-        global scale_factor_w
-        global view
-        global draggin_idx
-        global edit_btn
-        global qp
-        global im
-        global qim
-        global maskpoint
-        global scene
-        global check_state
-        global point_num
-
-        #마우스 위치를 확대, 축소된 이미지에 맞도록 변환
-        if scale_factor_w <= 1:
-            x = view.mapToScene(e.pos()).x() * scale_factor_w
-            y = view.mapToScene(e.pos()).y() * scale_factor_w
-        else:
-            x = view.mapToScene(e.pos()).x()
-            y = view.mapToScene(e.pos()).y()
-        if qim != []:
-            w = qim.width()
-            h = qim.height()
-        #Ctrl + 드래그를 했을 때, 화면이 이동
-        mods = e.modifiers()
-        if Qt.ControlModifier == int(mods) and e.buttons() == Qt.LeftButton:
-            view.fitInView(QRectF(e.x()/scale_factor_w, e.y()/scale_factor_w, w, h), Qt.KeepAspectRatio)
-        else:
-            if mask_btn.isChecked():
-                # 마스킹 작업 중일 경우 현재 위치에 포인트를 찍을 경우 그려지게 되는 마스크를 표시
-                if check_state == 30:
-                    if len(maskpoint) == point_num + 1:
-                        maskpoint[point_num] = QPoint(x, y)
-                    else:
-                        maskpoint.append(QPoint(x, y))
-                    im = QPixmap.fromImage(qim)
-                    im.setDevicePixelRatio(scale_factor_w)
-                    qp.begin(im)
-                    qp.setPen(line_pen)
-                    qp.drawPolyline(QPolygon(maskpoint))
-                    qp.end()
-                    scene.addPixmap(im)
-
-            if edit_btn.isChecked():
-                # 수정 작업 중 드래그 했을 때, 점과 선이 실시간으로 갱신
-                if draggin_idx != -1:
-
-                    maskpoint[draggin_idx] = QPoint(x, y)
-                    im = QPixmap.fromImage(qim)
-                    im.setDevicePixelRatio(scale_factor_w)
-                    qp.begin(im)
-
-                    qp.setPen(pen)
-                    qp.drawPoints(QPolygon(maskpoint))
-                    qp.setPen(line_pen)
-                    qp.drawPolygon(QPolygon(maskpoint))
-                    qp.end()
-                    scene.addPixmap(im)
-
-    def mouseReleaseEvent(self, e):
-        #마우스가 클릭됬다가 떨어질 때 발생하는 이벤트
-        global view
-        global scale_factor_w
-        global draggin_idx
-        global edit_btn
-        global qp
-        global im
-        global mask_num
-        global qim
-        global maskpoint
-        global maskpoint_value
-        global scene
-
-        # 마우스 위치를 확대, 축소된 이미지에 맞도록 변환
-        if scale_factor_w <= 1:
-            x = view.mapToScene(e.pos()).x() * scale_factor_w
-            y = view.mapToScene(e.pos()).y() * scale_factor_w
-        else:
-            x = view.mapToScene(e.pos()).x()
-            y = view.mapToScene(e.pos()).y()
-        if edit_btn.isChecked():
-
-            if e.button() == Qt.LeftButton and draggin_idx != -1:
-                maskpoint_value[draggin_idx] = [x, y]
-                maskpoint[draggin_idx] = QPoint(x, y)
-
-                draggin_idx = -1
-                im = QPixmap.fromImage(qim)
-                im.setDevicePixelRatio(scale_factor_w)
-                qp.begin(im)
-
-                qp.setPen(line_pen)
-                qp.drawPolygon(QPolygon(maskpoint))
-                qp.setPen(pen)
-                qp.drawPoints(QPolygon(maskpoint))
-                qp.end()
-                scene.addPixmap(im)
-
-
-    def wheelEvent(self, ev):
-        #휠이 움직일때 발생하는 이벤트
-        global scene
-        global scale_factor_w
-        global qp
-        global im
-        global qim
-        global view
-
-        delta = ev.angleDelta()
-
-        #ctrl+휠을 하면 이미지의 사이즈가 확대, 축소 되도록 수정
-        qp.begin(im)
-        #확대, 축소비율 설정 휠이 한번 움직일때마다 10%씩 작아지거나 커짐, 최소, 최대 크기는 0.5배에서 4배로 설정
-        if delta.y() > 0 and scale_factor_w > 0.25:
-            scale_factor_w = scale_factor_w * 0.9
-        elif scale_factor_w < 2 and delta.y() < 0:
-            scale_factor_w = scale_factor_w * 1.1
-        if scale_factor_w < 0.5:
-            line_pen.setWidth(1)
-        else:
-            line_pen.setWidth(3)
-
-        im.setDevicePixelRatio(scale_factor_w)
-        qp.end()
-        scene.clear()
-        scene.addPixmap(im)
-        w = qim.width()
-        h = qim.height()
-        view.fitInView(QRectF(ev.x() / scale_factor_w, ev.y() / scale_factor_w, w, h), Qt.KeepAspectRatio)
-
-
-    def mousePressEvent(self, e):
-        #마우스를 클릭했을 때, 발생하는 이벤트
-        global view
-        global scale_factor_w
-        global draggin_idx
-        global edit_btn
-        global qp
-        global pen
-        global scene
-        global mask_num
-        global mask_btn
-        global line_pen
-        global im
-        global color_value
-        global maskpoint_value
-        global maskpoint
-        global check_state
-        global qim
-        global point_num
-
-        if scale_factor_w <= 1:
-            x = view.mapToScene(e.pos()).x() * scale_factor_w
-            y = view.mapToScene(e.pos()).y() * scale_factor_w
-        else:
-            x = view.mapToScene(e.pos()).x()
-            y = view.mapToScene(e.pos()).y()
-        w = qim.width()
-        h = qim.height()
-        mods = e.modifiers()
-        #Ctrl + 좌클릭 시 화면 이동
-        if Qt.ControlModifier == int(mods) and e.buttons() == Qt.LeftButton:
-            view.fitInView(QRectF(e.x()/scale_factor_w, e.y()/scale_factor_w, w, h), Qt.KeepAspectRatio)
-        else:
-            #마스킹 작업 중 이벤트
-            if mask_btn.isChecked():
-                # 좌클릭시 포인트 생성 및 선 생성
-                # 첫 포인트 생성 시 작업
-                if e.buttons() == Qt.LeftButton and check_state == 100:
-                    maskpoint.append((QPoint(x, y)))
-                    maskpoint_value.append([x, y])
-                    qp.begin(im)
-                    qp.setPen(pen)
-                    qp.drawPoint(x, y)
-                    qp.setPen(line_pen)
-                    qp.drawPolyline(QPolygon(maskpoint))
-                    qp.end()
-                    scene.addPixmap(im)
-                    check_state = 30
-                    point_num = point_num + 1
-
-                # 두번째 이후 포인트 생성 시 작업
-                elif e.buttons() == Qt.LeftButton and check_state == 30:
-                    maskpoint[point_num] = QPoint(x, y)
-                    maskpoint_value.append([x, y])
-                    qp.begin(im)
-                    qp.setPen(pen)
-                    qp.drawPoint(x, y)
-                    qp.setPen(line_pen)
-                    qp.drawPolyline(QPolygon(maskpoint))
-                    qp.end()
-                    scene.addPixmap(im)
-                    point_num = point_num + 1
-                #마스크가 있는 상태에서 클릭할 경우 기존의 마스크는 사라지고 새로운 마스크 생성
-                elif e.buttons() == Qt.LeftButton and check_state == 10:
-                    maskpoint = []
-                    maskpoint_value = []
-                    maskpoint.append(QPoint(x, y))
-                    maskpoint_value.append([x, y])
-                    im = QPixmap.fromImage(qim)
-                    im.setDevicePixelRatio(scale_factor_w)
-                    qp.begin(im)
-                    qp.setPen(pen)
-                    qp.drawPoint(x, y)
-                    qp.setPen(line_pen)
-                    qp.drawPolyline(QPolygon(maskpoint))
-                    qp.end()
-                    scene.clear()
-                    scene.addPixmap(im)
-                    check_state = 30
-                    point_num = point_num + 1
-
-                #우클릭시 최종 마스크 생성
-                elif e.buttons() == Qt.RightButton:
-                    im = QPixmap.fromImage(qim)
-                    im.setDevicePixelRatio(scale_factor_w)
-                    qp.begin(im)
-                    qp.setPen(line_pen)
-
-                    qp.drawPolygon(QPolygon(maskpoint[:point_num]))
-                    qp.end()
-
-                    scene.addPixmap(im)
-                    check_state = 10
-                    point_num = 0
-
-            #수정 작업중 발생하는 이벤트
-            #클릭위치와 가장 가까운 점을 계산하여 해당 포인트를 마우스 위치로 수정
-            if edit_btn.isChecked():
-                if len(maskpoint_value) != 0:
-                    if e.buttons() == Qt.LeftButton and draggin_idx == -1:
-                        point = [x, y]
-                        min_dist = np.array(maskpoint_value) - np.array(point)
-                        min_dist = np.array(min_dist[:, 0] ** 2 + min_dist[:, 1] ** 2)
-                        minimum_value = min_dist.argmin()
-
-                        #마우스 위치와 포인트의 위치 사이의 거리가 1000이상일 경우 작업x
-                        if min(min_dist) < 1000:
-                            draggin_idx = minimum_value

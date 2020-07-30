@@ -54,7 +54,8 @@ class resist_app(QWidget):
         category_btn.clicked.connect(self.send_category_text)
 
         # 타이핑할 수 있는 위젯, 선택할 수 있는 위젯 생성
-        self.device_IP = QLineEdit()
+        self.broker_IP = QLineEdit()
+        self.device_ID = QLineEdit()
         self.floor = QLineEdit()
         self.device_w = QLineEdit()
         self.device_d = QLineEdit()
@@ -81,47 +82,49 @@ class resist_app(QWidget):
         #그리드의 특정 위치에 특정 요소 배치
         grid = QGridLayout()
 
-        grid.addWidget(device_btn, 6, 2)#(요소, 행, 열)
-        grid.addWidget(grid_btn, 9, 2)
-        grid.addWidget(super_category_btn, 11, 2)
-        grid.addWidget(category_btn, 20, 2)
+        grid.addWidget(device_btn, 7, 2)#(요소, 행, 열)
+        grid.addWidget(grid_btn, 10, 2)
+        grid.addWidget(super_category_btn, 12, 2)
+        grid.addWidget(category_btn, 21, 2)
 
-        grid.addWidget(self.device_IP, 1, 2)
-        grid.addWidget(self.floor, 2, 2)
-        grid.addWidget(self.device_w, 3, 2)
-        grid.addWidget(self.device_d, 4, 2)
-        grid.addWidget(self.device_h, 5, 2)
-        grid.addWidget(self.grid_x, 7, 2)
-        grid.addWidget(self.grid_y, 8, 2)
-        grid.addWidget(self.super_category_name, 10, 2)
-        grid.addWidget(self.super_category_list, 12, 2)
-        grid.addWidget(self.category_name, 13, 2)
-        grid.addWidget(self.category_w, 14, 2)
-        grid.addWidget(self.category_d, 15, 2)
-        grid.addWidget(self.category_h, 16, 2)
-        grid.addWidget(self.iterate_num, 17, 2)
-        grid.addWidget(self.thumbnail, 18, 2)
-        grid.addWidget(self.typing16, 19, 2)
+        grid.addWidget(self.broker_IP, 1, 2)
+        grid.addWidget(self.device_ID, 2, 2)
+        grid.addWidget(self.floor, 3, 2)
+        grid.addWidget(self.device_w, 4, 2)
+        grid.addWidget(self.device_d, 5, 2)
+        grid.addWidget(self.device_h, 6, 2)
+        grid.addWidget(self.grid_x, 8, 2)
+        grid.addWidget(self.grid_y, 9, 2)
+        grid.addWidget(self.super_category_name, 11, 2)
+        grid.addWidget(self.super_category_list, 13, 2)
+        grid.addWidget(self.category_name, 14, 2)
+        grid.addWidget(self.category_w, 15, 2)
+        grid.addWidget(self.category_d, 16, 2)
+        grid.addWidget(self.category_h, 17, 2)
+        grid.addWidget(self.iterate_num, 18, 2)
+        grid.addWidget(self.thumbnail, 19, 2)
+        grid.addWidget(self.typing16, 20, 2)
 
         label1 = QLabel("디바이스")
-        label2 = QLabel("ID\n(xxx.xxx.xxx.xxx)")
-        label3 = QLabel("층수")
-        label4 = QLabel("가로")
-        label5 = QLabel("깊이")
-        label6 = QLabel("높이")
-        label7 = QLabel("그리드")
-        label8 = QLabel("x")
-        label9 = QLabel("y")
-        label10 = QLabel("분류정보")
-        label11 = QLabel("분류")
-        label12 = QLabel("물품정보")
-        label13 = QLabel("분류")
-        label14 = QLabel("이름")
-        label15 = QLabel("가로")
-        label16 = QLabel("세로")
-        label17 = QLabel("높이")
-        label18 = QLabel("촬영 횟수")
-        label19 = QLabel("이미지")
+        label2 = QLabel("Broker_ip")
+        label3= QLabel("Device_id")
+        label4 = QLabel("층수")
+        label5 = QLabel("가로")
+        label6 = QLabel("깊이")
+        label7 = QLabel("높이")
+        label8 = QLabel("그리드")
+        label9 = QLabel("x")
+        label10 = QLabel("y")
+        label11 = QLabel("분류정보")
+        label12 = QLabel("분류")
+        label13 = QLabel("물품정보")
+        label14 = QLabel("분류")
+        label15 = QLabel("이름")
+        label16 = QLabel("가로")
+        label17 = QLabel("세로")
+        label18 = QLabel("높이")
+        label19 = QLabel("촬영 횟수")
+        label20 = QLabel("이미지")
 
         grid.addWidget(label1, 1, 0)
         grid.addWidget(label2, 1, 1)
@@ -129,19 +132,20 @@ class resist_app(QWidget):
         grid.addWidget(label4, 3, 1)
         grid.addWidget(label5, 4, 1)
         grid.addWidget(label6, 5, 1)
-        grid.addWidget(label7, 7, 0)
-        grid.addWidget(label8, 7, 1)
+        grid.addWidget(label7, 6, 1)
+        grid.addWidget(label8, 8, 0)
         grid.addWidget(label9, 8, 1)
-        grid.addWidget(label10, 10, 0)
-        grid.addWidget(label11, 10, 1)
-        grid.addWidget(label12, 12, 0)
-        grid.addWidget(label13, 12, 1)
+        grid.addWidget(label10, 9, 1)
+        grid.addWidget(label11, 11, 0)
+        grid.addWidget(label12, 11, 1)
+        grid.addWidget(label13, 13, 0)
         grid.addWidget(label14, 13, 1)
         grid.addWidget(label15, 14, 1)
         grid.addWidget(label16, 15, 1)
         grid.addWidget(label17, 16, 1)
         grid.addWidget(label18, 17, 1)
         grid.addWidget(label19, 18, 1)
+        grid.addWidget(label20, 19, 1)
 
         #요소들이 배치된 그리드를 실제 창에 배치
 
@@ -177,7 +181,7 @@ class resist_app(QWidget):
         if self.device_cash != None:
             for i in self.device_cash:
                 self.device_hbox = QHBoxLayout()
-                self.name = QLabel(i[1] + "/" + str(i[2]))
+                self.name = QLabel(i[1] + "/" + str(i[0]) + "/" + str(i[2]))
                 self.del_button = QPushButton("삭제")
                 self.del_button.clicked.connect(self.device_delete)
                 self.del_button.setCheckable(True)
@@ -215,7 +219,7 @@ class resist_app(QWidget):
         if self.category_cash != None:
             for i in self.category_cash:
                 category_hbox = QHBoxLayout()
-                name = QLabel(i[2] + "/" + self.DB.get_table(str(i[0]), "SuperCategory")[1])
+                name = QLabel(i[2] + "/" + self.DB.get_table(str(i[1]), "SuperCategory")[1])
                 del_button = QPushButton("삭제")
                 del_button.clicked.connect(self.category_delete)
                 del_button.setCheckable(True)
@@ -249,11 +253,11 @@ class resist_app(QWidget):
         self.show()
 
     def device_delete(self):
-        for i, info in enumerate(self.device_b):
-            if self.sender() == info:
-                delete_name = self.device_a[i].text()
-                del info
+        for i, info in enumerate(self.device_a):
+            if self.sender() == self.device_b[i]:
+                delete_name = info.text()
                 del self.device_a[i]
+                del self.device_b[i]
                 break
 
         for j in reversed(range(self.device_vbox.count())):
@@ -263,7 +267,7 @@ class resist_app(QWidget):
                     k.itemAt(l).widget().deleteLater()
                 k.deleteLater()
         delete_name = delete_name.split("/")
-        env_id = self.DB.get_env_id(delete_name[0], delete_name[1])
+        env_id = self.DB.get_env_id(delete_name[1], delete_name[0], delete_name[2])
         self.DB.delete_table(str(env_id), "Environment")
 
     def grid_delete(self):
@@ -282,7 +286,7 @@ class resist_app(QWidget):
                 k.deleteLater()
 
         grid_id = self.DB.get_grid_id(delete_name)
-        self.DB.delete_table(str(grid_id)[1:-2], "Grid")
+        self.DB.delete_table(str(grid_id), "Grid")
 
     def category_delete(self):
         for i, info in enumerate(self.category_b):
@@ -299,17 +303,17 @@ class resist_app(QWidget):
                     k.itemAt(l).widget().deleteLater()
                 k.deleteLater()
         cate_name = delete_name.split("/")
-        super_id = self.DB.get_supercategory_id(cate_name[1])
-        category_id = self.DB.get_category_id(str(super_id)[1:-2], cate_name[0])
+        super_id = self.DB.get_super_id_SN(cate_name[1])
+        category_id = self.DB.get_cat_id_SI(str(super_id), cate_name[0])
         self.DB.delete_table(str(category_id), "Category")
 
     def send_device_text(self):
         #입력받은 디바이스 정보를 DB에 보내주는 함수
-        return_value = self.DB.set_environment(self.device_IP.text(), self.floor.text(), self.device_w.text(), self.device_d.text(), self.device_h.text())
+        return_value = self.DB.set_environment(self.device_ID.text(), self.broker_IP.text(), self.floor.text(), self.device_w.text(), self.device_d.text(), self.device_h.text())
         #중복된 데이터는 아래의 함수를 실행시키지 않음
         if return_value == True:
             bix = QHBoxLayout()
-            new_env = QLabel(self.device_IP.text() + "/" + self.floor.text())
+            new_env = QLabel(self.broker_IP.text() + "/" + self.device_ID.text() + "/" + self.floor.text())
             self.del_button2 = QPushButton("삭제")
             bix.addWidget(new_env)
             bix.addWidget(self.del_button2)
@@ -321,7 +325,8 @@ class resist_app(QWidget):
             #DB에 보낸 데이터를 확인시켜주는 창
             self.env_check_window = QWidget()
 
-            IP_label = QLabel("IP : " + self.device_IP.text())
+            ID_label = QLabel("deice_ID : " + self.device_ID.text())
+            IP_label = QLabel("broker_IP : " + self.broker_IP.text())
             floor_label = QLabel("층수 : " + self.floor.text())
             w_label = QLabel("가로 : " + self.device_w.text())
             d_label = QLabel("깊이 : " + self.device_d.text())
@@ -331,6 +336,7 @@ class resist_app(QWidget):
             check_btn.clicked.connect(self.check)
 
             vbox = QVBoxLayout()
+            vbox.addWidget(ID_label)
             vbox.addWidget(IP_label)
             vbox.addWidget(floor_label)
             vbox.addWidget(w_label)
@@ -344,7 +350,8 @@ class resist_app(QWidget):
             self.env_check_window.show()
 
             # DB로 보내진 정보들을 Tool에서 지움
-            self.device_IP.setText("")
+            self.device_ID.setText("")
+            self.broker_IP.setText("")
             self.floor.setText("")
             self.device_w.setText("")
             self.device_d.setText("")
