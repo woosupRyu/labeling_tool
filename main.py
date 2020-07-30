@@ -29,6 +29,12 @@ class MyApp(QWidget):
         super().__init__()
         self.initUI()
         self.DB = db
+        #
+        # ob = self.DB.list_obj_CN("2", "1", "1", "3")
+        # print(ob)
+        # for i in self.DB.list_table("Object"):
+        #     if self.DB.get_table(str(i[3]), "Image")[4] == 1 or self.DB.get_table(str(i[3]), "Image")[4] == 2:
+        #         print(i[0])
 
         # for i in self.DB.list_table("Image"):
         #     print(str(i[0]) + "," + str(i[3]))

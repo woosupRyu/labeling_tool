@@ -1826,36 +1826,34 @@ class DB:
             else:
                 return None
 
-    def list_obj_CN(self, grid_id, cat_id, check_num):
+    def list_obj_CN(self, grid_id, cat_id, check_num, type):
         """
         Object table의 (cat_id)가 NULL이고, Location table의 (grid_id) 일때,
-        Image table의 (check_num)이 check_num과 같으면
+        Image table의 (check_num)이 check_num과 같고 Image table의 (type)이 type과 같으
         Object table의 row를 반환하는 함수
-
         Args:
             grid_id (str): Location table의 (grid_id)
-            cat_id (str): Object table의 (cat_id)
+            cat_id (str): Object table의 (cat면_id)
             check_num(str): Image table의 (check_num) 값과 비교될 값 -> (0 : 완료, 1 : 미진행, 2 : 거절)
-
+            type(str): Image table의 (type)
         Return:
             tuple ()(): Object table의 (row)s
-
             None: 값 없음
-
             False: 쿼리 실패
         """
         try:
             with self.db.cursor() as cursor:
                 query = "SELECT * FROM Object WHERE obj_id IN (SELECT C.obj_id " \
-                        "   FROM (SELECT tmp.obj_id, Image.check_num " \
+                        "   FROM (SELECT tmp.obj_id, I.check_num " \
                         "       FROM (SELECT Obj.obj_id, Obj.img_id " \
                         "           FROM (SELECT obj_id, img_id, loc_id " \
                         "               FROM Object WHERE cat_id=%s) AS Obj " \
                         "           INNER JOIN (SELECT loc_id FROM Location WHERE grid_id=%s) AS Loc " \
                         "           ON Loc.loc_id=Obj.loc_id) AS tmp " \
-                        "       INNER JOIN Image ON Image.img_id=tmp.img_id) AS C " \
+                        "       INNER JOIN (SELECT img_id, check_num FROM Image WHERE type=%s) AS I " \
+                        "       ON I.img_id=tmp.img_id) AS C " \
                         "WHERE check_num=%s)"
-                value = (cat_id, grid_id, check_num)
+                value = (cat_id, grid_id, type, check_num)
                 cursor.execute(query, value)
                 v = cursor.fetchall()
         except Exception as e:
@@ -1869,6 +1867,7 @@ class DB:
                 return v
             else:
                 return None
+
 
     def list_obj_CN_NULL(self, grid_id, check_num):
         """
