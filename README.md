@@ -1,22 +1,15 @@
 # labeling_tool
-!!!!!!!!!!!!!등록 작업시 디바이스의 123.123.123.123/2는 삭제하지 말아주시기 바랍니다!!!!!!!!!!!!!
-
-2020/07/14
-issue의 #7, #8, #4는 문제원인을 파악하였으나 해결하지 못한 상태입니다.
-(#3, #11)은 아직 확인해보지 못한 상태입니다.
-#6은 일차 수정하였으며, 지속적으로 업데이트할 예정입니다.
-!!!
-    
-  임시로 공유한 툴이기 때문에 메뉴얼도 미흡하고 미완성된 부분이 많습니다. 주석 후 수정된 코드도 많고 주석을 달지못한 코드도 있습니다. 사용, 확인해보시고 수정해야할 점 Github이나 Notion에 최대한 많이 올려주시기 바랍니다~   
+!!!!!!!!!!!!!등록 작업시 디바이스id를 20001번 이상으로 해주시가 바랍니다!!!!!!!!!!!!!
     
 ## 필요 설치모듈
 Linux, Window  
-Python3.7, PyQt5(5.14), opencv-python(4.2.0.34), pillow(7.1.2), paho-mqtt(1.5.0), PyMySQL(0.9.3)
-  
+Python3.7, PyQt5(5.14), opencv-python(4.2.0.34), pillow(7.1.2), paho-mqtt(1.5.0), PyMySQL(0.9.3), psutil(5.7.2)   
+합성 요구 모듈 : grpcio, grpcio-tools, protobuf  
 Mac  
-Python3.7, PyQt5(5.14), opencv-contrib-python-headless, pillow(7.1.2), paho-mqtt(1.5.0), PyMySQL(0.9.3)
+Python3.7, PyQt5(5.14), opencv-contrib-python-headless, pillow(7.1.2), paho-mqtt(1.5.0), PyMySQL(0.9.3), psutil(5.7.2)  
+합성 요구 모듈 : grpcio, grpcio-tools, protobuf  
 
-**모듈들은 상위버전이어도 상관없으나 Linux PyQt5의 경우 5.15(최신)버전을 사용했을 때, 에러가 발생했습니다.**
+**모듈들은 상위버전이어도 상관없으나 Linux PyQt5의 경우 5.15(최신)버전을 사용했을 때, 에러가 발생했습니다.**  
 
   
 ## 참고사항  
