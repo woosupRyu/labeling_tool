@@ -1,5 +1,6 @@
 # labeling_tool
 !!!!!!!!!!!!!등록 작업시 디바이스id를 20001번 이상으로 해주시가 바랍니다!!!!!!!!!!!!!
+!!!!!!!!!!!!!현재 Mix작업은 사용 불가능 합니다!!!!!!!!!!!!!
     
 ## 필요 설치모듈
 Linux, Window  
@@ -13,7 +14,7 @@ Python3.7, PyQt5(5.14), opencv-contrib-python-headless, pillow(7.1.2), paho-mqtt
 
   
 ## 참고사항  
-main.py를 실행시킨 후 등록 -> 촬영 -> 검수 -> 라벨링 -> 합성 순으로 작업을 진행  
+main.py를 실행시킨 후 등록 -> 촬영 -> 검수 -> 라벨링(Mask) -> 합성 -> 라벨링(Aug bbox)순으로 작업을 진행  
   
 <img src="https://user-images.githubusercontent.com/46614789/84610354-3f461700-aef5-11ea-8228-91c0946c4626.png"  width="30%" height="30%">
   
