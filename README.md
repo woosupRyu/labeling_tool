@@ -2,7 +2,7 @@
 !!!!!!!!!!!!!등록 작업시 디바이스id를 20001번 이상으로 해주시가 바랍니다!!!!!!!!!!!!!  
 !!!!!!!!!!!!!현재 Mix작업은 사용 불가능 합니다!!!!!!!!!!!!!  
 !!!!!!!!!!!!!json파일 생성 기능이 동작하지 않습니다!!!!!!!!!!!!!  
-https://github.com/woosupRyu/labeling_tool/releases/tag/v0.5 링크에 가셔서 zip파일을 받아 사용하시는게 사용하기 좋
+https://github.com/woosupRyu/labeling_tool/releases/tag/v0.5 링크에 가셔서 zip파일을 받아 사용하시는게 사용하기 좋습니다
     
 ## 필요 설치모듈
 Linux, Window  
