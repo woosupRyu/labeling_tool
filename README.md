@@ -106,7 +106,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 ### 라벨링
 ---
 검수된 이미지에 마스크를 그리는 환경  
-  <img src="https://user-images.githubusercontent.com/46614789/89004013-2e822100-d33c-11ea-9a5b-ca55ce3ade8f.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/89004013-2e822100-d33c-11ea-9a5b-ca55ce3ade8f.png"  width="30%" height="30%">  
   Mask : 촬영된 이미지를 마스킹 하는 창 생성
   Aug Bbox : 합성 이미지를 검수하는 창 생성
   Mix Bbox : 촬영된 믹스 이미지를 박스치는 창 생성
