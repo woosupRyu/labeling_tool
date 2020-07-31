@@ -41,7 +41,8 @@ Environment, Grid, SuperCategory, Category 정보를 등록하는 작업 환경
 **등록 작업에서 데이터를 등록할 경우 반드시 아래의 형식대로 등록** 
   
 디바이스  
-    IP : xxx.xxx.xxx.xxx  (x는 0\~9 정수)  
+    Broker_ip : xxx.xxx.xxx.xxx  (x는 0\~9 정수)  
+    Device_id : 20001~ (정수)
     층수 : 1\~x (정수)  
     가로 : 1\~x (정수)  
     깊이 : 1\~x (정수)  
@@ -64,7 +65,7 @@ Environment, Grid, SuperCategory, Category 정보를 등록하는 작업 환경
     촬영 횟수 : 1\~x (정수)  
     이미지 : 찾기 버튼 클릭 후 파일 선택  
     
-  <img src="https://user-images.githubusercontent.com/46614789/85643538-6fe53800-b6cf-11ea-976c-2412416c3d25.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/89002765-eb727e80-d338-11ea-8f4e-01fc96f4221c.png"  width="60%" height="30%">  
   
 ### 촬영
 ---
@@ -74,18 +75,13 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 메뉴얼은 코드를 받아 실행시키면 적용되는 UI 기준으로 설명이 되어 있으며, 다른 UI는 main함수의 import picture_DB를 import picture_DB_sample로 수정 후, 83번쨰 줄의 picture_DB를 picture_DB_sample로 수정 후 실행시키면 적용 가능  
   
 1. 원하는 디바이스, 그리드 선택  
-  <img src="https://user-images.githubusercontent.com/46614789/86326580-e5777800-bc7c-11ea-95f6-77ce4f08f65f.png"  width="60%" height="30%">  
-  아래의 이미지는 코드를 picture_DB_sample로 수정 후 실행시켰을 경우의 UI  
-  <img src="https://user-images.githubusercontent.com/46614789/86573009-b3348600-bfae-11ea-9dcf-e46088c03563.png"  width="60%" height="30%">  
-2. 물품 리스트에서 원하는 물품을 선택 후, ->버튼 클릭(추가할 물품 리스트로 물품 이동)  
-  <img src="https://user-images.githubusercontent.com/46614789/86326590-e90aff00-bc7c-11ea-88d0-5c778a58c5fe.png"  width="60%" height="30%">  
-3. 원하는 물품을 모두 추가할 물품 리스트로 옮긴 후, 물건추가 버튼 클릭  
-  <img src="https://user-images.githubusercontent.com/46614789/86326597-ea3c2c00-bc7c-11ea-8a31-c547be6d1421.png"  width="60%" height="30%">  
-4. 원하는 그리드, 물품조합을 모두 추가할 때 까지 2,3 과정 반복  
-  <img src="https://user-images.githubusercontent.com/46614789/86326601-eb6d5900-bc7c-11ea-9eef-5b9a8618b22c.png"  width="60%" height="30%">  
-  우측 공간에 물품을 잘못 추가했을 경우, 해당 항목을 클릭한 후, 삭제(Delete)버튼을 누르면 해당 항목이 제거됨
-5. 확인버튼 클릭  
-  <img src="https://user-images.githubusercontent.com/46614789/86730036-14209480-c069-11ea-9924-49b9eaaa046d.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/89002830-10ff8800-d339-11ea-928a-3206469b3aad.png"  width="60%" height="30%">  
+2. 물품 리스트에서 원하는 물품을 선택 후, -> 버튼 클릭 시 중앙의 추가할 물품 리스트로 이동, 추가할 물품에서 특정 물품 선택 후, <- 버튼 클릭 시 좌측의 물품 리스트로 이동 물품추가 버튼 클릭 시, 추가할 물품 리스트의 물품들이 추가된 물품 리스트로 이동, 추가된 물품 리스트에서 특정 물품 선택 후, 삭제(Delete)버튼을 클릭 시 해당 물품 삭제   
+  <img src="https://user-images.githubusercontent.com/46614789/89002835-1230b500-d339-11ea-9b7c-a588a1944f20.png"  width="60%" height="30%">  
+3. Mix의 촬영횟수를 Mix 촬영 횟수 아래의 칸에 입력 후, 우측의 등록버튼을 클릭 시, 추가된 물품 리스트에 Mix 추가  
+<img src="https://user-images.githubusercontent.com/46614789/89002840-1361e200-d339-11ea-8a16-8724b7de59a8.png"  width="60%" height="30%">  
+5. 확인버튼 클릭 시 아래의 화면 생성
+  <img src="https://user-images.githubusercontent.com/46614789/89003451-c54dde00-d33a-11ea-8955-5405d88e66d6.png"  width="60%" height="30%">  
 6. 촬영  
   촬영버튼을 누르면 냉장고 문이 열리고 물품을 배치 후, 문을 닫으면 사진이 찍힘  
   
@@ -109,56 +105,40 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   
 ### 라벨링
 ---
-검수된 이미지에 비박스와 마스크를 그리는 환경  
-  <img src="https://user-images.githubusercontent.com/46614789/84733391-126b3000-afd9-11ea-887c-a4a11a8268cc.png"  width="60%" height="30%">  
+검수된 이미지에 마스크를 그리는 환경  
+  <img src="https://user-images.githubusercontent.com/46614789/89004013-2e822100-d33c-11ea-9a5b-ca55ce3ade8f.png"  width="60%" height="30%">  
+  Mask : 촬영된 이미지를 마스킹 하는 창 생성
+  Aug Bbox : 합성 이미지를 검수하는 창 생성
+  Mix Bbox : 촬영된 믹스 이미지를 박스치는 창 생성
   
+##### Mask  
+  <img src="https://user-images.githubusercontent.com/46614789/89004384-0810b580-d33d-11ea-8555-83fffa829de4.png"  width="60%" height="30%">  
 1. 좌측 상단에서 원하는 물품을 선택  
 2. 원하는 오브젝트 선택 후 작업   
 3. **작업 후 저장 버튼 클릭**  
-4. 라벨링을 실수했을 경우 다시 그리면 자동으로 기존의 라벨은 사라짐
+4. 라벨링을 실수했을 경우 다시 그리면 자동으로 기존의 라벨은 사라짐  
 5. 약간의 수정만 하면 될 경우, 우측 상단의 수정 버튼을 눌러 수정 환경으로 바꾼 후 수정  
 6. 수정후 **저장**  
-  
-※작업 진행도는 체크박스를 기준으로 카운트됨 저장을 누를 경우 체크박스가 채워지며, 임의로 해제도 가능  
-※마스크, 비박스는 한 오브젝트에 하나만 존재하므로 이미 비박스, 마스크가 존재하는 상황에서 마스크, 비박스를 그릴 경우 기존의 것을 사라지고 새로 그려짐
-  
-**단축키**  
-  수정 환경으로 전환 - E  
-  화면에 가득차는 기본 사이즈로 변환 - G  
-  다음 이미지 - D  
-  이전 이미지 - A  
-  박스(마스크) 작업 환경으로 전환 - Q    
-  저장 - S  
-  확대 - Ctrl + 스크롤  
-  화면이동 - Ctrl + 좌클릭드래그  
-      
-  단축키는 해당 버튼위에 마우스를 올리면 툴팁으로 표시 됨  
     
-##### 비박스  
-클릭 후 드래그하여 작업  
+※작업 진행도는 체크박스를 기준으로 카운트됨 저장을 누를 경우 체크박스가 채워지며, 임의로 해제도 가능  
+※마스크, 비박스는 한 오브젝트에 하나만 존재하므로 이미 비박스, 마스크가 존재하는 상황에서 마스크, 비박스를 그릴 경우 기존의 것을 사라지고 새로 그려짐  
+※확대, 축소는 스크롤로 가능하며, 화면이동은 우측 상단의 화면이동 버튼을 클릭한 후, 이미지를 드래그 하여 이동 / 작업 시 다시 마스킹 버튼을 누른 후, 작업  
+※이미지 리셋 버튼을 누를 경우 이미지 사이즈가 초기 값이 되며, 작업중이던 라벨을 날리고 DB에 저장되어 있는 라벨을 불러옴  
   
-##### 마스크  
-좌클릭으로 포인트를 정한 후, 최종 우클릭을 하면 마지막 포인트와 첫 포인트가 이어짐  
+##### Aug bbox  
+<img src="https://user-images.githubusercontent.com/46614789/89004665-ab61ca80-d33d-11ea-91ce-679a242abeec.png"  width="60%" height="30%">  
+  합성된 이미지와 그 비박스를 검수하는 작업  
+  **해당 작업은 이미지 합성을 끝낸 후 사용 가능함**  
+    
+  오른쪽 상단의 수정 버튼이 활성화 된 상태에서 박스의 꼭지점들을 클릭, 드래그하여 수정할 수 있음
+  특정 박스를 클릭하면 해당 박스가 색칠되며 그 상태에서 라벨수정 버튼을 누르면 선택된 박스의 라벨이 현재 우측 하단에서 선택되어 있는 라벨로 수정됨
+  박스 제거 버튼을 활성화 시킬 경우 박스가 제거된 순수 이미지만 보여줌 
+  비박싱 버튼을 활성화 시킬 경우 우측하단에 선택되어 있는 라벨로 박스를 추가로 생성할 수 있음
+  
   
 ### Mix 비박싱  
 ---
-Mix 데이터는 테스트 데이터로 합성하기 위해 사용되는 마스크 작업을 할 필요가 없음
-  
-작업방식은 기존 라벨링과 동일하나 박스가 여러개 존재할 수 있으며, 특정 박스를 선택하여 삭제, 라벨수정을 할 수 있음
-  
-삭제 : 수정 환경에서 원하는 마스크 내부를 클릭한 뒤 삭제버튼 클릭
-  
-라벨수정 : 수정 환경에서 변경하고 싶은 라벨과 마스크를 선택한 뒤 라벨수정 버튼 클릭  
-  
-  <img src="https://user-images.githubusercontent.com/46614789/86441947-ede8b500-bd47-11ea-88d0-6e22d6e41da2.png"  width="60%" height="30%">  
-  
-  수정 태에서 마스크를 클릭할 경우 좌측 상단에 물품정보가 표시되며, 해당마스크를 삭제, 현재 우측에서 선택되어있는 라벨로 라벨수정이 가능함  
-  
-  <img src="https://user-images.githubusercontent.com/46614789/86441950-efb27880-bd47-11ea-80a4-467a5ba89487.png"  width="60%" height="30%">  
-    
-  다음 라벨(C)을 클릭할 경우 현재 작업라벨(우측에 선택되어 있는 라벨)이 다음 라벨로 바뀜  
-    
-  이전 라벨(Z)을 클릭할 경우 현재 작업라벨(우측에 선택되어 있는 라벨)이 이전 라벨로 바뀜  
+
   
 ### 합성
 ---
