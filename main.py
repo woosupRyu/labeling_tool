@@ -29,16 +29,19 @@ class MyApp(QWidget):
         super().__init__()
         self.initUI()
         self.DB = db
+        # print(self.DB.get_obj_id_img("373"))
+        # for i in [1775, 1776, 1777, 1778, 1779, 1780, 1781, 1782, 1783, 1784, 1785, 1786, 1787, 1788, 1789]:
+        #     print(self.DB.get_bbox_id(str(i)))
+        # print(len(self.DB.list_table("Image")))
         #
-        # ob = self.DB.list_obj_CN("2", "1", "1", "3")
-        # print(ob)
-        # for i in self.DB.list_table("Object"):
-        #     if self.DB.get_table(str(i[3]), "Image")[4] == 1 or self.DB.get_table(str(i[3]), "Image")[4] == 2:
-        #         print(i[0])
+        # for i in range(186, 196):
+        #     self.DB.delete_table(str(i), "Image")
+        # for i in range(240, 271):
+        #     self.DB.delete_table(str(i), "Image")
 
         # for i in self.DB.list_table("Image"):
         #     print(str(i[0]) + "," + str(i[3]))
-        #
+
         #
         # for i in self.DB.list_table("Category"):
         #     print(i[2])

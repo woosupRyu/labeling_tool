@@ -1826,34 +1826,36 @@ class DB:
             else:
                 return None
 
-    def list_obj_CN(self, grid_id, cat_id, check_num, type):
+    def list_obj_CN(self, grid_id, cat_id, check_num):
         """
         Object table의 (cat_id)가 NULL이고, Location table의 (grid_id) 일때,
-        Image table의 (check_num)이 check_num과 같고 Image table의 (type)이 type과 같으
+        Image table의 (check_num)이 check_num과 같으면
         Object table의 row를 반환하는 함수
+
         Args:
             grid_id (str): Location table의 (grid_id)
-            cat_id (str): Object table의 (cat면_id)
+            cat_id (str): Object table의 (cat_id)
             check_num(str): Image table의 (check_num) 값과 비교될 값 -> (0 : 완료, 1 : 미진행, 2 : 거절)
-            type(str): Image table의 (type)
+
         Return:
             tuple ()(): Object table의 (row)s
+
             None: 값 없음
+
             False: 쿼리 실패
         """
         try:
             with self.db.cursor() as cursor:
                 query = "SELECT * FROM Object WHERE obj_id IN (SELECT C.obj_id " \
-                        "   FROM (SELECT tmp.obj_id, I.check_num " \
+                        "   FROM (SELECT tmp.obj_id, Image.check_num " \
                         "       FROM (SELECT Obj.obj_id, Obj.img_id " \
                         "           FROM (SELECT obj_id, img_id, loc_id " \
                         "               FROM Object WHERE cat_id=%s) AS Obj " \
                         "           INNER JOIN (SELECT loc_id FROM Location WHERE grid_id=%s) AS Loc " \
                         "           ON Loc.loc_id=Obj.loc_id) AS tmp " \
-                        "       INNER JOIN (SELECT img_id, check_num FROM Image WHERE type=%s) AS I " \
-                        "       ON I.img_id=tmp.img_id) AS C " \
+                        "       INNER JOIN Image ON Image.img_id=tmp.img_id) AS C " \
                         "WHERE check_num=%s)"
-                value = (cat_id, grid_id, type, check_num)
+                value = (cat_id, grid_id, check_num)
                 cursor.execute(query, value)
                 v = cursor.fetchall()
         except Exception as e:
@@ -1867,7 +1869,6 @@ class DB:
                 return v
             else:
                 return None
-
 
     def list_obj_CN_NULL(self, grid_id, check_num):
         """
@@ -2350,31 +2351,28 @@ class DB:
             self.db.commit()
             return True
 
-    def get_aug_mask(self, grid_id, cat_id):
+    def get_aug_mask(self, grid_id, cat_id, aug_num):
         """
         Object table의 (cat_id), Location의 (grid_id)를 받아
         Location table의 (x), (y), Object table의 (iteration), Mask table의 (x), (y) 반환
-
         Args:
-            grid_id (str): Grid table의 (id)
-            cat_id (str): category table의 (id)
-
+            grid_id (str): Grid table의 (grid_id)
+            cat_id (str): Category table의 (cat_id)
+            aug_num (str): Object table의 (aug_num)
         Return:
             tuple ((loc_x, loc_y, iteration, mask_id, mask_x, mask_y), (...))
-
             None: 값 없음
-
             False: 쿼리 실패
         """
         try:
             with self.db.cursor() as cursor:
                 query = "SELECT Obj.loc_x, Obj.loc_y, Obj.iteration, Mask.mask_id, Mask.x, Mask.y " \
                         "FROM (SELECT O.obj_id, O.iteration, Loc.x AS loc_x, Loc.y AS loc_y " \
-                        "      FROM (SELECT obj_id, iteration, loc_id FROM Object WHERE cat_id=%s) AS O " \
+                        "      FROM (SELECT obj_id, iteration, loc_id FROM Object WHERE cat_id=%s AND aug_num=%s) AS O " \
                         "      INNER JOIN (SELECT x, y, loc_id FROM Location WHERE grid_id=%s) AS Loc " \
                         "      ON Loc.loc_id=O.loc_id) AS Obj " \
                         "INNER JOIN Mask ON Mask.obj_id=Obj.obj_id"
-                value = (cat_id, grid_id)
+                value = (cat_id, aug_num, grid_id)
                 cursor.execute(query, value)
                 v = cursor.fetchall()
         except Exception as e:
@@ -2389,20 +2387,18 @@ class DB:
             else:
                 return None
 
-    def get_aug_img(self, grid_id, cat_id):
+
+    def get_aug_img(self, grid_id, cat_id, aug_num):
         """
         Object table의 (cat_id)와 Location table의 (grid_id)를 받아
         Location table의 (x), (y), Object table의 (iteration), Image table의 (img) 반환
-
         Args:
             grid_id (str): Grid table의 (grid_id)
-            cat_id (str): category table의 (cat_id)
-
+            cat_id (str): Category table의 (cat_id)
+            aug_num (str): Object table의 (aug_num)
         Return:
             tuple ()(): ((loc_x, loc_y, iteration, (byte)img), (...))
-
             None: 값 없음
-
             False: 쿼리 실패
         """
         try:
@@ -2410,12 +2406,12 @@ class DB:
                 query = "SELECT Obj.loc_x, Obj.loc_y, Obj.iteration, Image.img " \
                         "FROM (SELECT O.img_id, O.iteration, O.obj_id, Loc.loc_x, Loc.loc_y " \
                         "      FROM (SELECT obj_id, img_id, iteration, loc_id " \
-                        "            FROM Object WHERE cat_id=%s) AS O " \
+                        "            FROM Object WHERE cat_id=%s AND aug_num=%s) AS O " \
                         "      INNER JOIN (SELECT x AS loc_x, y AS loc_y, loc_id " \
                         "                  FROM Location WHERE grid_id=%s) AS Loc " \
                         "      ON Loc.loc_id=O.loc_id) AS Obj " \
                         "INNER JOIN Image ON Image.img_id=Obj.img_id"
-                value = (cat_id, grid_id)
+                value = (cat_id, aug_num, grid_id)
                 cursor.execute(query, value)
                 v = cursor.fetchall()
         except Exception as e:
@@ -2429,6 +2425,7 @@ class DB:
                 return v
             else:
                 return None
+
 
     def get_aug_loc_id(self, grid_id):
         """
@@ -2825,6 +2822,100 @@ class DB:
                         "ON G.grid_id=Location.grid_id)"
                 value = (iteration)
                 cursor.execute(query, value)
+        except Exception as e:
+            print('Error function:', inspect.stack()[0][3])
+            print(e)
+            self.db.rollback()
+            return False
+        else:
+            self.db.commit()
+            return True
+
+    def db_to_json_type(self, json_path, img_path, type):
+        """
+        DB의 Image table에서 (type)이 type인 데이터들을 가져와
+        json 타입으로 저장
+        Args:
+            json_path (str): json file 저장 경로
+            img_path (str): img folder 경로
+            type (str): Image table의 (type) -> 1: original, 2: mix, 3: synthesize
+        Return:
+            Bool: True or False
+        """
+        try:
+            with self.db.cursor() as cursor:
+                # coco format init
+                coco_info = {"annotations": [],
+                             "categories": []}
+
+                # Image table의 모든 img는 folder에 update
+                # Image table이 언제 갱신되었을지 모름
+                # Image folder도 갱신
+                query = "SELECT img_id, img FROM Image"
+                cursor.execute(query)
+                img_table = cursor.fetchall()
+                for row in img_table:
+                    img_id, img = row[0], row[1]
+                    save_img(byte_img=img,
+                             img_dir=join(img_path, str(img_id) + '.png'))
+
+                # Object table search
+                query = "SELECT Object.obj_id, Object.img_id, Object.cat_id FROM Object " \
+                        "INNER JOIN (SELECT img_id FROM Image WHERE type=%s) AS I " \
+                        "ON Object.img_id=I.img_id"
+                value = (type)
+                cursor.execute(query, value)
+                obj_table = cursor.fetchall()
+
+                # Category table search
+                query = "SELECT cat_id, super_id, cat_name FROM Category"
+                cursor.execute(query)
+                cat_table = cursor.fetchall()
+                for row in cat_table:
+                    super_id, cat_id, cat_name = row[0], row[1], row[2]
+                    # SuperCategory table search
+                    query = "SELECT super_name FROM SuperCategory WHERE super_id=%s"
+                    value = (super_id)
+                    cursor.execute(query, value)
+                    super_name = sum(cursor.fetchall(), ())
+                    coco_info["categories"].append({"id": cat_id,
+                                                    "name": cat_name,
+                                                    "supercategory": super_name[0]})
+
+                obj_id_cnt = 0
+                for row in obj_table:
+                    img_id, cat_id, obj_id = row[0], row[1], row[2]
+                    dict = {}
+
+                    # area
+                    area = 0
+                    dict["area"] = area
+                    # Bbox table search
+                    query = "SELECT x, y, width, height FROM Bbox WHERE obj_id=%s"
+                    value = (obj_id)
+                    cursor.execute(query, value)
+                    bbox = list(sum(cursor.fetchall(), ()))
+                    dict["bbox"] = bbox
+                    # category id
+                    dict["category_id"] = cat_id
+                    # id
+                    dict["id"] = obj_id_cnt
+                    obj_id_cnt += 1
+                    # img_id
+                    dict["image_id"] = img_id
+                    # iscrowd
+                    dict["iscrowd"] = 0
+                    # Mask table search
+                    query = "SELECT x, y FROM Mask WHERE obj_id=%s"
+                    value = (obj_id)
+                    cursor.execute(query, value)
+                    mask_table = cursor.fetchall()
+                    mask = [list(sum(mask_table, ()))]
+                    dict["segmentation"] = mask
+
+                    coco_info["annotations"].append(dict)
+                save_json(json_path=json_path, coco_format=coco_info)
+
         except Exception as e:
             print('Error function:', inspect.stack()[0][3])
             print(e)

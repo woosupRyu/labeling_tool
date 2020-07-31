@@ -1,9 +1,4 @@
 from PyQt5.QtWidgets import *
-from io import BytesIO
-from PIL import Image
-import numpy as np
-import augment_v3
-from DCD_DB_API_master.db_api import DB
 from jihun_augment_master import augmain
 
 #디바이스 (id(int)) 그리드(x(int),y(int), id(int)) 카테고리 (id(list), iteration(int)), 배경 이미지 (id(int))
@@ -59,7 +54,7 @@ class project_app(QWidget):
         self.a = []
         category_table_list = self.DB.list_table("Category")
         for i in category_table_list:
-            mix_or_not = self.DB.get_table(str(i[0]), "SuperCategory")[1]
+            mix_or_not = self.DB.get_table(str(i[1]), "SuperCategory")[1]
 
             if self.DB.check_nomix_OBM(str(i[1])):
                 if mix_or_not != "mix" and mix_or_not != "background":
@@ -86,7 +81,7 @@ class project_app(QWidget):
         self.background = []
         category_table_list = self.DB.list_table("Category")
         for i in category_table_list:
-            background_or_not = self.DB.get_table(str(i[0]), "SuperCategory")[1]
+            background_or_not = self.DB.get_table(str(i[1]), "SuperCategory")[1]
             if background_or_not == "background":
                 ad = QRadioButton(i[2] + "/background")
                 ad.clicked.connect(self.current_back)
@@ -243,6 +238,7 @@ class project_app(QWidget):
         # 20001, 2, 3, 1, [1, 2], 3, 29
         # 이건 tool에서 입력으로 받아와야 하는 변수들
         # 20001, 2, 3, 1, [1, 2], 3, 29
+
         device_id = 20001
         grid = (grid_x, grid_y)
         grid_id = self.DB.get_grid_id(str(grid_x) + "x" + str(grid_y))
@@ -253,6 +249,8 @@ class project_app(QWidget):
         batch_num = [3, 3, 3]
         # bright_param : [bright_flag, mode_flag, flag1, flag2, flag3, th1, th2, th3, rect x, rect y, rect w, rect h]
         bright_param = [1, 1, 1, 1, 1, 78, 36, 113, 1140, 440, 100, 200]
+        print(object_category)
+        print(grid_id)
         augmain.aug_main(device_id, grid, grid_id, object_category, background_id, iteration, batch_num, bright_param)
 
         print("finish")

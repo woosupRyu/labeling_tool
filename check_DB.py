@@ -89,11 +89,11 @@ class check_app(QWidget):
 
             #현재 물품과 그리드를 참고하여 검수되지 않았거나 거절된 이미지를 가진 오브젝트만 호출
             objects = []
-            ob = self.DB.list_obj_CN(self.current_grid, self.current_category, "1", "1")
+            ob = self.DB.list_obj_CN(self.current_grid, self.current_category, "1")
             if ob != None:
                 ob = list(ob)
                 objects.append(ob)
-            rejected = self.DB.list_obj_CN(self.current_grid, self.current_category, "2", "1")
+            rejected = self.DB.list_obj_CN(self.current_grid, self.current_category, "2")
             if rejected != None:
                 rejected = list(rejected)
                 objects.append(rejected)
@@ -206,19 +206,16 @@ class check_app(QWidget):
         #이미지 클릭시 이미지를 띄워주는 함수
         btn_name = self.sender().text()
         obj_id = self.obj_name2id(btn_name)
-        print(btn_name)
-        print(obj_id)
-        if obj_id != None:
 
-            im = self.DB.get_table(str(self.DB.get_table(obj_id, "Object")[3]), "Image")
+        im = self.DB.get_table(str(self.DB.get_table(obj_id, "Object")[3]), "Image")
 
-            im_data = np.array(Image.open(BytesIO(im[2])).convert("RGB"))
-            qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
-            self.image_data = QPixmap.fromImage(qim)
-            self.image_label.clear()
-            width = self.mid_frame.width() - 400
-            if width < 1700:
-                self.image_label.setPixmap(self.image_data.scaledToWidth(width))
+        im_data = np.array(Image.open(BytesIO(im[2])).convert("RGB"))
+        qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
+        self.image_data = QPixmap.fromImage(qim)
+        self.image_label.clear()
+        width = self.mid_frame.width() - 400
+        if width < 1700:
+            self.image_label.setPixmap(self.image_data.scaledToWidth(width))
 
 
     def pass_image(self):
@@ -255,11 +252,11 @@ class check_app(QWidget):
                     k.itemAt(j).widget().deleteLater()
                 k.deleteLater()
 
-            ob = self.DB.list_obj_CN(self.current_grid, self.current_category, "1", "1")
+            ob = self.DB.list_obj_CN(self.current_grid, self.current_category, "1")
             if ob != None:
                 ob = list(ob)
                 objects.append(ob)
-            rejected = self.DB.list_obj_CN(self.current_grid, self.current_category, "2", "1")
+            rejected = self.DB.list_obj_CN(self.current_grid, self.current_category, "2")
             if rejected != None:
                 rejected = list(rejected)
                 objects.append(rejected)
@@ -296,7 +293,7 @@ class check_app(QWidget):
 
                 self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1", "-1")
                 # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
-                if self.DB.get_table(self.current_obj_id, "Object"):
+                if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
                     im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[3]), "Image")
                     if im[4] == 2:
                         image_btn.setStyleSheet("background-color: red")
@@ -306,7 +303,7 @@ class check_app(QWidget):
 
                 self.current_obj_id = self.DB.get_obj_id_cat_id_NULL(location_id, iteration, "-1", "-1")
                 # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
-                if self.DB.get_table(self.current_obj_id, "Object"):
+                if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
                     im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[3]), "Image")
                     if im[4] == 2:
                         image_btn.setStyleSheet("background-color: red")
@@ -341,11 +338,11 @@ class check_app(QWidget):
                 for j in reversed(range(k.count())):
                     k.itemAt(j).widget().deleteLater()
                 k.deleteLater()
-            ob = self.DB.list_obj_CN(self.current_grid, self.current_category, "1", "1")
+            ob = self.DB.list_obj_CN(self.current_grid, self.current_category, "1")
             if ob != None:
                 ob = list(ob)
                 objects.append(ob)
-            rejected = self.DB.list_obj_CN(self.current_grid, self.current_category, "2", "1")
+            rejected = self.DB.list_obj_CN(self.current_grid, self.current_category, "2")
             if rejected != None:
                 rejected = list(rejected)
                 objects.append(rejected)
@@ -384,7 +381,7 @@ class check_app(QWidget):
 
                 self.current_obj_id = self.DB.get_obj_id_from_args(location_id, category_id, iteration, "-1", "-1")
                 # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
-                if self.DB.get_table(self.current_obj_id, "Object"):
+                if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
                     im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[3]), "Image")
                     if im[4] == 2:
                         image_btn.setStyleSheet("background-color: red")
@@ -394,7 +391,7 @@ class check_app(QWidget):
 
                 self.current_obj_id = self.DB.get_obj_id_cat_id_NULL(location_id, iteration, "-1", "-1")
                 # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
-                if self.DB.get_table(self.current_obj_id, "Object"):
+                if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
                     im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[3]), "Image")
                     if im[4] == 2:
                         image_btn.setStyleSheet("background-color: red")

@@ -112,7 +112,7 @@ class mask(QWidget):
         objects = []
         for i in self.DB.list_table("Grid"):
             if i[1] != 0:
-                obj = self.DB.list_obj_CN(str(i[0]), self.current_category, "0", "1")
+                obj = self.DB.list_obj_CN(str(i[0]), self.current_category, "0")
                 if obj == None:
                     obj = []
                 else:
@@ -353,7 +353,7 @@ class mask(QWidget):
         objects = []
         for i in self.DB.list_table("Grid"):
             if i[1] != 0:
-                obj = self.DB.list_obj_CN(str(i[0]), self.current_category, "0", "1")
+                obj = self.DB.list_obj_CN(str(i[0]), self.current_category, "0")
                 if obj == None:
                     obj = []
                 else:
