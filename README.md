@@ -117,7 +117,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   Aug Bbox : 합성 이미지를 검수하는 창 생성
   Mix Bbox : 촬영된 믹스 이미지를 박스치는 창 생성
   
-##### Mask  
+### Mask  
   <img src="https://user-images.githubusercontent.com/46614789/89004384-0810b580-d33d-11ea-8555-83fffa829de4.png"  width="60%" height="30%">  
 1. 좌측 상단에서 원하는 물품을 선택   
 2. 원하는 오브젝트 선택 후 작업   
@@ -131,7 +131,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 ※확대, 축소는 스크롤로 가능하며, 화면이동은 우측 상단의 화면이동 버튼을 클릭한 후, 이미지를 드래그 하여 이동 / 작업 시 다시 마스킹 버튼을 누른 후, 작업  
 ※이미지 리셋 버튼을 누를 경우 이미지 사이즈가 초기 값이 되며, 작업중이던 라벨을 날리고 DB에 저장되어 있는 라벨을 불러옴  
   
-##### Aug bbox  
+### Aug bbox  
 <img src="https://user-images.githubusercontent.com/46614789/89004665-ab61ca80-d33d-11ea-91ce-679a242abeec.png"  width="60%" height="30%">  
   합성된 이미지와 그 비박스를 검수하는 작업  
   **해당 작업은 이미지 합성을 끝낸 후 사용 가능함**    
