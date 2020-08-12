@@ -15,6 +15,10 @@ import numpy as np
 
 class MyApp(QWidget):
     """
+    update_object에 category_id -> cat_id
+    check_nomix_OBM -> mask값만 있어도 되도록 수정
+
+
     Annotation tool의 가장 상위 코드, 해당 코드를 실행 시키면 툴 실행
 
     실행 시킨 후 수행 할 작업의 버튼을 클릭 시, 해당 작업을 수행할 수 있는 새로운 창이 열림
@@ -29,41 +33,42 @@ class MyApp(QWidget):
         super().__init__()
         self.initUI()
         self.DB = db
-        # print(self.DB.get_obj_id_img("373"))
-        # for i in [1775, 1776, 1777, 1778, 1779, 1780, 1781, 1782, 1783, 1784, 1785, 1786, 1787, 1788, 1789]:
-        #     print(self.DB.get_bbox_id(str(i)))
-        # print(len(self.DB.list_table("Image")))
-        #
-        # for i in range(186, 196):
-        #     self.DB.delete_table(str(i), "Image")
-        # for i in range(240, 271):
-        #     self.DB.delete_table(str(i), "Image")
+        # for i in range(8841,9441):
+        #     tem_img = self.DB.get_table(str(i), "Image")
+        #     im_data = np.array(Image.open(BytesIO(tem_img[2])).convert("RGB"))
+        #     im_data[:, :, [0, 2]] = im_data[:, :, [2, 0]]
+        #     cv2.imwrite(str(i) + ".jpg", im_data)
+        #     with open(str(i) + ".jpg", 'rb') as file:
+        #         img = file.read()
+        #     self.DB.update_image(str(i), img=img)
 
-        # for i in self.DB.list_table("Image"):
-        #     print(str(i[0]) + "," + str(i[3]))
 
-        #
-        # for i in self.DB.list_table("Category"):
-        #     print(i[2])
-        #     print(i[0])
-        # for i in self.DB.list_table("Grid"):
-        #     print(str(i[1]) + "x" + str(i[2]))
-        #     print(i[0])
-
-        # for i in self.DB.list_table("Image"):
-        #     i[2]
-
+        # a = []
         # for i in self.DB.list_table("Object"):
-        #     print(i)
+        #     if i[1] == 32 and i[4] == 10:
+        #         a.append(i[0])
+        # print(a)
+        # print(len(a))
+
+        # a=[]
+        # for i in self.DB.list_table("Object"):
+        #     if i[3] == 8837:
+        #         a.append(i[0])
         # for i in self.DB.list_table("Bbox"):
-        #     print(i)
-        # for i in range(20, 26):
-        #     print(self.DB.get_table(str(i), "Image")[4])
-        # for i in range(20, 26):
-        #     print(self.DB.get_table(str(i), "Image")[3])
-        # print(self.DB.list_img_id_TC("3", "1"))
+        #     for j in a:
+        #         if i[1] == j:
+        #             print(i)
 
-
+        # for i in self.DB.list_table("Image"):
+        #     if i[0] < 8441 and i[3] == 3:
+        #         self.DB.delete_table(str(i[0]), "Image")
+        # for i in self.DB.list_table("Object"):
+        #     print(i[3])
+        #
+        # for i in range(9451, 9461):
+        #     self.DB.delete_table(str(i), "Image")
+        # for i in range(1, 31):
+        #     self.DB.delete_mix_obj(str(i))
 
         # for i in range(20, 26):
         #     tem_img = self.DB.get_table(str(i), "Image")

@@ -223,7 +223,7 @@ class check_app(QWidget):
         for i, info in enumerate(self.a):
             if info.isChecked() == True:
                 self.b[i].setStyleSheet("background-color : green")
-                self.DB.update_img_CN_OI(self.obj_name2id(self.b[i].text()), "0")
+                self.DB.update_img_CN_II(self.DB.get_table(self.obj_name2id(self.b[i].text()), "Object")[3], "0")
                 self.a[i].toggle()
 
     def reject_image(self):
@@ -232,7 +232,7 @@ class check_app(QWidget):
         for i, info in enumerate(self.a):
             if info.isChecked() == True:
                 self.b[i].setStyleSheet("background-color : red")
-                self.DB.update_img_CN_OI(self.obj_name2id(self.b[i].text()), "2")
+                self.DB.update_img_CN_II(self.DB.get_table(self.obj_name2id(self.b[i].text()), "Object")[3], "2")
                 self.a[i].toggle()
 
 
@@ -281,7 +281,7 @@ class check_app(QWidget):
                 objects.append(rejected)
 
         obj_btn_name_list = self.obj_list2name(sum(objects, []))
-        for i in range(len(sum(objects, []))):
+        for i in range(len(obj_btn_name_list)):
             check_box = QCheckBox()
             image_btn = QPushButton(obj_btn_name_list[i])
             tt_name = image_btn.text().split("_")  # (테스트 1x2 5) - >(오브젝트이름, 1x2/3x3, 횟수)
@@ -304,9 +304,11 @@ class check_app(QWidget):
                 self.current_obj_id = self.DB.get_obj_id_cat_id_NULL(location_id, iteration, "-1", "-1")
                 # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
                 if self.DB.get_table(self.current_obj_id, "Object")[0] != None:
-                    im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[3]), "Image")
-                    if im[4] == 2:
-                        image_btn.setStyleSheet("background-color: red")
+                    tem = self.DB.get_table(self.current_obj_id, "Object")
+                    if tem[3] != None:
+                        im = self.DB.get_table(str(tem[3]), "Image")
+                        if im[4] == 2:
+                            image_btn.setStyleSheet("background-color: red")
             image_btn.setCheckable(True)
             self.btn_group.addButton(image_btn)
             image_btn.clicked.connect(self.signal)
@@ -438,7 +440,7 @@ class check_app(QWidget):
 
                 btn_name = "mix/mix" + "_" + location_str + "/" + grid_str + "_" + str(obj_list[i][4])
                 btn_name_list.append(btn_name)
-        return btn_name_list
+        return list(set(btn_name_list))
 
     def obj_name2id(self, i):
         #버튼이름을 참조하여 오브젝트 아이디를 반환해주는 함수

@@ -5,6 +5,7 @@ import numpy as np
 from MQTT_client import mqtt_connector
 from PyQt5.QtWidgets import *
 from PyQt5.QtGui import *
+import cv2
 
 class picture_app(QWidget):
     """
@@ -287,8 +288,8 @@ class picture_app(QWidget):
         hbox = QHBoxLayout()
         left_frame = QFrame()
         left_frame.setFrameShape(QFrame.Box)
-        self.mid_frame = QFrame()
-        self.mid_frame.setFrameShape(QFrame.Box)
+        # self.mid_frame = QFrame()
+        # self.mid_frame.setFrameShape(QFrame.Box)
         self.right_frame = QFrame()
         self.right_frame.setFrameShape(QFrame.Box)
         self.image_label = QLabel()
@@ -327,14 +328,10 @@ class picture_app(QWidget):
             if i[1] == "0" and i[2] == "0":
                 for k in range(int(i[3])):
                     tt = QPushButton(str(i[0]) + "_0x0/0x0_" + str(k + 1))
-
                     tt_name = tt.text().split("_")
                     location_id = str(self.DB.get_loc_id_GL(tt_name[1].split("/")[1], tt_name[1].split("/")[0]))
                     iteration = str(tt_name[2])
                     self.current_obj_id = self.DB.get_obj_id_cat_id_NULL(location_id, iteration, "-1", "-1")
-                    print(iteration)
-                    print(location_id)
-                    print(self.current_obj_id)
                     # 해당 오브젝트가 이미지를 가지고 있으면(이미 촬영이 된 경우) 해당 이미지를 보여줌
                     if self.DB.get_table(self.current_obj_id, "Object")[3] != None:
                         im = self.DB.get_table(str(self.DB.get_table(self.current_obj_id, "Object")[3]), "Image")
@@ -378,7 +375,7 @@ class picture_app(QWidget):
         """
         중앙 프레임
         """
-        grid_label = QLabel("그리드")
+        #grid_label = QLabel("그리드")
         #미구현
 
         """
@@ -394,10 +391,10 @@ class picture_app(QWidget):
         #이미지 표시
 
         #윈도우를 나누어 만들어진 프레임들을 나눠진 공간에 배치
-        splitter2 = QSplitter(Qt.Vertical)
-        splitter2.addWidget(grid_label)
-        splitter2.addWidget(self.mid_frame)
-        splitter2.setStyleSheet("background-image: url(beyless.png)")
+        # splitter2 = QSplitter(Qt.Vertical)
+        # splitter2.addWidget(grid_label)
+        # splitter2.addWidget(self.mid_frame)
+        # splitter2.setStyleSheet("background-image: url(beyless.png)")
 
 
         splitter3 = QSplitter(Qt.Vertical)
@@ -415,7 +412,7 @@ class picture_app(QWidget):
 
         splitter1 = QSplitter(Qt.Horizontal)
         splitter1.addWidget(splitter3)
-        splitter1.addWidget(splitter2)
+        #splitter1.addWidget(splitter2)
         splitter1.addWidget(splitter4)
         splitter1.splitterMoved.connect(self.print_xy)
         splitter1.handle(200)
@@ -452,7 +449,11 @@ class picture_app(QWidget):
                 self.image_label.clear()
                 self.image_label.setPixmap(self.image_data.scaledToWidth(1080))
             else:
+                im_data = np.array(cv2.imread("beyless.png"))
+                qim = QImage(im_data, im_data.shape[1], im_data.shape[0], im_data.strides[0], QImage.Format_RGB888)
+                self.image_data = QPixmap.fromImage(qim)
                 self.image_label.clear()
+                self.image_label.setPixmap(self.image_data.scaledToWidth(1080))
 
 
         else:

@@ -30,7 +30,6 @@ global label_name  # 라벨 이름
 global current_label  # 선택된 마스크의 라벨
 global color_value  # 색의 실제 값
 global coordinates # 비박스 정보 (좌상좌표, 우상좌표, 좌하좌표, 우하좌표, 카테고리)
-global category_box # 물품 선택 박스
 global left_vboxx
 global current_object # 현재 작업중인 원본 오브젝트
 global label_list # 라벨링할 수 있는 라벨 리스트
@@ -81,7 +80,6 @@ class mix(QWidget):
         global mask_btn
         global qim
         global current_label
-        global category_box
         global left_vboxx
         global line_pen
         global pen
@@ -146,7 +144,6 @@ class mix(QWidget):
         before_btn.setToolTip("A")
         #label_label = QLabel("선택 마스크의 라벨")
         current_label = QLineEdit()
-        category_box = QComboBox()
 
         label_frame = QFrame()
         label_frame.setFrameShape(QFrame.Box)
@@ -166,12 +163,6 @@ class mix(QWidget):
         self.scroll_area = QScrollArea()
         self.scroll_area.setWidget(label_frame)
 
-        #분류가 mix인 물품중 작업할 물품을 선택할 수 있는 박스 생생
-        for i in self.DB.list_table("Category"):
-            super_name = self.DB.get_table(str(i[1]), "SuperCategory")[1]
-            if super_name == "mix":
-                category_box.addItem(i[2] + "/" + super_name)
-
         self.a = []
         self.b = []
         count = 0
@@ -179,16 +170,10 @@ class mix(QWidget):
         #현재 물품의 모든 오브젝트와 연동되는 버튼 생성
 
         objects = []
-        for i in self.DB.list_table("Grid"):
-            if i[1] == 0:
-                obj = self.DB.list_obj_CN_NULL(str(i[0]), "0")
-                if obj == None:
-                    obj = []
-                else:
-                    obj = list(obj)
-                if len(obj) != 0:
-                    objects.append(obj)
-        objects = sum(objects, [])
+        mix_img_list = self.DB.list_img_id_TC("2", "0")
+        for i in mix_img_list:
+            objects.append(self.DB.get_table(max(self.DB.get_obj_id_img(str(i))), "Object"))
+
         btn_names = self.obj_list2name(objects)
         for i in btn_names:
             temp_btn = QPushButton(i)
@@ -205,18 +190,16 @@ class mix(QWidget):
             self.b.append(tem_box)
             count = count + 1
         obj_id = self.obj_name2id(current_object)
-
         exist_bbox = self.DB.get_bbox_img(str(self.DB.get_table(obj_id, "Object")[3]))
 
         self.label_vbox = QVBoxLayout()
         self.label_box = QGroupBox()
 
         # 생성된 오브젝트에 비박스가 존재할 경우 필요 라벨 호출
-        category_name = category_box.currentText()
         if exist_bbox == None:
             RGB = random.choice(self.collect_color)
             back_label_color = "background-color: " + QColor(RGB[0], RGB[1], RGB[2]).name()
-            label_list = QRadioButton(category_name)
+            label_list = QRadioButton("없음")
             label_list.clicked.connect(self.color_select)
             label_list.setStyleSheet(back_label_color)
             label_list.toggle()
@@ -231,6 +214,7 @@ class mix(QWidget):
                 coor.append(bbox_cate)
                 coordinates.append(coor)
 
+
             bbox_label_list = self.category_id2name(cate_list)
 
             for i in range(len(category_name_list)):
@@ -240,8 +224,12 @@ class mix(QWidget):
             label_line_color = []
             fill_color = []
             for i in coordinates:
-                label_line_color.append(QPen(mix_label_color[i[4]], 4))
-                fill_color.append(QBrush(mix_label_color[i[4]], Qt.Dense2Pattern))
+                if i[4] == None:
+                    label_line_color.append(QPen(QColor(255, 0, 0), 4))
+                    fill_color.append(QBrush(QColor(255, 0, 0), Qt.Dense2Pattern))
+                else:
+                    label_line_color.append(QPen(mix_label_color[i[4]], 4))
+                    fill_color.append(QBrush(mix_label_color[i[4]], Qt.Dense2Pattern))
 
         # 버튼 좌측의 체크박스 기준으로 현재 작업진행도 표시
         len_a = len(self.a)
@@ -257,11 +245,9 @@ class mix(QWidget):
         left_vboxp.addWidget(next_btn)
         left_vboxp.addWidget(before_btn)
         left_vboxp.addWidget(current_label)
-        left_vboxp.addWidget(category_box)
         left_vboxp.addWidget(self.scroll_area)
         left_vboxp.addWidget(self.progress_state)
         left_vboxx.addLayout(left_vboxp)
-        category_box.currentIndexChanged.connect(self.list_change)
 
         #버튼, 체크박스에 기능 연동
         lframe = QFrame()
@@ -475,8 +461,12 @@ class mix(QWidget):
             fill_color = []
 
             for i in coordinates:
-                label_line_color.append(QPen(mix_label_color[i[4]], 4))
-                fill_color.append(QBrush(mix_label_color[i[4]], Qt.Dense2Pattern))
+                if i[4] == None:
+                    label_line_color.append(QPen(QColor(255,0,0), 4))
+                    fill_color.append(QBrush(QColor(255, 0, 0), Qt.Dense2Pattern))
+                else:
+                    label_line_color.append(QPen(mix_label_color[i[4]], 4))
+                    fill_color.append(QBrush(mix_label_color[i[4]], Qt.Dense2Pattern))
             for i in label_list:
                 self.label_vbox.addWidget(i)
             self.label_box.setLayout(self.label_vbox)
@@ -510,31 +500,60 @@ class mix(QWidget):
         loc_id = str(self.DB.get_loc_id_GL("0x0", '0x0'))
         category_id_list = sorted(category_id_list)
         iteration = current_object.split("_")[2]
-        self.DB.delete_mix_obj(iteration)
-
+        #self.DB.delete_mix_obj(iteration)
+        obj_list = self.DB.get_obj_id_img(img_id)
+        coor_len = len(coordinates)
         #현재의 비박스 정보들을 저장
         if scale_factor_w > 1:
-            if len(coordinates) != 0:
-                for i in range(len(category_id_list)):
-                    for j in coordinates:
-                        if j[4] == category_id_list[i]:
+            if coor_len != 0:
+                for j in category_id_list:
+                    for i in range(coor_len):
+                        if coordinates[i][4] == j:
                             num = self.DB.get_max_mix_num()
-                            self.DB.set_object(img_id, loc_id, str(j[4]), iteration, str(int(num + 1)))
-                            box_info = self.coordinate2bbox(j)
-                            self.DB.set_bbox(str(self.DB.get_last_id("Object")), str(box_info[0] * scale_factor_w), str(box_info[1] * scale_factor_w),
+                            self.DB.update_object(obj_id=str(obj_list[i]), img_id=img_id, loc_id=loc_id, cat_id=str(j), iteration=iteration, mix_num=str(int(num + 1)))
+                            box_info = self.coordinate2bbox(coordinates[i])
+                            bbox_id = self.DB.get_bbox_id(str(obj_list[i]))
+                            if bbox_id == None:
+                                self.DB.set_bbox(str(obj_list[i]), str(box_info[0] * scale_factor_w), str(box_info[1] * scale_factor_w),
                                              str(box_info[2] * scale_factor_w), str(box_info[3] * scale_factor_w))
+                            else:
+                                self.DB.update_bbox(bbox_id=bbox_id, obj_id=str(obj_list[i]), x=str(box_info[0] * scale_factor_w),
+                                                 y=str(box_info[1] * scale_factor_w),
+                                                 width=str(box_info[2] * scale_factor_w), height=str(box_info[3] * scale_factor_w))
+                for i in range(coor_len, len(obj_list)):
+                    self.DB.delete_bbox(obj_list[i])
+                    self.DB.update_object(obj_id=str(obj_list[i]), img_id=img_id, loc_id=loc_id, cat_id=None, iteration=iteration, mix_num=-1)
+
                 for i in range(len(self.a)):
                     if self.a[i].isChecked():
                         self.b[i].setCheckState(Qt.Checked)
         else:
-            if len(coordinates) != 0:
-                for i in range(len(category_id_list)):
-                    for j in coordinates:
-                        if j[4] == category_id_list[i]:
+            if coor_len != 0:
+                for j in category_id_list:
+                    for i in range(coor_len):
+                        if coordinates[i][4] == j:
                             num = self.DB.get_max_mix_num()
-                            self.DB.set_object(img_id, loc_id, str(j[4]), iteration, str(int(num + 1)))
-                            box_info = self.coordinate2bbox(j)
-                            self.DB.set_bbox(str(self.DB.get_last_id("Object")), str(box_info[0]), str(box_info[1]), str(box_info[2]), str(box_info[3]))
+                            self.DB.update_object(obj_id=str(obj_list[i]), img_id=img_id, loc_id=loc_id,
+                                                  cat_id=str(j), iteration=iteration,
+                                                  mix_num=str(int(num + 1)))
+                            box_info = self.coordinate2bbox(coordinates[i])
+                            bbox_id = self.DB.get_bbox_id(str(obj_list[i]))
+                            if bbox_id == None:
+                                self.DB.set_bbox(str(obj_list[i]), str(box_info[0]),
+                                                 str(box_info[1]),
+                                                 str(box_info[2]), str(box_info[3]))
+                            else:
+                                self.DB.update_bbox(bbox_id=bbox_id, obj_id=str(obj_list[i]),
+                                                    x=str(box_info[0]),
+                                                    y=str(box_info[1]),
+                                                    width=str(box_info[2]),
+                                                    height=str(box_info[3]))
+
+                for i in range(coor_len, len(obj_list)):
+                    self.DB.delete_bbox(str(obj_list[i]))
+                    self.DB.update_object(obj_id=str(obj_list[i]), img_id=img_id, loc_id=loc_id, cat_id=None,
+                                          iteration=iteration, mix_num=-1)
+
                 for i in range(len(self.a)):
                     if self.a[i].isChecked():
                         self.b[i].setCheckState(Qt.Checked)
@@ -555,173 +574,6 @@ class mix(QWidget):
                     if i < (len_a - 1):
                         self.a[i + 1].click()
                         break
-
-    def list_change(self):
-        # 보고싶은 물품을 갱신했을 경우 실행되는 함수
-        global category_box
-        global left_vboxx
-        global pen
-        global brush
-        global line_pen
-        global im
-        global qim
-        global current_object
-        global coordinates
-        global label_list
-        global pen
-        global brush
-        global label_line_color
-        global fill_color
-        global scale_factor_w
-        global mask_num
-        global draggin_idx
-        global category_id_list
-        global color_value
-
-        #변수들 초기화
-        category_id_list = []
-
-        progress = 0
-        self.a = []
-        self.b = []
-        count = 0
-        coordinates = []
-        color_value = []
-
-        scale_factor_w = 1
-        mask_num = 1000000
-        draggin_idx = -1
-
-        label_line_color = []
-        fill_color = []
-        coordinates = []
-        self.collect_color = [[255, 0, 0], [255, 0, 80], [255, 0, 160], [255, 0, 240], [110, 0, 255], [30, 0, 255], [0, 130, 255], [0, 210, 255], [0, 255, 220], [0, 255, 140], [0, 255, 60], [100, 255, 0], [180, 255, 0], [240, 255, 0], [255, 160, 0], [255, 80, 0], [128, 64, 64], [112, 64, 128], [64, 96, 128], [64, 128, 80], [128, 128, 64], [190, 94, 94], [190, 94, 174], [126, 94, 190], [94, 142, 190], [94, 190, 158]]
-
-        #선택된 라벨 초기화
-        for i in self.label_name_list:
-            i.setCheckState(Qt.Unchecked)
-
-        RGB = random.choice(self.collect_color)
-        back_label_color = "background-color: " + QColor(RGB[0], RGB[1], RGB[2]).name()
-        label_list = QRadioButton(category_box.currentText())
-        label_list.clicked.connect(self.color_select)
-        label_list.setStyleSheet(back_label_color)
-        label_list.toggle()
-        line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 4)
-        brush = QBrush(QColor(RGB[0], RGB[1], RGB[2]), Qt.Dense2Pattern)
-        for i in reversed(range(self.label_vbox.count())):
-            self.label_vbox.itemAt(i).widget().deleteLater()
-        self.label_vbox.addWidget(label_list)
-
-        objects = []
-        for i in self.DB.list_table("Grid"):
-            obj = self.DB.list_obj_CN_NULL(str(i[0]), "0")
-            if obj == None:
-                obj = []
-            else:
-                obj = list(obj)
-            if len(obj) != 0:
-                objects.append(obj)
-        objects = sum(objects, [])
-        btn_names = self.obj_list2name(objects)
-        if len(btn_names) > 0:
-            current_object = btn_names[0]
-        for i in btn_names:
-            temp_btn = QPushButton(i)
-            temp_btn.setCheckable(True)
-            if count == 0:
-                temp_btn.toggle()
-                current_object = temp_btn.text()
-                self.current_object_label.setText(current_object)
-            self.label_group.addButton(temp_btn)
-            self.a.append(temp_btn)
-            tem_box = QCheckBox()
-            if self.DB.get_bbox_img(str(self.obj_name2img_id(i))) != None:
-                tem_box.toggle()
-                progress = progress + 1
-            self.b.append(tem_box)
-            count = count + 1
-
-        obj_id = self.obj_name2id(current_object)
-        exist_bbox = self.DB.get_bbox_img(str(self.DB.get_table(obj_id, "Object")[3]))
-        category_name = category_box.currentText()
-        if exist_bbox == None:
-            RGB = random.choice(self.collect_color)
-            back_label_color = "background-color: " + QColor(RGB[0], RGB[1], RGB[2]).name()
-            label_list = QRadioButton(category_name)
-            label_list.clicked.connect(self.color_select)
-            label_list.setStyleSheet(back_label_color)
-            label_list.toggle()
-            line_pen = QPen(QColor(RGB[0], RGB[1], RGB[2]), 4)
-            brush = QBrush(QColor(RGB[0], RGB[1], RGB[2]), Qt.Dense2Pattern)
-        else:
-            category_name_list = self.category_list2name(self.DB.list_table("Category"))
-            cate_list = []
-            for j in exist_bbox:
-                bbox_cate = self.bbox2cate_id(j)
-                cate_list.append(bbox_cate)
-                coor = self.bbox2coordinate(j)
-                coor.append(bbox_cate)
-                coordinates.append(coor)
-
-            bbox_label_list = self.category_id2name(cate_list)
-
-            for i in range(len(category_name_list)):
-                if category_name_list[i] in bbox_label_list:
-                    self.label_name_list[i].setChecked(True)
-                    self.addlabel()
-            label_line_color = []
-            fill_color = []
-            for i in coordinates:
-                label_line_color.append(QPen(mix_label_color[i[4]], 4))
-                fill_color.append(QBrush(mix_label_color[i[4]], Qt.Dense2Pattern))
-        len_a = len(self.a)
-        self.progress_state.setText("진행도 : " + str(progress) + "/" + str(len_a))
-
-        lvbox = QVBoxLayout()
-        lframe = QFrame()
-        for i in range(len(self.a)):
-            left_hbox = QHBoxLayout()
-            self.a[i].clicked.connect(self.image_state)
-            self.b[i].stateChanged.connect(self.save_state)
-            left_hbox.addWidget(self.a[i])
-            left_hbox.addWidget(self.b[i])
-            lvbox.addLayout(left_hbox)
-
-        lframe.setLayout(lvbox)
-        self.lscroll.setWidget(lframe)
-        left_vboxx.addWidget(self.lscroll)
-        scene.clear()
-        if len(objects) >= 1:
-
-            img_obj_id = self.obj_name2id(current_object)
-
-            imgd = self.DB.get_table(self.DB.get_table(str(img_obj_id), "Object")[3], "Image")[2]
-            self.img_data = np.array(Image.open(BytesIO(imgd)).convert("RGB"))
-
-            qim = QImage(self.img_data, self.img_data.shape[1], self.img_data.shape[0], self.img_data.strides[0],
-                         QImage.Format_RGB888)
-            w = qim.width()
-            h = qim.height()
-            im = QPixmap.fromImage(qim)
-
-            qp = QPainter()
-            im.setDevicePixelRatio(scale_factor_w)
-            qp.begin(im)
-
-            if exist_bbox != None:
-                for i in range(len(coordinates)):
-                    line_pen = label_line_color[i]
-                    brush = fill_color[i]
-                    qp.setPen(line_pen)
-                    qp.drawRect(QRect(coordinates[i][0][0], coordinates[i][0][1], coordinates[i][3][0] - coordinates[i][0][0], coordinates[i][3][1] - coordinates[i][0][1]))
-                self.color_select()
-            qp.end()
-            scene.clear()
-            scene.addPixmap(im)
-            view.fitInView(QRectF(0, 0, w, h), Qt.KeepAspectRatio)
-            scene.update()
-        self.update()
 
     def obj_list2name(self, obj_list):
         btn_name_list = []
@@ -763,7 +615,7 @@ class mix(QWidget):
         return bbox
 
     def bbox2coordinate(self, bbox):
-        obj = self.DB.get_table(bbox[0], "Object")
+        obj = self.DB.get_table(bbox[1], "Object")
         coor = [[bbox[2], bbox[3]], [bbox[2] + bbox[4], bbox[3]], [bbox[2], bbox[3] + bbox[5]], [bbox[2] + bbox[4], bbox[3] + bbox[5]], obj[2]]
         return coor
 
@@ -780,12 +632,15 @@ class mix(QWidget):
     def category_id2name(self, category_id):
         cate_name = []
         for i in category_id:
-            a = self.DB.get_table(str(i), "Category")
-            b = self.DB.get_table(str(a[1]), "SuperCategory")[1]
-            if a == "mix" or a == "background":
-                continue
+            if i == None:
+                cate_name.append("없음")
             else:
-                cate_name.append(a[2] + "/" + b)
+                a = self.DB.get_table(str(i), "Category")
+                b = self.DB.get_table(str(a[1]), "SuperCategory")[1]
+                if a == "mix" or a == "background":
+                    continue
+                else:
+                    cate_name.append(a[2] + "/" + b)
         return cate_name
 
     def addlabel(self):
@@ -824,8 +679,7 @@ class mix(QWidget):
             RGB = random.choice(self.collect_color)
             color_value.append(RGB)
             back_label_color = "background-color: " + QColor(RGB[0], RGB[1], RGB[2]).name()
-            category_name = category_box.currentText()
-            label_list = QRadioButton(category_name)
+            label_list = QRadioButton("없음")
             label_list.clicked.connect(self.color_select)
             label_list.setStyleSheet(back_label_color)
             label_list.toggle()
@@ -938,7 +792,7 @@ class mix(QWidget):
         self.repaint()
 
     def bbox2cate_id(self, bbox):
-        cate_table = self.DB.get_table(str(self.DB.get_table(str(bbox[0]), "Object")[2]), "Category")[0]
+        cate_table = self.DB.get_table(str(bbox[1]), "Object")[2]
         return cate_table
 
     def obj_name2img_id(self, obj_name):
@@ -1148,20 +1002,29 @@ class tracking_screen(QGraphicsView):
                     if draggin_idx == 0:
                         qp.drawRect(QRect(x, y, a[3][0] - x, a[3][1] - y))
                         tem_coor = self.bbox2coordinate([x, y, a[3][0] - x, a[3][1] - y])
-                        coordinates[minimum_mask] = self.point_sort(tem_coor)
+                        tem_coor = self.point_sort(tem_coor)
+                        tem_coor.append(coordinates[minimum_mask][4])
+                        coordinates[minimum_mask] = tem_coor
+
 
                     elif draggin_idx == 1:
                         qp.drawRect(QRect(a[0][0], y, x - a[0][0], a[2][1] - y))
                         tem_coor = self.bbox2coordinate([a[0][0], y, x - a[0][0], a[2][1] - y])
-                        coordinates[minimum_mask] = self.point_sort(tem_coor)
+                        tem_coor = self.point_sort(tem_coor)
+                        tem_coor.append(coordinates[minimum_mask][4])
+                        coordinates[minimum_mask] = tem_coor
                     elif draggin_idx == 2:
                         qp.drawRect(QRect(x, a[0][1], a[1][0] - x, y - a[0][1]))
                         tem_coor = self.bbox2coordinate([x, a[0][1], a[1][0] - x, y - a[0][1]])
-                        coordinates[minimum_mask] = self.point_sort(tem_coor)
+                        tem_coor = self.point_sort(tem_coor)
+                        tem_coor.append(coordinates[minimum_mask][4])
+                        coordinates[minimum_mask] = tem_coor
                     elif draggin_idx == 3:
                         qp.drawRect(QRect(a[0][0], a[0][1], x - a[0][0], y - a[0][1]))
                         tem_coor = self.bbox2coordinate([a[0][0], a[0][1], x - a[0][0], y - a[0][1]])
-                        coordinates[minimum_mask] = self.point_sort(tem_coor)
+                        tem_coor = self.point_sort(tem_coor)
+                        tem_coor.append(coordinates[minimum_mask][4])
+                        coordinates[minimum_mask] = tem_coor
 
                     qp.end()
                     scene.addPixmap(im)
@@ -1245,7 +1108,6 @@ class tracking_screen(QGraphicsView):
                 if len(coordinates) != 0:
                     if e.buttons() == Qt.LeftButton and draggin_idx == -1:
                         point = [x, y]
-
                         for i in coordinates:
                             dist = np.array(i[:4]) - np.array(point)
                             dist = dist[:, 0] ** 2 + dist[:, 1] ** 2

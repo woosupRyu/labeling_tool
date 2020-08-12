@@ -1,5 +1,5 @@
 from PyQt5.QtWidgets import *
-from jihun_augment_master import augmain
+from aug_master import aug_start
 
 #디바이스 (id(int)) 그리드(x(int),y(int), id(int)) 카테고리 (id(list), iteration(int)), 배경 이미지 (id(int))
 
@@ -244,14 +244,20 @@ class project_app(QWidget):
         grid_id = self.DB.get_grid_id(str(grid_x) + "x" + str(grid_y))
         object_category = category_id
         background_id = self.DB.get_table(str(obj[3]), "Image")[0]
-        print("배경 아이디 : " + str(background_id))
+
         iteration = 3  #######################
-        batch_num = [3, 3, 3]
+        batch_num = [200, 200, 200]
         # bright_param : [bright_flag, mode_flag, flag1, flag2, flag3, th1, th2, th3, rect x, rect y, rect w, rect h]
         bright_param = [1, 1, 1, 1, 1, 78, 36, 113, 1140, 440, 100, 200]
-        print(object_category)
-        print(grid_id)
-        augmain.aug_main(device_id, grid, grid_id, object_category, background_id, iteration, batch_num, bright_param)
+        print("디바이스 아이디 : " + str(device_id))
+        print("그리드 : " + str(grid))
+        print("그리드 아이디 : " + str(grid_id))
+        print("오브젝트 카테고리 : " + str(object_category))
+        print("배경 아이디 : " + str(background_id))
+        print("반복횟수 : " + str(iteration))
+
+
+        aug_start.aug_start(device_id, grid, grid_id, object_category, background_id, iteration, batch_num)
 
         print("finish")
 

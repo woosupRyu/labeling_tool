@@ -113,13 +113,13 @@ class aug_check(QWidget):
         edit_btn.setCheckable(True)
         edit_btn.setShortcut("E")
         edit_btn.setToolTip("E")
+        edit_btn.toggle()
         edit_btn.clicked.connect(self.remove_box)
         mask_btn = QPushButton("비박싱(Q)")
         mask_btn.setCheckable(True)
         mask_btn.setShortcut("Q")
         mask_btn.setToolTip("Q")
         mask_btn.clicked.connect(self.remove_box)
-        mask_btn.toggle()
         next_label_btn = QPushButton("다음 라벨(C)")
         next_label_btn.setShortcut("C")
         next_label_btn.setToolTip("C")
@@ -1041,7 +1041,7 @@ class aug_check(QWidget):
                 i.click()
 
     def push_json(self):
-        self.DB.db_to_json_type("./", "./Image", "3")
+        self.DB.db_to_json_type("/home/woosup/data.json", "./Image", "3")
 
 
 
