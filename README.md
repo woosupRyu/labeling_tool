@@ -193,4 +193,5 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 학습된 모델에 저장되어 있는 이미지들을 통과시켜 결과를 받아와 확인할 수 있는 작업 공간  
 이전, 다음으로 이미지를 이동할 수 있으며, 이전(10), 다음(10)으로 열장씩 띄워가며 확인할 수 있음  
 작업 창의 타이틀이 이미지 넘버가 되도록 설정  
+main코드 상단의 import client_our as client를 import client_china as client로 바꾸면 중국 모델로 성능확인 가능
 
