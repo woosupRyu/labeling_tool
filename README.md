@@ -17,7 +17,7 @@ Python3.7, PyQt5(5.14), opencv-contrib-python-headless, pillow(7.1.2), paho-mqtt
 ## 참고사항  
 main.py를 실행시킨 후 등록 -> 촬영 -> 검수 -> 라벨링(Bbox,Mask,Mix bbox) -> 합성 -> 라벨링(Aug bbox)순으로 작업을 진행  
   
-<img src="https://user-images.githubusercontent.com/46614789/84610354-3f461700-aef5-11ea-8228-91c0946c4626.png"  width="30%" height="30%">
+<img src="https://user-images.githubusercontent.com/46614789/96201968-e9fc3e00-0f98-11eb-8c1d-fd2d74b79fb1.png"  width="30%" height="30%">
   
 main.py를 실행시켰을 때 생성되는 창 -> 최상위 화면  
   
@@ -106,7 +106,8 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 ### 라벨링    
 ---  
 검수된 이미지에 마스크를 그리는 환경  
-  <img src="https://user-images.githubusercontent.com/46614789/89004013-2e822100-d33c-11ea-9a5b-ca55ce3ade8f.png"  width="30%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/96202028-12843800-0f99-11eb-8fdd-37a7c8c11deb.png"  width="30%" height="30%">  
+  Bbox : 촬영된 이미지를 비박싱 하는 창 생성  
   Mask : 촬영된 이미지를 마스킹 하는 창 생성  
   Aug Bbox : 합성 이미지를 검수하는 창 생성  
   Mix Bbox : 촬영된 믹스 이미지를 박스치는 창 생성  
@@ -129,7 +130,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   
 ### Bbox  
 물체 인식 범위를 지정하는 작업  
-  <img src="https://user-images.githubusercontent.com/46614789/89004384-0810b580-d33d-11ea-8555-83fffa829de4.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/96202047-20d25400-0f99-11eb-8d71-06cfdb8481ff.png"  width="60%" height="30%">  
   
   1. 좌측 상단에서 원하는 물품을 선택   
   2. 원하는 오브젝트 선택 후 작업   
@@ -183,10 +184,12 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 
 ### 지그오픈  
 ---
+ <img src="https://user-images.githubusercontent.com/46614789/96202118-5119f280-0f99-11eb-844a-55b8f3dcdb06.png"  width="40%" height="40%">  
 지그를 열고 닫을 때 사진을 찍어 학습된 모델을 통과하여 물체인식 결과를 보여주는 버튼(라벨링과 무관)  
 
 ### 벤치마킹
 ---
+<img src="https://user-images.githubusercontent.com/46614789/96202134-60993b80-0f99-11eb-979a-5cd6de173261.png"  width="40%" height="40%">  
 학습된 모델에 저장되어 있는 이미지들을 통과시켜 결과를 받아와 확인할 수 있는 작업 공간  
 이전, 다음으로 이미지를 이동할 수 있으며, 이전(10), 다음(10)으로 열장씩 띄워가며 확인할 수 있음  
 작업 창의 타이틀이 이미지 넘버가 되도록 설정  
