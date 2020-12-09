@@ -1,9 +1,11 @@
 # labeling_tool
+---
 !!!!!!!!!!!!!등록 작업시 디바이스id를 20001번 이상으로 해주시가 바랍니다!!!!!!!!!!!!!
 
 https://github.com/woosupRyu/labeling_tool/releases/tag/v1.2 링크에 가셔서 zip파일을 받아 사용하셔야 됩니다.
     
 ## 필요 설치모듈
+---
 Linux, Window  
 Python3.7, PyQt5(5.14), opencv-python(4.2.0.34), pillow(7.1.2), paho-mqtt(1.5.0), PyMySQL(0.9.3), psutil(5.7.2)   
 합성 요구 모듈 : grpcio, grpcio-tools, protobuf  
@@ -15,6 +17,7 @@ install.py를 실행하시면 자동으로 설치됩니다
 
   
 ## 참고사항  
+---
 main.py를 실행시킨 후 등록 -> 촬영 -> 검수 -> 라벨링(Bbox,Mask,Mix bbox) -> 합성 -> 라벨링(Aug bbox)순으로 작업을 진행  
   
 <img src="https://user-images.githubusercontent.com/46614789/101588106-f648c880-3a28-11eb-82c2-22947e8ec2e1.png"  width="30%" height="30%">
@@ -115,6 +118,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   Mix Bbox : 촬영된 믹스 이미지를 박스치는 창 생성  
   
 ### Bbox  
+---
 물체 인식 범위를 지정하는 작업  
   <img src="https://user-images.githubusercontent.com/46614789/101589390-a3bcdb80-3a2b-11eb-9ea9-0605b10b0758.png"  width="60%" height="30%">  
   
@@ -131,6 +135,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   ※이미지 리셋 버튼을 누를 경우 이미지 사이즈가 초기 값이 되며, 작업중이던 라벨을 날리고 DB에 저장되어 있는 라벨을 불러옴 
   
 ### Mask  
+---
 합성을 위해 물품의 형태를 따는 작업  
   <img src="https://user-images.githubusercontent.com/46614789/101589282-7bcd7800-3a2b-11eb-900e-be025c615da0.png"  width="60%" height="30%">  
   
@@ -148,6 +153,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   
   
 ### Rotated Bbox  
+---
 물체 인식 범위를 지정하는 작업  
   <img src="https://user-images.githubusercontent.com/46614789/101589592-16c65200-3a2c-11eb-97f7-14c01c6abd0e.png"  width="60%" height="30%">  
   
@@ -162,6 +168,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   ※이미지 리셋 버튼을 누를 경우 이미지 사이즈가 초기 값이 되며, 작업중이던 라벨을 날리고 DB에 저장되어 있는 라벨을 불러옴  
   
 ### Aug bbox  
+---
 합성된 이미지와 생성된 비박스의 상태를 체크하는 작업  
 <img src="https://user-images.githubusercontent.com/46614789/101589672-45442d00-3a2c-11eb-8a7d-2023d5df9c35.png"  width="60%" height="30%">  
 
