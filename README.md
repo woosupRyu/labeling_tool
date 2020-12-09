@@ -161,7 +161,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   ※이미지 리셋 버튼을 누를 경우 이미지 사이즈가 초기 값이 되며, 작업중이던 라벨을 날리고 DB에 저장되어 있는 라벨을 불러옴  
   
 ### Aug bbox  
-합성된 이미지와 생성된 비박스의 상태를 체크하는 작업
+합성된 이미지와 생성된 비박스의 상태를 체크하는 작업  
 <img src="https://user-images.githubusercontent.com/46614789/101589672-45442d00-3a2c-11eb-8a7d-2023d5df9c35.png"  width="60%" height="30%">  
 
   **해당 작업은 이미지 합성을 끝낸 후 사용 가능함**    
@@ -194,20 +194,20 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 합성하기 클릭      
  
 
-### 모델 학습
----
-라벨링한 데이터를 이용하여 모델을 학습하는 작업 공간
-### 데이터셋 생성
----
-라벨링한 데이터로 원하는 데이터 셋을 생성하는 공간
-<img src="https://user-images.githubusercontent.com/46614789/101589901-b4ba1c80-3a2c-11eb-9a0f-1f15dd03357c.png"  width="30%" height="20%">
-### 모델 학습
----
-데이터 셋과 모델종류, 파라미터등을 설정하여 모델을 학습시키는 공간
- <img src="https://user-images.githubusercontent.com/46614789/101590084-1bd7d100-3a2d-11eb-96ff-cb046a815d40.png"  width="50%" height="40%">  
+### 모델 학습  
+---  
+라벨링한 데이터를 이용하여 모델을 학습하는 작업 공간  
+### 데이터셋 생성  
+---  
+라벨링한 데이터로 원하는 데이터 셋을 생성하는 공간  
+<img src="https://user-images.githubusercontent.com/46614789/101589901-b4ba1c80-3a2c-11eb-9a0f-1f15dd03357c.png"  width="30%" height="20%">  
+### 모델 학습  
+---  
+데이터 셋과 모델종류, 파라미터등을 설정하여 모델을 학습시키는 공간  
+ <img src="https://user-images.githubusercontent.com/46614789/101590084-1bd7d100-3a2d-11eb-96ff-cb046a815d40.png"  width="50%" height="40%">   
 
-### 성능 확인
----
+### 성능 확인  
+---  
 <img src="https://user-images.githubusercontent.com/46614789/101590204-55a8d780-3a2d-11eb-8917-1b2cff8f6fdf.png"  width="50%" height="40%">  
 원하는 모델을 선택하여 해당 모델의 성능을 확인할 수 있는 공간  
 원하는 모델을 선택  
