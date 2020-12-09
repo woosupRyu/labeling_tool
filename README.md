@@ -11,28 +11,28 @@ Mac
 Python3.7, PyQt5(5.14), opencv-contrib-python-headless, pillow(7.1.2), paho-mqtt(1.5.0), PyMySQL(0.9.3), psutil(5.7.2)  
 합성 요구 모듈 : grpcio, grpcio-tools, protobuf  
 
-**모듈들은 상위버전이어도 상관없으나 Linux PyQt5의 경우 5.15(최신)버전을 사용했을 때, 에러가 발생했습니다.**  
+install.py를 실행하시면 자동으로 설치됩니다  
 
   
 ## 참고사항  
 main.py를 실행시킨 후 등록 -> 촬영 -> 검수 -> 라벨링(Bbox,Mask,Mix bbox) -> 합성 -> 라벨링(Aug bbox)순으로 작업을 진행  
   
-<img src="https://user-images.githubusercontent.com/46614789/96201968-e9fc3e00-0f98-11eb-8c1d-fd2d74b79fb1.png"  width="30%" height="30%">
+<img src="https://user-images.githubusercontent.com/46614789/101588106-f648c880-3a28-11eb-82c2-22947e8ec2e1.png"  width="30%" height="30%">
   
 main.py를 실행시켰을 때 생성되는 창 -> 최상위 화면  
   
 각 단계의 버튼을 클릭하면 해당 작업을 수행할 수 있는 새로운 창이 생성  
   
-DB에 관련된 버튼(파란버튼)을 DB와 연동되는 작업은 없기 때문에 기능적으로 잘못 된 작업을 돌릴 수 없거나 렉이 걸릴 경우 창을 재시작해도 무관  
+기능적으로 잘못 된 작업을 돌릴 수 없거나 렉이 걸릴 경우 창을 재시작해도 무관  
   
-DB의 데이터를 기준으로 모든 GUI가 구성되어 있기 때문에 작업 완료 후 특별한 액션을 취하지 않고 창을 닫은 후 다음 작업을 진행  
+DB의 데이터를 기준으로 모든 GUI가 구성되어 있기 때문에 작업 완료 후 특별한 액션을 취하지 않고 창을 닫은 후 다음 작업 진행  
   
 파란색 버튼들은 클릭할 경우 DB에 접근하는 버튼이기 때문에 비정상적인 상황에서 클릭하면 프로그램이 죽거나 데이터가 잘못 저장될 수 있음  
   
 나머지 버튼 및 작업들은 로컬 변수로만 동작하는 버튼  
 (**검수작업의 허락, 거절 버튼은 DB와 연동되어 있지만 기능 상, 다른색으로 지정**)  
   
-작업 순서에따라 작업하지 않고 DB에 직접 작업 후, 툴을 사용할 경우 에러가 발생할 수 있으니 왠만하면 툴에서 모든 작업 진행  
+작업 순서에따라 작업하지 않고 DB에서 직접 작업 후, 툴을 사용할 경우 에러가 발생할 수 있으니 왠만하면 툴에서 모든 작업 진행  
     
   
 ### 등록
@@ -65,23 +65,24 @@ Environment, Grid, SuperCategory, Category 정보를 등록하는 작업 환경
     촬영 횟수 : 1\~x (정수)  
     이미지 : 찾기 버튼 클릭 후 파일 선택  
     
-  <img src="https://user-images.githubusercontent.com/46614789/89002765-eb727e80-d338-11ea-8f4e-01fc96f4221c.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/101588302-6d7e5c80-3a29-11eb-9432-8f6766baa39b.png"  width="60%" height="30%">  
+   
+   Environment, Grid, Category를 삭제할 경우, 연관된 이후의 모든 데이터가 삭제되므로 왠만하면 삭제 지양
   
 ### 촬영
 ---
 Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택 하고 촬영하는 환경  
-**Mix 데이터는 반드시 한번에 모든 촬영을 다 끝내야 합니다**  
-**Mix 데이터는 반드시 한번에 모든 촬영을 다 끝내야 합니다**  
-**Mix 데이터는 반드시 한번에 모든 촬영을 다 끝내야 합니다**  
+**Mix 데이터는 재촬영시 최소 1장을 찍는 것으로 설정해야 촬영 기능에 접근할 수 있기 때문에 작업을 중단했다 다시 할 경우 Mix를 한장 더 촬영해야 합니다.**  
   
 1. 원하는 디바이스, 그리드 선택  
-  <img src="https://user-images.githubusercontent.com/46614789/89002830-10ff8800-d339-11ea-928a-3206469b3aad.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/101588793-80ddf780-3a2a-11eb-9a7a-b7536f852a5a.png"  width="60%" height="30%">  
 2. 물품 리스트에서 원하는 물품을 선택 후, -> 버튼 클릭 시 중앙의 추가할 물품 리스트로 이동, 추가할 물품에서 특정 물품 선택 후, <- 버튼 클릭 시 좌측의 물품 리스트로 이동 물품추가 버튼 클릭 시, 추가할 물품 리스트의 물품들이 추가된 물품 리스트로 이동, 추가된 물품 리스트에서 특정 물품 선택 후, 삭제(Delete)버튼을 클릭 시 해당 물품 삭제   
-  <img src="https://user-images.githubusercontent.com/46614789/89002835-1230b500-d339-11ea-9b7c-a588a1944f20.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/101588901-ba166780-3a2a-11eb-9717-cfd3567d0964.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/101588951-d74b3600-3a2a-11eb-9a59-df1f82e36dbb.png"  width="60%" height="30%">  
 3. Mix의 촬영횟수를 Mix 촬영 횟수 아래의 칸에 입력 후, 우측의 등록버튼을 클릭 시, 추가된 물품 리스트에 Mix 추가  
-<img src="https://user-images.githubusercontent.com/46614789/89002840-1361e200-d339-11ea-8a16-8724b7de59a8.png"  width="60%" height="30%">  
+<img src="https://user-images.githubusercontent.com/46614789/101589023-f8ac2200-3a2a-11eb-8db7-15801f65729a.png"  width="60%" height="30%">  
 5. 확인버튼 클릭 시 아래의 화면 생성
-  <img src="https://user-images.githubusercontent.com/46614789/89003451-c54dde00-d33a-11ea-8955-5405d88e66d6.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/101589096-1bd6d180-3a2b-11eb-9209-3e18060524a9.png"  width="60%" height="30%">  
 6. 촬영  
   촬영버튼을 누르면 냉장고 문이 열리고 물품을 배치 후, 문을 닫으면 사진이 찍힘  
   
@@ -106,15 +107,16 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 ### 라벨링    
 ---  
 검수된 이미지에 마스크를 그리는 환경  
-  <img src="https://user-images.githubusercontent.com/46614789/96202028-12843800-0f99-11eb-8fdd-37a7c8c11deb.png"  width="30%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/101589188-4e80ca00-3a2b-11eb-8137-54361c93536c.png"  width="30%" height="30%">  
   Bbox : 촬영된 이미지를 비박싱 하는 창 생성  
+  Rotated Bbox : 기울어진 박스를 그릴 수 있는 공간 생성
   Mask : 촬영된 이미지를 마스킹 하는 창 생성  
   Aug Bbox : 합성 이미지를 검수하는 창 생성  
   Mix Bbox : 촬영된 믹스 이미지를 박스치는 창 생성  
   
 ### Mask  
 합성을 위해 물품의 형태를 따는 작업  
-  <img src="https://user-images.githubusercontent.com/46614789/89004384-0810b580-d33d-11ea-8555-83fffa829de4.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/101589282-7bcd7800-3a2b-11eb-900e-be025c615da0.png"  width="60%" height="30%">  
   
   1. 좌측 상단에서 원하는 물품을 선택   
   2. 원하는 오브젝트 선택 후 작업   
@@ -130,7 +132,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   
 ### Bbox  
 물체 인식 범위를 지정하는 작업  
-  <img src="https://user-images.githubusercontent.com/46614789/96202047-20d25400-0f99-11eb-8d71-06cfdb8481ff.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/101589390-a3bcdb80-3a2b-11eb-9ea9-0605b10b0758.png"  width="60%" height="30%">  
   
   1. 좌측 상단에서 원하는 물품을 선택   
   2. 원하는 오브젝트 선택 후 작업   
@@ -144,9 +146,23 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
   ※확대, 축소는 스크롤로 가능하며, 화면이동은 우측 상단의 화면이동 버튼을 클릭한 후, 이미지를 드래그 하여 이동 / 작업 시 다시 마스킹 버튼을 누른 후, 작업  
   ※이미지 리셋 버튼을 누를 경우 이미지 사이즈가 초기 값이 되며, 작업중이던 라벨을 날리고 DB에 저장되어 있는 라벨을 불러옴  
   
+### Rotated Bbox  
+물체 인식 범위를 지정하는 작업  
+  <img src="https://user-images.githubusercontent.com/46614789/101589592-16c65200-3a2c-11eb-97f7-14c01c6abd0e.png"  width="60%" height="30%">  
+  
+  1. 비박스를 그림  
+  2. 회전 버튼을 누른 후 마우스를 위, 아래로 드래그하여 박스 회전   
+  3. 회전 후 수정사항이 있을 경우, 수정 버튼을 누른 뒤 수정  
+  4. **작업 후 저장 버튼 클릭**  
+    
+  ※작업 진행도는 체크박스를 기준으로 카운트됨 저장을 누를 경우 체크박스가 채워지며, 임의로 해제도 가능  
+  ※마스크, 비박스는 한 오브젝트에 하나만 존재하므로 이미 비박스가 존재하는 상황에서 더블클릭 시 기존의 것이 사라지고 새로 그려짐  
+  ※확대, 축소는 스크롤로 가능하며, 화면이동은 우측 상단의 화면이동 버튼을 클릭한 후, 이미지를 드래그 하여 이동 / 작업 시 다시 마스킹 버튼을 누른 후, 작업  
+  ※이미지 리셋 버튼을 누를 경우 이미지 사이즈가 초기 값이 되며, 작업중이던 라벨을 날리고 DB에 저장되어 있는 라벨을 불러옴  
+  
 ### Aug bbox  
 합성된 이미지와 생성된 비박스의 상태를 체크하는 작업
-<img src="https://user-images.githubusercontent.com/46614789/89004665-ab61ca80-d33d-11ea-91ce-679a242abeec.png"  width="60%" height="30%">  
+<img src="https://user-images.githubusercontent.com/46614789/101589672-45442d00-3a2c-11eb-8a7d-2023d5df9c35.png"  width="60%" height="30%">  
 
   **해당 작업은 이미지 합성을 끝낸 후 사용 가능함**    
       
@@ -158,7 +174,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 ### Mix bbox  
 ---
 테스트용 이미지를 비박싱 하는 작업  
-
+<img src="https://user-images.githubusercontent.com/46614789/101589746-64db5580-3a2c-11eb-83d3-2f8f92cbd3b4.png"  width="60%" height="30%">  
   1. 좌측 상단의 카테고리 박스에서 원하는 물품들을 선택 시 우측하단에 해당 라벨들 생성   
   2. 원하는 라벨을 선택 후, 비박싱 작업 진행    
   3. 우측 상단의 수정 버튼을 누른 후, 특정박스를 클릭할 경우 해당 박스가 색칠되며 선택됨  
@@ -173,25 +189,34 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 합성 환경을 설정하기위해 그리드, 배경, 물품을 선택  
 (물품별 그리드 기능과 augment 옵션 기능은 현재 합성에선 사용되지 않는다)  
 
-<img src="https://user-images.githubusercontent.com/46614789/86729401-6ca36200-c068-11ea-90a2-9dbafdf939d3.png"  width="60%" height="30%">  
+<img src="https://user-images.githubusercontent.com/46614789/101589826-8ccab900-3a2c-11eb-9760-e48c80822429.png"  width="60%" height="30%">  
   
 합성하기 클릭      
-  
-  <img src="https://user-images.githubusercontent.com/46614789/86729414-6e6d2580-c068-11ea-8b69-3003f8cb88cd.png"  width="60%" height="30%">  
  
-  
-  
 
-### 지그오픈  
+### 모델 학습
 ---
- <img src="https://user-images.githubusercontent.com/46614789/96202118-5119f280-0f99-11eb-844a-55b8f3dcdb06.png"  width="40%" height="40%">  
-지그를 열고 닫을 때 사진을 찍어 학습된 모델을 통과하여 물체인식 결과를 보여주는 버튼(라벨링과 무관)  
-
-### 벤치마킹
+라벨링한 데이터를 이용하여 모델을 학습하는 작업 공간
+### 데이터셋 생성
 ---
-<img src="https://user-images.githubusercontent.com/46614789/96202134-60993b80-0f99-11eb-979a-5cd6de173261.png"  width="40%" height="40%">  
-학습된 모델에 저장되어 있는 이미지들을 통과시켜 결과를 받아와 확인할 수 있는 작업 공간  
-이전, 다음으로 이미지를 이동할 수 있으며, 이전(10), 다음(10)으로 열장씩 띄워가며 확인할 수 있음  
-작업 창의 타이틀이 이미지 넘버가 되도록 설정  
-main코드 상단의 import client_our as client를 import client_china as client로 바꾸면 중국 모델로 성능확인 가능
+라벨링한 데이터로 원하는 데이터 셋을 생성하는 공간
+<img src="https://user-images.githubusercontent.com/46614789/101589901-b4ba1c80-3a2c-11eb-9a0f-1f15dd03357c.png"  width="30%" height="20%">
+### 모델 학습
+---
+데이터 셋과 모델종류, 파라미터등을 설정하여 모델을 학습시키는 공간
+ <img src="https://user-images.githubusercontent.com/46614789/101590084-1bd7d100-3a2d-11eb-96ff-cb046a815d40.png"  width="50%" height="40%">  
 
+### 성능 확인
+---
+<img src="https://user-images.githubusercontent.com/46614789/101590204-55a8d780-3a2d-11eb-8917-1b2cff8f6fdf.png"  width="50%" height="40%">  
+원하는 모델을 선택하여 해당 모델의 성능을 확인할 수 있는 공간  
+원하는 모델을 선택  
+해당 모델의 학습 정도를 선택  
+박스를 보여주는 기준이 될 Socre threshold 설정  
+카테고리 표시를 체크할 경우 물품의 종류까지 표시되며, 해제할 경우 박스만 보여줌  
+
+모델 on/off를 통해 모델을 키고 끌 수 있음  
+모델 off 상태에서는 성능확인 불가능  
+지그오픈 : 매대의 문이 열리며 문이 닫힌 후의 상황을 촬영하여 물체인식 결과를 보여줌  
+벤치마킹 : 지정 경로에 있는 이미지들에 대해 물체인식 결과를 보여줌   
+로그확인 : 해당 모델의 학습 로그를 확인할 수 있음
