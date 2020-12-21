@@ -210,6 +210,9 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 ---  
 라벨링한 데이터로 원하는 데이터 셋을 생성하는 공간  
 <img src="https://user-images.githubusercontent.com/46614789/101589901-b4ba1c80-3a2c-11eb-9a0f-1f15dd03357c.png"  width="30%" height="20%">  
+원하는 물품들을 체크한 후, 데이터셋 생성 클릭
+
+※현재는 데이터셋 생성 시 선택한 물품으로 이루어진 type2(Mix), type3(Aug) 이미지들을 전부 json으로 출력
 ### 모델 학습  
 ---  
 데이터 셋과 모델종류, 파라미터등을 설정하여 모델을 학습시키는 공간  
