@@ -2,7 +2,7 @@
 ---
 !!!!!!!!!!!!!등록 작업시 디바이스id를 20001번 이상으로 해주시가 바랍니다!!!!!!!!!!!!!
 
-https://github.com/woosupRyu/labeling_tool/releases/tag/v1.2 링크에 가셔서 zip파일을 받아 사용하셔야 됩니다.
+https://github.com/woosupRyu/labeling_tool/releases/tag/v1.5 링크에 가셔서 zip파일을 받아 사용하셔야 됩니다.
     
 ## 필요 설치모듈
 ---
