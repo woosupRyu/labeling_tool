@@ -78,14 +78,14 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 **Mix 데이터는 재촬영시 최소 1장을 찍는 것으로 설정해야 촬영 기능에 접근할 수 있기 때문에 작업을 중단했다 다시 할 경우 Mix를 한장 더 촬영해야 합니다.**  
   
 1. 원하는 디바이스, 그리드 선택  
-  <img src="https://user-images.githubusercontent.com/46614789/101588793-80ddf780-3a2a-11eb-9a7a-b7536f852a5a.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/120570553-5ad26680-c453-11eb-9dd0-c55e67f5de33.png"  width="60%" height="30%">  
 2. 물품 리스트에서 원하는 물품을 선택 후, -> 버튼 클릭 시 중앙의 추가할 물품 리스트로 이동, 추가할 물품에서 특정 물품 선택 후, <- 버튼 클릭 시 좌측의 물품 리스트로 이동 물품추가 버튼 클릭 시, 추가할 물품 리스트의 물품들이 추가된 물품 리스트로 이동, 추가된 물품 리스트에서 특정 물품 선택 후, 삭제(Delete)버튼을 클릭 시 해당 물품 삭제   
-  <img src="https://user-images.githubusercontent.com/46614789/101588901-ba166780-3a2a-11eb-9717-cfd3567d0964.png"  width="60%" height="30%">  
-  <img src="https://user-images.githubusercontent.com/46614789/101588951-d74b3600-3a2a-11eb-9a59-df1f82e36dbb.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/120570586-70479080-c453-11eb-9d9f-28ec00166db0.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/120570608-7a698f00-c453-11eb-967d-f9366c4771d9.png"  width="60%" height="30%">  
 3. Mix의 촬영횟수를 Mix 촬영 횟수 아래의 칸에 입력 후, 우측의 등록버튼을 클릭 시, 추가된 물품 리스트에 Mix 추가  
-<img src="https://user-images.githubusercontent.com/46614789/101589023-f8ac2200-3a2a-11eb-8db7-15801f65729a.png"  width="60%" height="30%">  
+<img src="https://user-images.githubusercontent.com/46614789/120570718-ad138780-c453-11eb-9748-1dbd5509613e.png"  width="60%" height="30%">  
 5. 확인버튼 클릭 시 아래의 화면 생성
-  <img src="https://user-images.githubusercontent.com/46614789/101589096-1bd6d180-3a2b-11eb-9209-3e18060524a9.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/120570636-881f1480-c453-11eb-986f-018917b194c1.png"  width="60%" height="30%">  
 6. 촬영  
   촬영버튼을 누르면 냉장고 문이 열리고 물품을 배치 후, 문을 닫으면 사진이 찍힘  
   
