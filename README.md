@@ -20,7 +20,7 @@ install.py를 실행하시면 자동으로 설치됩니다
 ---
 main.py를 실행시킨 후 등록 -> 촬영 -> 검수 -> 라벨링(Bbox,Mask,Mix bbox) -> 합성 -> 라벨링(Aug bbox)순으로 작업을 진행  
   
-<img src="https://user-images.githubusercontent.com/46614789/101588106-f648c880-3a28-11eb-82c2-22947e8ec2e1.png"  width="30%" height="30%">
+<img src="https://user-images.githubusercontent.com/46614789/120570471-324a6c80-c453-11eb-9d9c-f4d04dc9b813.png"  width="30%" height="30%">
   
 main.py를 실행시켰을 때 생성되는 창 -> 최상위 화면  
   
@@ -68,7 +68,7 @@ Environment, Grid, SuperCategory, Category 정보를 등록하는 작업 환경
     촬영 횟수 : 1\~x (정수)  
     이미지 : 찾기 버튼 클릭 후 파일 선택  
     
-  <img src="https://user-images.githubusercontent.com/46614789/101588302-6d7e5c80-3a29-11eb-9432-8f6766baa39b.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/120570508-45f5d300-c453-11eb-96d7-28d371c2107a.png"  width="60%" height="30%">  
    
    Environment, Grid, Category를 삭제할 경우, 연관된 이후의 모든 데이터가 삭제되므로 왠만하면 삭제 지양
   
@@ -94,15 +94,15 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 ---
 촬영된 이미지가 데이터로 쓰일 수 있는지 체크하는 환경   
 1. 원하는 카테고리와 그리드 선택, 이전에 검수과정을 진행했었고 그때 거절된 이미지는 붉은색으로 버튼이 생성됨  
-  <img src="https://user-images.githubusercontent.com/46614789/86754141-9d40c700-c07b-11ea-8dee-84b433550841.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/120570553-5ad26680-c453-11eb-9dd0-c55e67f5de33.png"  width="60%" height="30%">  
 2. 허락(거절)할 오브젝트들 선택(S를 누를 시, 해당 이미지의 체크박스 상태가 바뀌며, F를 누를 시, 거절된 이미지를 제외한 나머지 이미지의 체크박스 상태가 바뀜)   
-  <img src="https://user-images.githubusercontent.com/46614789/86754149-9e71f400-c07b-11ea-80d3-14bc1363a9c6.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/120570586-70479080-c453-11eb-9d9f-28ec00166db0.png"  width="60%" height="30%">  
 3. 허락(거절)버튼 클릭  
-  <img src="https://user-images.githubusercontent.com/46614789/86754155-9f0a8a80-c07b-11ea-8641-bf7a9c5e82a3.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/120570608-7a698f00-c453-11eb-967d-f9366c4771d9.png"  width="60%" height="30%">  
 4. 허락(거절)된 버튼을 제외한 나머지 버튼 클릭 및 거절  
-  <img src="https://user-images.githubusercontent.com/46614789/86754159-9fa32100-c07b-11ea-87f8-7aa2e2286027.png"  width="60%" height="30%">  
+  <img src="https://user-images.githubusercontent.com/46614789/120570718-ad138780-c453-11eb-9748-1dbd5509613e.png"  width="60%" height="30%">  
 5. 거절한 데이터의 경우 촬영 작업 시 버튼이 붉은색으로 표시   
-  <img src="https://user-images.githubusercontent.com/46614789/86728974-e850df00-c067-11ea-9bda-67bb444fad18.png"  width="60%" height="30%"> 
+  <img src="https://user-images.githubusercontent.com/46614789/120570636-881f1480-c453-11eb-986f-018917b194c1.png"  width="60%" height="30%"> 
   
   한번 허락하거나 거절해서 버튼색이 변한 버튼도 다시 거절, 허락 할 수 있음. 단, 한번 리스트를 갱신하거나 창을 재시작하면 허락된 오브젝트들은 나타나지 않음
 **(허락한 데이터는 추후 검수리스트에 보이지 않으니 신중히 선택)** 
@@ -110,7 +110,7 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 ## 라벨링    
 ---  
 검수된 이미지에 마스크를 그리는 환경  
-  <img src="https://user-images.githubusercontent.com/46614789/103265112-29f78c80-49f0-11eb-8cfb-2262d1d84f7a.png"  width="40%" height="40%">  
+  <img src="https://user-images.githubusercontent.com/46614789/120570756-c6b4cf00-c453-11eb-9c7d-ac1b21c197be.png"  width="40%" height="40%">  
   Bbox : 촬영된 이미지를 비박싱 하는 창 생성  
   Rotated Bbox : 기울어진 박스를 그릴 수 있는 공간 생성  
   Mask : 촬영된 이미지를 마스킹 하는 창 생성  
@@ -183,7 +183,7 @@ Mask 작업을 보조해주는 기능이 추가된 작업
 ### Aug bbox  
 ---
 합성된 이미지와 생성된 비박스의 상태를 체크하는 작업  
-<img src="https://user-images.githubusercontent.com/46614789/101879997-89266600-3bd5-11eb-86f9-d478d7735062.png"  width="60%" height="30%">  
+<img src="https://user-images.githubusercontent.com/46614789/120570840-efd55f80-c453-11eb-9812-1cdb092ce012.png"  width="60%" height="30%">  
 
   **해당 작업은 이미지 합성을 끝낸 후 사용 가능함**    
       
@@ -196,7 +196,7 @@ Mask 작업을 보조해주는 기능이 추가된 작업
 ### Mix bbox  
 ---
 테스트용 이미지를 비박싱 하는 작업  
-<img src="https://user-images.githubusercontent.com/46614789/101880203-dc98b400-3bd5-11eb-9b61-dc711bd1a4de.png"  width="60%" height="30%">  
+<img src="https://user-images.githubusercontent.com/46614789/120570893-04b1f300-c454-11eb-8806-4337aa5f3862.png"  width="60%" height="30%">  
   1. 좌측 상단의 카테고리 박스에서 원하는 물품들을 선택 시 우측하단에 해당 라벨들 생성   
   2. 원하는 라벨을 선택 후, 비박싱 작업 진행    
   3. 우측 상단의 수정 버튼을 누른 후, 특정박스를 클릭할 경우 해당 박스가 색칠되며 선택됨  
@@ -211,7 +211,7 @@ Mask 작업을 보조해주는 기능이 추가된 작업
 합성 환경을 설정하기위해 그리드, 배경, 물품을 선택  
 (물품별 그리드 기능과 augment 옵션 기능은 현재 합성에선 사용되지 않는다)  
 
-<img src="https://user-images.githubusercontent.com/46614789/101589826-8ccab900-3a2c-11eb-9760-e48c80822429.png"  width="60%" height="30%">  
+<img src="https://user-images.githubusercontent.com/46614789/120570931-1a271d00-c454-11eb-88e1-eb20508d3ecc.png"  width="60%" height="30%">  
   
 합성하기 클릭      
  
@@ -222,7 +222,7 @@ Mask 작업을 보조해주는 기능이 추가된 작업
 ### 데이터셋 생성  
 ---  
 라벨링한 데이터로 원하는 데이터 셋을 생성하는 공간  
-<img src="https://user-images.githubusercontent.com/46614789/101589901-b4ba1c80-3a2c-11eb-9a0f-1f15dd03357c.png"  width="30%" height="20%">  
+<img src="https://user-images.githubusercontent.com/46614789/120570967-2f03b080-c454-11eb-8ae6-a60e938cee4d.png"  width="25%" height="60%">  
 원하는 물품들을 체크한 후, 데이터셋 생성 클릭
 
 ※현재는 데이터셋 생성 시 선택한 물품으로 이루어진 type2(Mix), type3(Aug) 이미지들을 전부 json으로 출력
@@ -233,7 +233,7 @@ Mask 작업을 보조해주는 기능이 추가된 작업
 
 ## 성능 확인  
 ---  
-<img src="https://user-images.githubusercontent.com/46614789/101590204-55a8d780-3a2d-11eb-8917-1b2cff8f6fdf.png"  width="50%" height="40%">  
+<img src="https://user-images.githubusercontent.com/46614789/120571041-46429e00-c454-11eb-8443-79697748025e.png"  width="50%" height="40%">  
 원하는 모델을 선택하여 해당 모델의 성능을 확인할 수 있는 공간  
 원하는 모델을 선택  
 해당 모델의 학습 정도를 선택  
