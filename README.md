@@ -93,16 +93,11 @@ Environment, Category, Grid를 선택하여 촬영하고 싶은 물품을 선택
 ## 검수
 ---
 촬영된 이미지가 데이터로 쓰일 수 있는지 체크하는 환경   
-1. 원하는 카테고리와 그리드 선택, 이전에 검수과정을 진행했었고 그때 거절된 이미지는 붉은색으로 버튼이 생성됨  
-  <img src="https://user-images.githubusercontent.com/46614789/120570553-5ad26680-c453-11eb-9dd0-c55e67f5de33.png"  width="60%" height="30%">  
+1. 원하는 카테고리와 그리드 선택, 이전에 검수과정을 진행했었을 경우 그때 거절된 이미지는 붉은색으로 버튼이 생성됨  
 2. 허락(거절)할 오브젝트들 선택(S를 누를 시, 해당 이미지의 체크박스 상태가 바뀌며, F를 누를 시, 거절된 이미지를 제외한 나머지 이미지의 체크박스 상태가 바뀜)   
-  <img src="https://user-images.githubusercontent.com/46614789/120570586-70479080-c453-11eb-9d9f-28ec00166db0.png"  width="60%" height="30%">  
 3. 허락(거절)버튼 클릭  
-  <img src="https://user-images.githubusercontent.com/46614789/120570608-7a698f00-c453-11eb-967d-f9366c4771d9.png"  width="60%" height="30%">  
 4. 허락(거절)된 버튼을 제외한 나머지 버튼 클릭 및 거절  
-  <img src="https://user-images.githubusercontent.com/46614789/120570718-ad138780-c453-11eb-9748-1dbd5509613e.png"  width="60%" height="30%">  
 5. 거절한 데이터의 경우 촬영 작업 시 버튼이 붉은색으로 표시   
-  <img src="https://user-images.githubusercontent.com/46614789/120570636-881f1480-c453-11eb-986f-018917b194c1.png"  width="60%" height="30%"> 
   
   한번 허락하거나 거절해서 버튼색이 변한 버튼도 다시 거절, 허락 할 수 있음. 단, 한번 리스트를 갱신하거나 창을 재시작하면 허락된 오브젝트들은 나타나지 않음
 **(허락한 데이터는 추후 검수리스트에 보이지 않으니 신중히 선택)** 
